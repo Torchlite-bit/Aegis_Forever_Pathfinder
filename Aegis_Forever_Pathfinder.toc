@@ -1,0 +1,34 @@
+## Interface: 16001
+## Title: Aegis: Pathfinder (Forever)
+## Notes: Leveling guide window for WoW: Forever. No guides yet: it collects quest and leveling data to build them from.|nPart of the Aegis addon suite.
+## Author: Aegis: Pathfinder Contributors
+## Version: 0.1.0
+## X-Category: Quest
+## SavedVariables: AegisPathfinderDB
+## SavedVariablesPerCharacter: AegisPathfinderCharDB
+## IconTexture: Interface\AddOns\Aegis_Forever_Pathfinder\media\minimap-logo
+
+# The namespace, saved variables, events and slash commands, then the client
+# helpers every window is built through, then the look.
+Locale.lua
+Core\Init.lua
+Core\Compat.lua
+Core\Theme.lua
+Core\Guides.lua
+
+# The data collector: what the client says about quests and levels.
+Collector\Collector.lua
+Collector\Export.lua
+
+# The windows. The guide window is built first: the others open beside it.
+UI\ObjectivesFrame.lua
+UI\CollectorFrame.lua
+UI\GuideBrowser.lua
+UI\OptionsFrame.lua
+UI\MinimapButton.lua
+
+# What works without a guide: quest and vendor automation, and chat extras.
+Features\Automation.lua
+Features\Extras.lua
+
+Core\Startup.lua

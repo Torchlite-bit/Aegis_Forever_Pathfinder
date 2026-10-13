@@ -1,0 +1,8 @@
+<Bindings>
+	<Binding name="AEGISPATHFINDER_TOGGLE" header="AEGISPATHFINDER" category="ADDONS">
+		AegisPathfinder_Toggle()
+	</Binding>
+	<Binding name="AEGISPATHFINDER_COLLECT" category="ADDONS">
+		AegisPathfinder_Collect()
+	</Binding>
+</Bindings>
