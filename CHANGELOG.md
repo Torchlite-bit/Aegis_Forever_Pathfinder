@@ -53,6 +53,12 @@
 - **Fixed: data dropped from exports.** A table with gaps in its numbers (levels
   5 and 6, say) could be written as a short or empty list, losing what came
   after the gap. Such tables are now written whole.
+- **Fixed: Reload did nothing when switching skins**, and only said to type
+  /reload. The secure /reload button now lies over each Reload button for as
+  long as it's shown, instead of being put there as the mouse arrived, which
+  could hand the click back to the button underneath.
+- **Themes renamed:** Default (Blizzard's own look), and Pathfinder Day,
+  Night, Green, Purple, Grey, Tan and Red. Your saved choice carries over.
 - **Fixed: a shared quest recorded who shared it.** When a party member
   shared a quest, the collector wrote down their character name as the quest
   giver. Such a pickup is now `shared`, with no name, and the GitHub intake

@@ -73,7 +73,7 @@ local GUIDE_MENU = {
 	"-",
 	{ label = "Reset window", glyph = "reset", run = function() AP:ResetWindowLayout() end },
 	-- Reloads through the secure button over it (Theme:OfferReload); a click that reaches the row was in combat.
-	{ label = "Reload", glyph = "reload", reload = true, run = function() AP:Print(AP.L.TYPE_RELOAD) end },
+	{ label = "Reload", glyph = "reload", reload = true, run = function() Theme:ReloadFallback() end },
 	"-",
 	{ label = "Settings", glyph = "gear", run = function() AP:ToggleConfigPanel() end },
 }

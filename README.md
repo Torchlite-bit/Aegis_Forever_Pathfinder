@@ -19,11 +19,11 @@ now it collects the data to write them.**
 
 **The Pathfinder look, on Forever.** The guide window, the ≡ menu, the guide
 browser, the options window and the minimap button are the Turtle WoW
-addon's, panel for panel: same layout, same fonts, same colour themes (Day,
-Night, Pathfinder (the original green), OctoWoW, RavenCraft, Capybara Paradise, Aegis).
+addon's, panel for panel: same layout, same fonts, same colour themes:
+Pathfinder Day, Night, Green (the original), Purple, Grey, Tan and Red.
 
-**A Blizzard skin.** One more theme, **Blizzard**, draws the same windows the
-way today's game draws its own, like its Options window: the smooth metal
+**Default: Blizzard's own look.** One more theme, **Default**, draws the same
+windows the way today's game draws its own, like its Options window: the smooth metal
 frame with a solid dark background (nothing shows through), the red close
 button, Blizzard's red buttons, the slim check boxes, sliders, scroll bars and
 drop-downs, gold Friz Quadrata labels, the Options list highlight and section

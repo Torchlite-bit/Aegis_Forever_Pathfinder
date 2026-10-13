@@ -82,26 +82,26 @@ end
 	white text on dark dialog stone) and its art is the client's own.
 ]]
 Theme.THEMES = {
-	{ key = "day", label = "Day", note = "Warm amber on lighter panels.",
+	{ key = "day", label = "Pathfinder Day", note = "Warm amber on lighter panels.",
 		colors = { accent = "f0b43c", accentDeep = "a8740f", accentGlow = "ffd98a", switchOn = "a8740f",
 			panel = "2b2925", panel2 = "1c1a17", panel3 = "24221f", tabbg = "4a463e",
 			bg1 = "1f1c16", bg2 = "15130f" } },
-	{ key = "night", label = "Night", note = "Moonlight blue on deeper panels.",
+	{ key = "night", label = "Pathfinder Night", note = "Moonlight blue on deeper panels.",
 		colors = { accent = "6fa8ff", accentDeep = "2f5fae", accentGlow = "a9cbff", switchOn = "2f5fae",
 			panel = "171b25", panel2 = "0c0f16", panel3 = "12151e", tabbg = "2b3242",
 			bg1 = "0e1119", bg2 = "080a10" } },
-	{ key = "pathfinder", label = "Pathfinder", note = "The original green.", colors = {} },
-	{ key = "octowow", label = "OctoWoW", note = "OctoWoW's purple.",
+	{ key = "pathfinder", label = "Pathfinder Green", note = "The original green.", colors = {} },
+	{ key = "octowow", label = "Pathfinder Purple", note = "Purple accents.",
 		colors = { accent = "a970ff", accentDeep = "6526c4", accentGlow = "cfb0ff", switchOn = "6526c4" } },
-	{ key = "ravencraft", label = "RavenCraft",
+	{ key = "ravencraft", label = "Pathfinder Grey",
 		note = "Dark grey, with a lighter grey where the green was so it stays readable.",
 		colors = { accent = "a3aab3", accentDeep = "474d55", accentGlow = "d2d6db", switchOn = "eceff2",
 			panel = "1a1a1c", panel2 = "0d0d0f", panel3 = "151517", tabbg = "323235" } },
-	{ key = "capybara", label = "Capybara Paradise", note = "Capybara Paradise's tan.",
+	{ key = "capybara", label = "Pathfinder Tan", note = "Tan accents.",
 		colors = { accent = "cfa77c", accentDeep = "8b5a2b", accentGlow = "ead0b0", switchOn = "8b5a2b" } },
-	{ key = "aegis", label = "Aegis", note = "The Aegis suite's red.",
+	{ key = "aegis", label = "Pathfinder Red", note = "Red accents.",
 		colors = { accent = "ea5f56", accentDeep = "9e2a22", accentGlow = "f4958e", switchOn = "9e2a22" } },
-	{ key = "blizzard", label = "Blizzard", skin = "blizzard",
+	{ key = "blizzard", label = "Default", skin = "blizzard",
 		note = "Today's Blizzard windows, as the game's own Options window: the metal border, a solid panel, "
 			.. "Blizzard's buttons, check boxes and sliders. Switching to it or away from it reloads the interface.",
 		colors = { accent = "ffd100", accentDeep = "8c6d00", accentGlow = "ffe766", switchOn = "ffd100",
@@ -2141,6 +2141,7 @@ function Theme:Confirm(spec)
 	confirm.no:SetText(spec.cancel or NO or "No")
 	confirm:Show()
 	self:BringToFront(confirm)
+	self:SyncReload(confirm.yes)
 	return confirm
 end
 
@@ -2149,17 +2150,23 @@ end
 	The game lets only its own code reload the interface: ReloadUI() from an
 	addon is "ADDON BLOCKED: Reload()", even from a click. A secure action
 	button running the /reload macro goes through Blizzard's code instead. So
-	one such button, invisible, sits over whichever of our Reload buttons the
-	mouse is on, and takes the click.
+	each of our Reload buttons gets one such button, invisible, lying over it
+	for as long as it is shown, outside combat: the click lands on that.
+
+	It lies there from the moment the button shows, and follows it if its
+	window moves. 0.2.0 put it there only as the mouse arrived: a frame moved
+	under the mouse can trade the mouse back and forth with the one below it,
+	and the click then reached our own button, which only said to type /reload.
 
 	It belongs to UIParent, not to our windows: a window holding a secure
 	button becomes protected, and could then not be hidden or moved in a fight.
-	A secure button can be set up, moved, shown and hidden only out of combat;
-	in combat our own button takes the click and says to type /reload. ]]
-local reloader
+	A secure button can be set up, moved, shown and hidden only out of combat:
+	they step aside as combat starts, and in combat our own button takes the
+	click and says to type /reload. ]]
+local covers = {} -- our Reload button -> { cover = its secure button, active = function or nil }
 
+-- Our button looks hovered while the mouse is on the secure button over it.
 local function Hover(host, on)
-	if not host then return end
 	if host.LockHighlight then
 		if on then host:LockHighlight() else host:UnlockHighlight() end
 	end
@@ -2167,55 +2174,114 @@ local function Hover(host, on)
 	if script then script(host) end
 end
 
-local function HideReloader()
-	if not reloader or Compat.InCombat() or not reloader:IsShown() then return end
-	local host = reloader.host
-	reloader.host = nil
-	reloader:Hide()
-	Hover(host, false)
+-- Over its button, in the same strata and above it. False while the button has no place yet.
+local function Place(cover, host)
+	local x, y = host:GetCenter()
+	if not x then return false end
+	local scale = host:GetEffectiveScale() / UIParent:GetEffectiveScale()
+	local w, h = host:GetWidth() * scale, host:GetHeight() * scale
+	x, y = x * scale, y * scale
+	if cover.x ~= x or cover.y ~= y or cover.w ~= w or cover.h ~= h then
+		cover:ClearAllPoints()
+		cover:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
+		cover:SetSize(w, h)
+		cover.x, cover.y, cover.w, cover.h = x, y, w, h
+	end
+	local strata, level = host:GetFrameStrata(), host:GetFrameLevel() + 20
+	if cover:GetFrameStrata() ~= strata then cover:SetFrameStrata(strata) end
+	if cover:GetFrameLevel() ~= level then cover:SetFrameLevel(level) end
+	return true
 end
 
-local function Reloader()
-	if reloader then return reloader end
-	if Compat.InCombat() then return nil end
-	reloader = CreateFrame("Button", "AegisPathfinderReload", UIParent, "SecureActionButtonTemplate")
-	reloader:RegisterForClicks("AnyUp")
-	reloader:SetAttribute("useOnKeyDown", false)
-	reloader:SetAttribute("type", "macro")
-	reloader:SetAttribute("macrotext", "/reload")
-	reloader:Hide()
-	reloader:SetScript("OnEnter", function(self) Hover(self.host, true) end)
-	reloader:SetScript("OnLeave", HideReloader)
-	reloader:SetScript("OnUpdate", function(self)
-		local host = self.host
-		if not (host and host:IsVisible() and (not host.IsMouseOver or host:IsMouseOver())) then HideReloader() end
-	end)
-	-- Out of the way before combat starts: it couldn't be hidden during it.
-	AP:On("PLAYER_REGEN_DISABLED", HideReloader)
-	return reloader
+local function Wanted(host)
+	local entry = covers[host]
+	return entry ~= nil and host:IsVisible() and (not entry.active or entry.active()) and true or false
 end
+
+local function Leave(cover)
+	if not cover:IsShown() then return end
+	cover:Hide()
+	if cover.hovered then
+		cover.hovered = nil
+		Hover(cover.host, false)
+	end
+end
+
+local Sync
+
+local function NewCover(host)
+	local cover = CreateFrame("Button", nil, UIParent, "SecureActionButtonTemplate")
+	cover:RegisterForClicks("AnyUp")
+	cover:SetAttribute("useOnKeyDown", false)
+	cover:SetAttribute("type", "macro")
+	cover:SetAttribute("macrotext", "/reload")
+	cover:Hide()
+	cover.host = host
+	cover:SetScript("OnEnter", function(self) self.hovered = true; Hover(self.host, true) end)
+	cover:SetScript("OnLeave", function(self) self.hovered = nil; Hover(self.host, false) end)
+	cover:HookScript("OnMouseDown", function(self)
+		if self.host.SetButtonState then self.host:SetButtonState("PUSHED") end
+	end)
+	cover:HookScript("OnMouseUp", function(self)
+		if self.host.SetButtonState then self.host:SetButtonState("NORMAL") end
+	end)
+	cover:SetScript("OnUpdate", function(self)
+		if Compat.InCombat() then return end
+		if Wanted(self.host) then Place(self, self.host) else Leave(self) end
+	end)
+	return cover
+end
+
+--- Puts the secure button over `host`, or takes it away, as the button is shown
+--- and wanted. Out of combat only.
+function Sync(host)
+	local entry = covers[host]
+	if not entry or Compat.InCombat() then return end
+	if not Wanted(host) then
+		if entry.cover then Leave(entry.cover) end
+		return
+	end
+	entry.cover = entry.cover or NewCover(host)
+	if Place(entry.cover, host) then
+		entry.waits = 0
+		entry.cover:Show()
+	elseif (entry.waits or 0) < 10 and C_Timer and C_Timer.After then
+		-- Shown this very moment: its window has no place on screen until the next frame.
+		entry.waits = (entry.waits or 0) + 1
+		C_Timer.After(0, function() Sync(host) end)
+	end
+end
+
+-- Out of the way before combat starts (they couldn't be hidden during it), and back after.
+AP:On("PLAYER_REGEN_DISABLED", function()
+	for _, entry in pairs(covers) do
+		if entry.cover then Leave(entry.cover) end
+	end
+end)
+AP:On("PLAYER_REGEN_ENABLED", function()
+	for host in pairs(covers) do Sync(host) end
+end)
 
 --- Makes `button` reload the interface when clicked, outside combat, while `active()` (if given) says so.
---- Its own OnClick still runs when the secure button isn't over it (in combat): have it say to type /reload.
+--- Its own OnClick runs only when the secure button isn't over it: have it call Theme:ReloadFallback().
 function Theme:OfferReload(button, active)
-	button:HookScript("OnEnter", function(self)
-		if active and not active() then return end
-		local r = Reloader()
-		if not r or Compat.InCombat() or not self:IsVisible() then return end
-		local x, y = self:GetCenter()
-		if not x then return end
-		local scale = self:GetEffectiveScale() / UIParent:GetEffectiveScale()
-		r:ClearAllPoints()
-		r:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x * scale, y * scale)
-		r:SetSize(self:GetWidth() * scale, self:GetHeight() * scale)
-		r:SetFrameStrata(self:GetFrameStrata())
-		r:SetFrameLevel(self:GetFrameLevel() + 20)
-		r.host = self
-		r:Show()
-	end)
-	button:HookScript("OnHide", function(self)
-		if reloader and reloader.host == self then HideReloader() end
-	end)
+	covers[button] = covers[button] or {}
+	covers[button].active = active
+	button:HookScript("OnShow", Sync)
+	button:HookScript("OnHide", Sync)
+	Sync(button)
+end
+
+--- After `active()` changed for a button already on screen.
+function Theme:SyncReload(button) Sync(button) end
+
+--- The secure button over `button`, if it has one (for the smoke test).
+function Theme:ReloadCover(button) return covers[button] and covers[button].cover end
+
+--- Our own Reload button was clicked: in combat that's expected; outside it, the
+--- secure button wasn't there, and the player should know to type /reload.
+function Theme:ReloadFallback()
+	AP:Print(Compat.InCombat() and AP.L.TYPE_RELOAD or AP.L.TYPE_RELOAD_MISSED)
 end
 
 --- Save and apply a theme. A colour theme applies at once; moving to or from
@@ -2227,7 +2293,7 @@ function AP:SetTheme(key)
 		-- The Reload button reloads through the secure button over it (Theme:OfferReload);
 		-- a click that reaches the button itself was in combat.
 		Theme:Confirm({ text = AP.L.RELOAD_FOR_SKIN, accept = AP.L.RELOAD, cancel = AP.L.LATER, reload = true,
-			onAccept = function() AP:Print(AP.L.TYPE_RELOAD) end })
+			onAccept = function() Theme:ReloadFallback() end })
 		return def
 	end
 	Theme:ApplyTheme(def.key)
