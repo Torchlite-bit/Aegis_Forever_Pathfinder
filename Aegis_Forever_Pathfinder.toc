@@ -4,6 +4,7 @@
 ## Author: Aegis: Pathfinder Contributors
 ## Version: 0.2.0
 ## X-Category: Quest
+## X-Curse-Project-ID: 1742985
 ## SavedVariables: AegisPathfinderDB
 ## SavedVariablesPerCharacter: AegisPathfinderCharDB
 ## IconTexture: Interface\AddOns\Aegis_Forever_Pathfinder\media\minimap-logo

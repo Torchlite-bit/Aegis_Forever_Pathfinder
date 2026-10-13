@@ -13,13 +13,14 @@ uploaded to CurseForge once (`.github/workflows/release.yml`,
    first), and the summary line under it. A new project would be World of
    Warcraft, Addon, category Quests & Leveling, with `media/logo.tga` (as a
    PNG) for the avatar.
-2. **Copy the project's ID** from its page (About this project → Project ID).
+2. **The project's ID** (About this project → Project ID) is in the TOC already, as
+   `## X-Curse-Project-ID: 1742985`, the line CurseForge's own packager reads.
 3. **Make an API token** on the authors site (your account's API tokens), named
    for this repository.
 4. **On GitHub**, in the repository's *Settings → Secrets and variables →
    Actions*:
    - Secrets: `CF_API_KEY` = the token.
-   - Variables: `CURSEFORGE_PROJECT_ID` = the ID (a secret of that name works too). Optional:
+   - Variables, all optional: `CURSEFORGE_PROJECT_ID` to override the TOC's ID (a secret of that name works too),
      `CURSEFORGE_RELEASE_TYPE` = `beta` while it is in testing (the default is
      `release`), and `CURSEFORGE_GAME_VERSION_IDS` if the upload can't find
      the WoW: Forever game version by itself (its log says so).
