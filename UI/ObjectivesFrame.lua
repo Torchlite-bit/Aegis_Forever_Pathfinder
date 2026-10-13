@@ -193,9 +193,13 @@ local function BuildMenu(chip)
 	end
 	menu:SetHeight(6 - y)
 	menu:SetScript("OnShow", function(self)
+		local labels = {}
 		for _, row in ipairs(self.rows) do
 			if row.item.key then row:SetChecked(Profile()[row.item.key]) end
+			labels[#labels + 1] = row.label
 		end
+		-- Built at login, maybe before our fonts had loaded: draw the labels again.
+		Theme:RefreshFontStrings(labels)
 	end)
 	chip:HookScript("OnHide", function() menu:Hide() end)
 	tinsert(UISpecialFrames, "AegisPathfinderGuideMenu")

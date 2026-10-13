@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.3 — no more blank labels
+
+- **Fixed:** after switching from Default to a Pathfinder theme, some text
+  could be missing (in the guide's ≡ menu, "Lock window" and "Reload") until
+  the next reload. The text is now drawn again once the fonts have loaded, and
+  each time the menu opens.
+- **New: `/apg mouse`.** Rest the mouse on a button that doesn't take your
+  click. Three seconds later, chat says what has the mouse there. It helps us
+  find what's in the way.
+
+---
+
 ## 0.2.2 — a clearer Reload question
 
 - **Fixed:** the first Reload question after logging in was blank. It now

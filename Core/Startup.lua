@@ -9,6 +9,30 @@ local L = AP.L
 	another addon in the Aegis suite (the Instance Journal).
 ]]
 
+--- /apg mouse: three seconds later, which frames have the mouse, top first. For a
+--- button that doesn't take a click where it should: only the game knows that.
+function AP:ReportMouse()
+	self:Print(L.MOUSE_WAIT)
+	C_Timer.After(3, function()
+		local foci = {}
+		if GetMouseFoci then
+			foci = GetMouseFoci() or {}
+		elseif GetMouseFocus and GetMouseFocus() then
+			foci = { GetMouseFocus() }
+		end
+		if #foci == 0 then
+			AP:Print(L.MOUSE_NOTHING)
+			return
+		end
+		for i, f in ipairs(foci) do
+			if i > 3 then break end
+			local ok, name = pcall(function() return f:GetDebugName() end)
+			if not (ok and name and name ~= "") then name = f:GetName() or "?" end
+			AP:Print(("%d. %s (%s, level %s)"):format(i, name, tostring(f:GetFrameStrata()), tostring(f:GetFrameLevel())))
+		end
+	end)
+end
+
 local COMMANDS = {
 	[""] = function() AP:ToggleObjectivePanel() end,
 	collect = function() AP:ToggleCollectorFrame() end,
@@ -33,6 +57,7 @@ local COMMANDS = {
 	status = function()
 		AP:Print((AP.Collector:IsRunning() and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. ": " .. AP.Collector:StatsText())
 	end,
+	mouse = function() AP:ReportMouse() end,
 	help = function() AP:Print(L.SLASH_HELP) end,
 }
 

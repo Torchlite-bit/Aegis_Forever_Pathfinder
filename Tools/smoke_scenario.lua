@@ -422,6 +422,18 @@ if skin == "pathfinder" then
 		if row.item and row.item.label == "Reload" then menuReload = row end
 	end
 	check(menuReload, "the guide menu has Reload")
+	-- Text set before our fonts load can stay blank: it's drawn again after login and as the menu opens.
+	Mock.Fire("PLAYER_ENTERING_WORLD")
+	Mock.Advance(9)
+	guide.ui.menu:Show()
+	equal(menuReload.label:GetText(), "Reload", "the menu's labels keep their text when drawn again")
+	check(menuReload.label:GetFont(), "and their font")
+	guide.ui.menu:Hide()
+	-- /apg mouse says what has the mouse, for a button that doesn't take a click.
+	SlashCmdList.AEGISPATHFINDER("mouse")
+	check(Chat("Rest the mouse"), "/apg mouse explains itself")
+	Mock.Advance(3.5)
+	check(Chat("has the mouse there") or Chat("level"), "and then says what has the mouse")
 	guide.ui.menu:Show()
 	Mock.Click(menuReload)
 	check(dialog():IsShown() and not guide.ui.menu:IsShown(), "the menu's Reload asks through the dialog")

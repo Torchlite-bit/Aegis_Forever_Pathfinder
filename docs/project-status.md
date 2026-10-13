@@ -36,7 +36,8 @@ browser; published copy at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq).
 | #7 | A Reload check that reports what the client sees; the CurseForge project id from a variable or a secret |
 | #8 | The CurseForge project id in the TOC (`## X-Curse-Project-ID: 1742985`) |
 | #9 | **0.2.1**: every Reload asks through one dialog whose Reload button is the secure /reload button. Tested in game on 2026-10-13: it reloads from all three places |
-| #11 | **0.2.2**: the Reload dialog's first question is no longer blank; Clear data and Reload no longer hide each other; going back to the running skin withdraws its reload request |
+| #11 | **0.2.2**: the Reload dialog's first question is no longer blank; Clear data and Reload no longer hide each other; going back to the running skin withdraws its reload request. Tested in game |
+| #12 | **0.2.3**: text drawn in our fonts is set again after login and as the ≡ menu opens (labels were blank after a skin switch); `/apg mouse` names what has the mouse |
 
 **Released:** v0.2.1 on GitHub, and on CurseForge as file 9167387 (project
 1742985, game version id 17053, found by itself; uploaded as a *Release*, since
@@ -75,6 +76,13 @@ clone, following `.claude/CLAUDE.md` (#10).
 - **A new frame is shown:** `Hide()` on a frame just made fires its OnHide.
   Hide it before setting an OnHide that forgets state (0.2.1's first Reload
   question came up blank that way).
+- **Our fonts load late** the first time a game session uses them (after a
+  switch from Default): some labels built then came up blank until the next
+  reload. `Theme:SetFont` keeps our font strings, and `Theme:RefreshFontStrings`
+  sets their text again (after login, and as the ≡ menu opens).
+- **A click that lands on the wrong frame** can only be seen in game:
+  `/apg mouse` names what has the mouse after 3 seconds. Open: in Default, the
+  Data collection window's X takes the mouse over only a few pixels.
 - **The client's UI source** is exported on the owner's PC:
   `World of Warcraft\_classic_beta_\BlizzardInterfaceCode\Interface\AddOns`
   (2026-10-06). Check Blizzard templates and APIs there.
