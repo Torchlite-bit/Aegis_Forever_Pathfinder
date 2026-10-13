@@ -35,22 +35,27 @@ browser; published copy at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq).
 | #6 | Themes renamed (Default, Pathfinder Day … Red); a second Reload attempt |
 | #7 | A Reload check that reports what the client sees; the CurseForge project id from a variable or a secret |
 | #8 | The CurseForge project id in the TOC (`## X-Curse-Project-ID: 1742985`) |
+| #9 | **0.2.1**: every Reload asks through one dialog whose Reload button is the secure /reload button. Tested in game on 2026-10-13: it reloads from all three places |
+| #11 | **0.2.2**: the Reload dialog's first question is no longer blank; Clear data and Reload no longer hide each other; going back to the running skin withdraws its reload request |
 
-**Released:** v0.2.0 on GitHub, and on CurseForge as file 9166895 (project
+**Released:** v0.2.1 on GitHub, and on CurseForge as file 9167387 (project
 1742985, game version id 17053, found by itself; uploaded as a *Release*, since
-`CURSEFORGE_RELEASE_TYPE` isn't set).
+`CURSEFORGE_RELEASE_TYPE` isn't set). v0.2.0 was file 9166895.
+
+**Working locally:** from 2026-10-13, sessions run on the owner's PC, in the
+clone, following `.claude/CLAUDE.md` (#10).
 
 ## Open
 
-1. **PR #9, 0.2.1: Reload.** Needs an in-game test, then a merge (which uploads
-   0.2.1). Switch Default → a Pathfinder theme and press Reload; the guide's ≡
-   menu → Reload; Submit → *Save it now*. Each should reload at once. If chat
-   says "Reload was clicked, but the game didn't reload", the secure /reload
-   macro itself doesn't work on this client: test it bare with
-   `/run local b=CreateFrame("Button","APTest",UIParent,"SecureActionButtonTemplate,UIPanelButtonTemplate") b:SetSize(140,30) b:SetPoint("CENTER") b:SetText("Test /reload") b:SetAttribute("type","macro") b:SetAttribute("macrotext","/reload") b:RegisterForClicks("AnyUp")`
-   and click it.
+1. **If Reload ever stops working:** check the button gets the mouse (hovering
+   it lights it up; that highlight comes from the secure button itself). Then
+   try the secure /reload macro bare, if `/run` works on this client (it's a
+   debug command, and the client can switch those off):
+   `/run local b=CreateFrame("Button","APTest",UIParent,"SecureActionButtonTemplate,UIPanelButtonTemplate") b:SetSize(140,30) b:SetPoint("CENTER") b:SetText("Test /reload") b:SetAttribute("type","macro") b:SetAttribute("macrotext","/reload") b:SetAttribute("useOnKeyDown",false) b:RegisterForClicks("AnyUp")`
+   and click it. Keep `useOnKeyDown` false: without it, the button follows the
+   ActionButtonUseKeyDown setting and, registered for mouse-up only, does nothing.
 2. **CurseForge page:** paste the description from `docs/curseforge.md`
-   (switch the editor to Markdown). Mark the 0.2.0 file Beta if wanted, and set
+   (switch the editor to Markdown). Mark the uploaded files Beta if wanted, and set
    the repository variable `CURSEFORGE_RELEASE_TYPE` = `beta` for later uploads.
 3. **Tester post** for Discord: in the Launch Kit.
 4. **Discord restructure:** the plan is in the Launch Kit; the owner applies it.
@@ -61,6 +66,18 @@ browser; published copy at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq).
    *Settings → Automation*), and the level-up card.
 
 ## Learned the hard way (don't relearn these)
+
+- **Secure buttons and key down:** an addon's `SecureActionButtonTemplate`
+  button acts on the key-down half of a click while the ActionButtonUseKeyDown
+  setting is on, unless its `useOnKeyDown` attribute is false
+  (`SecureActionButton_OnClick` in the client's SecureTemplates.lua). Registered
+  for `AnyUp` only, it then does nothing. The mock client now plays this rule.
+- **A new frame is shown:** `Hide()` on a frame just made fires its OnHide.
+  Hide it before setting an OnHide that forgets state (0.2.1's first Reload
+  question came up blank that way).
+- **The client's UI source** is exported on the owner's PC:
+  `World of Warcraft\_classic_beta_\BlizzardInterfaceCode\Interface\AddOns`
+  (2026-10-06). Check Blizzard templates and APIs there.
 
 - **Chat:** `C_ChatInfo.SendChatMessage` works only from a click (a hardware
   event), so level-up announcements are a card with a button per channel.
@@ -107,8 +124,9 @@ browser; published copy at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq).
   `python Tools/test_ingest.py` (75 tests). They need `lupa`. **The mock can't
   model which frame gets the mouse**: anything about clicks reaching the right
   frame must be tested in game.
-- **The Forever UI source** isn't in the repository. To check a Blizzard
-  template or API, export the client's interface files, or ask the owner.
+- **The Forever UI source** isn't in the repository, but it is exported on the
+  owner's PC (see the top of this list). A cloud session can't reach it: ask
+  the owner.
 - **Writing style:** plain words, short sentences, no jargon in anything a
   player reads; a CHANGELOG entry per version.
 

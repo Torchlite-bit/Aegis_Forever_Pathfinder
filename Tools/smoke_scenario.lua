@@ -359,6 +359,7 @@ if skin == "pathfinder" then
 	check(not (dialog() and dialog():IsShown()), "without a reload")
 	AP:SetTheme("blizzard")
 	check(dialog() and dialog():IsShown(), "Default asks for a reload")
+	equal(dialog().text:GetText(), AP.L.RELOAD_FOR_SKIN, "saying why, the first time too")
 	local reload = dialog().reload
 	check(rawget(reload, "_secure"), "its Reload button is the secure button itself")
 	equal(reload:GetAttribute("type"), "macro", "a macro button")
@@ -366,16 +367,39 @@ if skin == "pathfinder" then
 	equal(reload:GetParent(), dialog(), "inside the dialog, so nothing lies over it")
 	check(reload:IsVisible(), "and shown")
 	check(not AP.Theme:IsWindow(dialog()), "the dialog isn't scaled or stacked with the Pathfinder windows")
+	equal(reload:GetScript("OnClick"), Mock.SecureActionButton_OnClick, "keeping the secure template's own OnClick")
+	equal(reload:GetAttribute("useOnKeyDown"), false, "acting on the mouse-up, whatever ActionButtonUseKeyDown says")
 	Mock.ClickSecure(reload)
 	check(Mock.reloaded, "and reloads when clicked")
 	Mock.reloaded = nil
+	check(reload:GetFrameLevel() and reload:GetFrameLevel() > dialog():GetFrameLevel()
+		and dialog():GetFrameLevel() >= 500, "above the window stack, the guide menu and the drop-down lists")
 	-- If the game didn't reload, the click says so a moment later.
 	local mark = #Mock.chat
-	Mock.Click(reload)
+	Mock.ClickSecure(reload)
+	Mock.reloaded = nil
 	Mock.Advance(1.5)
 	check(Mock.chat[mark + 1] and Mock.chat[mark + 1]:find("didn't reload"), "a Reload that didn't reload says so")
+	-- Back to a theme of the running skin: the reload asked for Default isn't needed.
+	AP:SetTheme("night")
+	check(not dialog():IsShown(), "picking a Pathfinder theme again withdraws the request")
+	AP:SetTheme("blizzard")
+	Mock.Fire("PLAYER_REGEN_DISABLED")
+	Mock.inCombat = true
+	AP:SetTheme("night")
+	Mock.inCombat = false
+	Mock.Fire("PLAYER_REGEN_ENABLED")
+	check(not dialog():IsShown(), "in combat too: it doesn't come back after the fight")
+	-- The Clear-data question opens in the same place: the newest question wins.
+	AP:SetTheme("blizzard")
+	AP:ConfirmClearData()
+	check(_G.AegisPathfinderConfirm:IsShown() and not dialog():IsShown(), "Clear data closes the Reload question")
+	AP:SetTheme("blizzard")
+	check(dialog():IsShown() and not _G.AegisPathfinderConfirm:IsShown(), "and a Reload question closes Clear data")
+	AP:SetTheme("night")
 	-- A frame holding a secure button can't be shown or hidden in combat: it steps aside
 	-- before the fight and comes back after.
+	AP:SetTheme("blizzard")
 	Mock.Fire("PLAYER_REGEN_DISABLED")
 	check(not dialog():IsShown(), "it steps aside as combat starts")
 	Mock.inCombat = true
@@ -419,7 +443,12 @@ if skin == "pathfinder" then
 else
 	AP:SetTheme("pathfinder")
 	check(dialog() and dialog():IsShown(), "leaving Default asks for a reload")
+	equal(dialog().text:GetText(), AP.L.RELOAD_FOR_SKIN, "saying why, the first time too")
 	check(rawget(dialog().reload, "_secure"), "with the secure Reload in this skin too")
+	equal(dialog().reload:GetScript("OnClick"), Mock.SecureActionButton_OnClick, "keeping the secure OnClick here too")
+	Mock.ClickSecure(dialog().reload)
+	check(Mock.reloaded, "and it reloads")
+	Mock.reloaded = nil
 	Mock.Click(dialog().later)
 	check(not dialog():IsShown() and not Mock.reloaded, "Later leaves it be")
 end

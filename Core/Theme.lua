@@ -2139,6 +2139,9 @@ function Theme:Confirm(spec)
 	confirm.text:SetText(spec.text or "")
 	confirm.yes:SetText(spec.accept or YES or "Yes")
 	confirm.no:SetText(spec.cancel or NO or "No")
+	-- The Reload dialog sits where this one does: the newest question wins.
+	local asking = self:ReloadDialog()
+	if asking and asking:IsShown() and not Compat.InCombat() then asking:Hide() end
 	confirm:Show()
 	self:BringToFront(confirm)
 	return confirm
@@ -2160,12 +2163,20 @@ end
 	moved only out of combat. So the dialog is a window of its own, not one of
 	the Pathfinder windows (it isn't scaled or stacked with them). It steps
 	aside as combat starts and comes back when the fight is over; asked during
-	one, it says to type /reload and opens afterwards. ]]
+	one, it says to type /reload and opens afterwards.
+
+	It shares FULLSCREEN_DIALOG with the guide menu, the drop-down lists and
+	Theme:Confirm, so it is built above them (frame level 500, past the window
+	stack's levels). Theme:Confirm opens in the same place: whichever opened last
+	closes the other. ]]
 local reloadDialog, reloadText
+local RELOAD_LEVEL = 500
 
 local function BuildReloadDialog()
 	local d = CreateFrame("Frame", "AegisPathfinderReloadDialog", UIParent)
 	d:SetFrameStrata("FULLSCREEN_DIALOG")
+	-- Before any child is made, so the Reload button is built above it too.
+	d:SetFrameLevel(RELOAD_LEVEL)
 	d:SetSize(340, 150)
 	d:SetPoint("CENTER", UIParent, "CENTER", 0, 160)
 	d:EnableMouse(true)
@@ -2198,12 +2209,13 @@ local function BuildReloadDialog()
 	d.later:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -14 - m.right, 12 + m.bottom)
 	d.later:SetScript("OnClick", function() d:Hide() end)
 
+	-- Hidden before OnHide is set: built while asking, this Hide mustn't forget the request.
+	d:Hide()
 	-- Closed by Later or Escape, it isn't wanted any more; stepping aside for a fight, it is.
 	d:SetScript("OnHide", function(self)
 		if not self.steppingAside then reloadText = nil end
 	end)
 	tinsert(UISpecialFrames, "AegisPathfinderReloadDialog")
-	d:Hide()
 	return d
 end
 
@@ -2217,7 +2229,19 @@ function Theme:AskReload(text)
 	end
 	reloadDialog = reloadDialog or BuildReloadDialog()
 	reloadDialog.text:SetText(reloadText)
+	-- Theme:Confirm sits where this one does: the newest question wins.
+	if confirm and confirm:IsShown() then confirm:Hide() end
 	reloadDialog:Show()
+end
+
+--- Drops a reload request that isn't needed any more: the one asked with `text`, or any.
+function Theme:WithdrawReload(text)
+	if not reloadText or (text and reloadText ~= text) then return end
+	if reloadDialog and reloadDialog:IsShown() and not Compat.InCombat() then
+		reloadDialog:Hide() -- its OnHide forgets the request
+	else
+		reloadText = nil
+	end
 end
 
 --- The dialog, once built (for the smoke test).
@@ -2243,6 +2267,8 @@ function AP:SetTheme(key)
 		Theme:AskReload(AP.L.RELOAD_FOR_SKIN)
 		return def
 	end
+	-- Back on the skin that's running: a reload asked for the other one isn't needed.
+	Theme:WithdrawReload(AP.L.RELOAD_FOR_SKIN)
 	Theme:ApplyTheme(def.key)
 	for _, refresh in ipairs({ "RefreshObjectivePanel", "RefreshConfigPanel", "RefreshGuideBrowser",
 		"RefreshCollectorFrame", "UpdateMinimapButton" }) do
