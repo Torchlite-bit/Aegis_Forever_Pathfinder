@@ -1,11 +1,15 @@
 # Changelog
 
-## 0.2.3 — no more blank labels
+## 0.2.3 — no more blank labels, a close button that closes
 
 - **Fixed:** after switching from Default to a Pathfinder theme, some text
   could be missing (in the guide's ≡ menu, "Lock window" and "Reload") until
   the next reload. The text is now drawn again once the fonts have loaded, and
   each time the menu opens.
+- **Fixed:** in Default, the X on the Data collection window took a click on
+  only a few pixels. Clicking a window could put its title bar level with its
+  X, and the title bar got the click. Every part of a window now stays above
+  the part that holds it.
 - **New: `/apg mouse`.** Rest the mouse on a button that doesn't take your
   click. Three seconds later, chat says what has the mouse there. It helps us
   find what's in the way.

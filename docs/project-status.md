@@ -37,7 +37,7 @@ browser; published copy at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq).
 | #8 | The CurseForge project id in the TOC (`## X-Curse-Project-ID: 1742985`) |
 | #9 | **0.2.1**: every Reload asks through one dialog whose Reload button is the secure /reload button. Tested in game on 2026-10-13: it reloads from all three places |
 | #11 | **0.2.2**: the Reload dialog's first question is no longer blank; Clear data and Reload no longer hide each other; going back to the running skin withdraws its reload request. Tested in game |
-| #12 | **0.2.3**: text drawn in our fonts is set again after login and as the ≡ menu opens (labels were blank after a skin switch); `/apg mouse` names what has the mouse |
+| #12 | **0.2.3**: text drawn in our fonts is set again after login and as the ≡ menu opens (labels were blank after a skin switch); `/apg mouse` names what has the mouse; window stacking keeps each frame above its parent (the Default X took clicks on only a few pixels) |
 
 **Released:** v0.2.1 on GitHub, and on CurseForge as file 9167387 (project
 1742985, game version id 17053, found by itself; uploaded as a *Release*, since
@@ -81,8 +81,12 @@ clone, following `.claude/CLAUDE.md` (#10).
   reload. `Theme:SetFont` keeps our font strings, and `Theme:RefreshFontStrings`
   sets their text again (after login, and as the ≡ menu opens).
 - **A click that lands on the wrong frame** can only be seen in game:
-  `/apg mouse` names what has the mouse after 3 seconds. Open: in Default, the
-  Data collection window's X takes the mouse over only a few pixels.
+  `/apg mouse` names what has the mouse after 3 seconds. It found the Default
+  X's problem: the header had it (level 516).
+- **Window stacking:** a toplevel window raised by a click goes above its own
+  children, so `Restack` measured every child as 1 above the window and set
+  them all level with each other: the header covered its own X. `Restack` now
+  keeps each frame at least 1 above its parent.
 - **The client's UI source** is exported on the owner's PC:
   `World of Warcraft\_classic_beta_\BlizzardInterfaceCode\Interface\AddOns`
   (2026-10-06). Check Blizzard templates and APIs there.

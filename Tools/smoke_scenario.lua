@@ -466,6 +466,34 @@ else
 end
 equal(#Mock.popups, 0, "the game's own popups are never used")
 
+-- Stacking keeps every frame above the one holding it: the Blizzard X (a level of its own)
+-- once ended up level with its header, and the header took its clicks.
+local function Below(f, parentLevel)
+	for _, k in ipairs({ f:GetChildren() }) do
+		if k:GetFrameLevel() <= parentLevel then return k end
+		local bad = Below(k, k:GetFrameLevel())
+		if bad then return bad end
+	end
+end
+local wasShown = {}
+for _, w in ipairs(AP.Theme.windows) do wasShown[w] = w:IsShown() end
+for round = 1, 2 do
+	for _, w in ipairs(AP.Theme.windows) do
+		-- As a click raises a toplevel window in the client: the window alone, above its own children.
+		if round == 2 then w:SetFrameLevel(5000) end
+		w:Show()
+		AP.Theme:BringToFront(w)
+	end
+end
+for _, w in ipairs(AP.Theme.windows) do
+	local bad = Below(w, w:GetFrameLevel())
+	check(not bad, "every frame of " .. tostring(w:GetName()) .. " is above the frame holding it")
+	if w.closeChip then
+		check(w.closeChip:GetFrameLevel() > w.header:GetFrameLevel(), "its X is above its header")
+	end
+end
+for _, w in ipairs(AP.Theme.windows) do w:SetShown(wasShown[w]) end
+
 AP:SetGuideTransparent(true)
 AP:SetGuideLocked(true)
 check(guide.locked, "Lock window holds the guide")

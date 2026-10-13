@@ -1985,11 +1985,18 @@ local function Descendants(f, out)
 	return out
 end
 
+--[[ Each frame keeps its height above the window, but always ends up above the
+	frame holding it: a child built below its window's level (the Blizzard X has a
+	fixed level of its own) once landed level with its header, and the header
+	took its clicks. Descendants lists a parent before its children. ]]
 local function Restack(w, base)
 	local root = w:GetFrameLevel()
 	local tree = Descendants(w, {})
-	local offsets = {}
-	for i, k in ipairs(tree) do offsets[i] = math.max(k:GetFrameLevel() - root, 1) end
+	local offsets, above = {}, { [w] = 0 }
+	for i, k in ipairs(tree) do
+		offsets[i] = math.max(k:GetFrameLevel() - root, (above[k:GetParent()] or 0) + 1)
+		above[k] = offsets[i]
+	end
 	w:SetFrameLevel(base)
 	local top = base
 	for i, k in ipairs(tree) do
