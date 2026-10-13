@@ -63,9 +63,19 @@ function Collector:OnChange(listener)
 	listeners[#listeners + 1] = listener
 end
 
+--[[ A random id for this collection, made once and kept until Clear. Players send
+	the same growing file again and again: the tools that merge submissions keep
+	only the newest copy of each id, so nothing is counted twice. ]]
+local function NewID()
+	local parts = {}
+	for index = 1, 4 do parts[index] = string.format("%04x", math.random(0, 0xffff)) end
+	return string.format("%08x", Compat.Timestamp() % 0x100000000) .. table.concat(parts)
+end
+
 local function Fresh()
 	return {
 		schemaVersion = Collector.SCHEMA_VERSION,
+		id = NewID(),
 		created = Compat.Timestamp(),
 		builds = {},
 		observers = {},
@@ -80,6 +90,7 @@ function Collector:Init()
 	if type(global.collect) ~= "table" then global.collect = Fresh() end
 	-- Older schemas migrate here, one version at a time; there is only version 1 so far.
 	global.collect.schemaVersion = self.SCHEMA_VERSION
+	global.collect.id = global.collect.id or NewID()
 	data = global.collect
 	for _, key in ipairs({ "builds", "observers", "levels", "quests", "log" }) do
 		data[key] = data[key] or {}
@@ -851,6 +862,14 @@ function Collector:Clear()
 	end
 	AP:Print(L.COLLECTOR_CLEARED)
 	Changed()
+end
+
+local function Plural(n, word) return n .. " " .. word .. (n == 1 and "" or "s") end
+
+--- "16 quests, 3 turned in, 1 level": the counts, as every window says them.
+function Collector:StatsText()
+	local counts = self:Counts()
+	return string.format(L.COLLECTOR_STATS, Plural(counts.quests, "quest"), counts.turnedIn, Plural(counts.levels, "level"))
 end
 
 --- What the collection window shows: quests seen, turned in, levels, and in the log now.

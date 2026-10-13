@@ -208,7 +208,12 @@ AP:RefreshCollectorFrame()
 equal(collector.ui.quests:GetText(), 4, "the collection window counts the quests")
 check(collector.ui.lines[1]:GetText() ~= "", "and lists what it wrote down")
 AP:RefreshObjectivePanel()
-check(guide.ui.empty.status:GetText():find("4 quests"), "the guide's empty state counts them too")
+check(guide.ui.empty.status:GetText():find("4 quests, 1 turned in, 2 levels", 1, true), "the guide's empty state counts them too")
+check(guide.ui.empty.auto:IsOn(), "the guide's Automatically run box shows the setting")
+Mock.Click(guide.ui.empty.auto)
+check(not AP.Collector:IsAuto(), "and changes it from the guide window")
+Mock.Click(guide.ui.empty.auto)
+check(AP.Collector:IsAuto(), "both ways")
 
 -- Export: the text the scenario hands back to Python to parse as JSON.
 AP:ShowExport()

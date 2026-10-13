@@ -394,23 +394,30 @@ local function BuildEmpty()
 	open:SetPoint("LEFT", start, "RIGHT", 8, 0)
 	open:SetScript("OnClick", function() AP:ToggleCollectorFrame() end)
 
+	-- The collection window's own checkbox, here too: the one setting worth having at hand.
+	local auto = Theme:Checkbox(empty, L.COLLECTOR_AUTO, function(on) AP.Collector:SetAuto(on) end)
+	auto:SetPoint("TOPLEFT", start, "BOTTOMLEFT", 0, -10)
+	auto:Fit()
+	auto:HookScript("OnEnter", function(self) Theme:ShowTip(self, "BOTTOM", L.COLLECTOR_AUTO, L.COLLECTOR_AUTO_NOTE) end)
+	auto:HookScript("OnLeave", function(self) Theme:HideTip(self) end)
+
 	empty.logo, empty.title, empty.status, empty.text, empty.start, empty.open = logo, title, status, body, start, open
+	empty.auto = auto
 	ui.empty = empty
 end
 
 local function PaintEmpty()
 	local empty = ui.empty
 	local running = AP.Collector:IsRunning()
-	local counts = AP.Collector:Counts()
 	empty.start:SetText(running and L.STOP_COLLECTING or L.START_COLLECTING)
 	empty.start:SetActive(running)
-	empty.status:SetText((running and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. " -- "
-		.. string.format(L.COLLECTOR_STATS, counts.quests, counts.turnedIn, counts.levels))
+	empty.auto:SetOn(AP.Collector:IsAuto())
+	empty.status:SetText((running and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. " -- " .. AP.Collector:StatsText())
 	Theme:TextColor(empty.status, running and "accent" or "textDim")
 	empty.text:SetWidth(math.max(100, frame:GetWidth() - 2 * G.EMPTY_PAD - 2))
 	-- A wrapped string can measure nothing before its first frame on screen: never less than three lines.
 	local textH = math.max(empty.text:GetStringHeight() or 0, 48)
-	local h = 40 + 12 + textH + 14 + 26
+	local h = 40 + 12 + textH + 14 + 26 + 10 + 24
 	empty:SetHeight(h)
 	empty:Show()
 	return h + 2 * G.EMPTY_PAD

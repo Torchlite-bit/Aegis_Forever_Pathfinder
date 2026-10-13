@@ -442,9 +442,7 @@ function AP:RefreshGuideBrowser()
 		ui.paneButton:SetScript("OnClick", function() AP:LoadGuide(selected.name) end)
 	else
 		ui.paneTitle:SetText(L.TITLE)
-		local counts = self.Collector:Counts()
-		ui.paneText:SetText((running and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. ". "
-			.. string.format(L.COLLECTOR_STATS, counts.quests, counts.turnedIn, counts.levels) .. ".")
+		ui.paneText:SetText((running and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. ". " .. self.Collector:StatsText() .. ".")
 		ui.paneButton:SetText(running and L.STOP_COLLECTING or L.START_COLLECTING)
 		ui.paneButton:SetActive(running)
 		ui.paneButton:SetScript("OnClick", function() AP.Collector:Toggle() end)

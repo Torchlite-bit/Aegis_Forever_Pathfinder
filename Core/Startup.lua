@@ -30,9 +30,7 @@ local COMMANDS = {
 		if current and current > 1 then AP:SetStepDone(current - 1, false) end
 	end,
 	status = function()
-		local counts = AP.Collector:Counts()
-		AP:Print((AP.Collector:IsRunning() and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. ": "
-			.. string.format(L.COLLECTOR_STATS, counts.quests, counts.turnedIn, counts.levels))
+		AP:Print((AP.Collector:IsRunning() and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. ": " .. AP.Collector:StatsText())
 	end,
 	help = function() AP:Print(L.SLASH_HELP) end,
 }
