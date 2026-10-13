@@ -102,10 +102,11 @@ Theme.THEMES = {
 	{ key = "aegis", label = "Aegis", note = "The Aegis suite's red.",
 		colors = { accent = "ea5f56", accentDeep = "9e2a22", accentGlow = "f4958e", switchOn = "9e2a22" } },
 	{ key = "blizzard", label = "Blizzard", skin = "blizzard",
-		note = "The client's own frames, buttons and fonts. Switching to it or away from it reloads the interface.",
+		note = "Today's Blizzard windows, as the game's own Options window: the metal border, a solid panel, "
+			.. "Blizzard's buttons, check boxes and sliders. Switching to it or away from it reloads the interface.",
 		colors = { accent = "ffd100", accentDeep = "8c6d00", accentGlow = "ffe766", switchOn = "ffd100",
-			panel = "000000", panel2 = "000000", panel3 = "141414", tabbg = "262626", textDim = "d9d9d9",
-			subtle = "6e6e6e", border = "000000", bg1 = "000000", bg2 = "000000" } },
+			panel = "131313", panel2 = "0d0d0d", panel3 = "1a1a1a", tabbg = "1f1f1f", textDim = "cfcfcf",
+			subtle = "6e6e6e", border = "000000", bg1 = "0d0d0d", bg2 = "0d0d0d" } },
 }
 Theme.DEFAULT_THEME = "pathfinder"
 -- Keys the 1.12 addon saved, read as their Forever names.
@@ -264,6 +265,16 @@ local S0, S1 = 10 / 32, 22 / 32
 	chosen before anything is built and changed by a reload. ]]
 Theme.skin = "pathfinder"
 
+--[[ Where a window's content sits inside its frame, per skin: the header's
+	height and the frame's edges. The concept's panel has a 1px border and a
+	30px header; the Blizzard window has its metal border (7px left, 3px right
+	and bottom) and its title in the 22px top bar. ]]
+local METRICS = {
+	pathfinder = { header = 30, left = 1, right = 1, top = 1, bottom = 1 },
+	blizzard = { header = 22, left = 7, right = 3, top = 0, bottom = 3 },
+}
+Theme.metrics = METRICS.pathfinder
+
 function Theme:IsBlizzard()
 	return self.skin == "blizzard"
 end
@@ -273,6 +284,7 @@ function Theme:ChooseSkin(themeKey)
 	themeKey = self.RENAMED[themeKey] or themeKey
 	local def = self.themeByKey[themeKey]
 	self.skin = def and def.skin or "pathfinder"
+	self.metrics = METRICS[self.skin]
 	return self.skin
 end
 
@@ -490,6 +502,108 @@ function Theme:Backdrop(frame, kind, alpha)
 	return proxy
 end
 
+--[[ The Blizzard skin's art.
+
+	Today's Blizzard windows, as the game's own Options window draws them
+	(SettingsFrameTemplate in the Forever client): the metal nine-slice border,
+	a solid flat background in the client's panel colour, the title in the top
+	bar, and the minimal check boxes, sliders, dropdowns and scroll bars. All of
+	it is the client's own art. Every atlas is asked for before it is used, with
+	a plain fallback, so a client without one still draws a solid, readable
+	window. Nothing here is see-through unless the player turns Transparency on.
+]]
+local Modern = {}
+Theme.Modern = Modern
+
+function Modern.HasAtlas(name)
+	if not (name and C_Texture and C_Texture.GetAtlasInfo) then return false end
+	local ok, info = pcall(C_Texture.GetAtlasInfo, name)
+	return ok and info ~= nil
+end
+
+--- Put an atlas on a texture. False, and nothing set, when the client lacks it.
+function Modern.Atlas(tex, name, useSize)
+	if not Modern.HasAtlas(name) then return false end
+	tex:SetAtlas(name, useSize and true or false)
+	return true
+end
+
+--- The client's panel colour (the Options window's background), `shade` times as bright.
+function Modern.PanelColor(shade)
+	local r, g, b = 0.075, 0.075, 0.075
+	if PANEL_BACKGROUND_COLOR and PANEL_BACKGROUND_COLOR.GetRGB then
+		local ok, cr, cg, cb = pcall(PANEL_BACKGROUND_COLOR.GetRGB, PANEL_BACKGROUND_COLOR)
+		if ok and type(cr) == "number" then r, g, b = cr, cg, cb end
+	end
+	shade = shade or 1
+	return math.min(1, r * shade), math.min(1, g * shade), math.min(1, b * shade)
+end
+
+--[[ One of the client's nine-slice layouts, drawn as the frame's own textures
+	(so its children draw over it). Through NineSliceUtil, so the Forever
+	client's own corrections to the layouts apply. False when the art is missing. ]]
+function Modern.Border(frame, layout, probeAtlas)
+	if not (NineSliceUtil and NineSliceUtil.ApplyLayoutByName and NineSliceUtil.GetLayout) then return false end
+	if not NineSliceUtil.GetLayout(layout) then return false end
+	if probeAtlas and not Modern.HasAtlas(probeAtlas) then return false end
+	return (pcall(NineSliceUtil.ApplyLayoutByName, frame, layout))
+end
+
+-- A solid fill in the panel colour. Its proxy's SetTint only changes how
+-- see-through it is: the guide's Transparency setting.
+local function SolidFill(frame, shade, inset)
+	local t = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
+	if inset then
+		t:SetPoint("TOPLEFT", frame, "TOPLEFT", inset[1], inset[2])
+		t:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", inset[3], inset[4])
+	else
+		t:SetAllPoints(frame)
+	end
+	local r, g, b = Modern.PanelColor(shade)
+	t:SetColorTexture(r, g, b, 1)
+	local proxy = { texture = t }
+	function proxy:SetTint(_, alpha) t:SetAlpha(alpha or 1) end
+	return proxy
+end
+Modern.SolidFill = SolidFill
+
+--- A window: the solid background and the metal border.
+function Modern.Window(frame)
+	local fill = SolidFill(frame, 1, { 7, -18, -3, 3 })
+	if not Modern.Border(frame, "ButtonFrameTemplateNoPortrait", "UI-Frame-Metal-CornerTopLeft") then
+		-- No metal on this client: a dialog edge, over the same solid fill.
+		EnsureBackdrop(frame)
+		frame:SetBackdrop({ edgeFile = Theme.blizzardArt.dialogBorder, edgeSize = 24 })
+	end
+	return { fill = fill, border = NOOP_TINT, shadow = NOOP_TINT }
+end
+
+--- A panel that floats over others -- a menu, a dropdown's list, a hint: the
+--- tooltip's border, solid inside.
+function Modern.Floating(frame)
+	local fill = SolidFill(frame, 0.7)
+	if Modern.Border(frame, "TooltipDefaultLayout", "Tooltip-NineSlice-CornerTopLeft") then
+		-- The layout's own middle is see-through; the solid fill shows instead.
+		if frame.Center then frame.Center:Hide() end
+	else
+		EnsureBackdrop(frame)
+		frame:SetBackdrop({ edgeFile = Theme.blizzardArt.tooltipBorder, edgeSize = 14 })
+	end
+	return { fill = fill, border = NOOP_TINT }
+end
+
+--- A recessed panel inside a window -- a list, a card, the export box: the
+--- inset frame's edges, darker and solid inside.
+function Modern.Inset(frame)
+	local fill = SolidFill(frame, 0.55)
+	if not Modern.Border(frame, "InsetFrameTemplate", "UI-Frame-InnerTopLeft") then
+		EnsureBackdrop(frame)
+		frame:SetBackdrop({ edgeFile = Theme.blizzardArt.tooltipBorder, edgeSize = 12 })
+		frame:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+	end
+	return { fill = fill, border = NOOP_TINT }
+end
+
 --[[ Composite widgets ]]
 
 -- A floating window: tinted fill, 1px border in the concept's near-black, and
@@ -500,9 +614,9 @@ Theme.SHADOW_GEOM = SHADOW_GEOM
 
 function Theme:Panel(frame, colorName, withShadow)
 	if self:IsBlizzard() then
-		local kind = (colorName == "panel2" or colorName == "panel3") and "tooltip" or "dialog"
-		local fill = self:Backdrop(frame, kind)
-		return { fill = fill, border = NOOP_TINT, shadow = withShadow ~= false and NOOP_TINT or nil }
+		if colorName == "panel2" then return Modern.Floating(frame) end
+		if colorName == "panel3" then return Modern.Inset(frame) end
+		return Modern.Window(frame)
 	end
 	local skin = {}
 	if withShadow ~= false then
@@ -513,14 +627,23 @@ function Theme:Panel(frame, colorName, withShadow)
 	return skin
 end
 
+--- A recessed box inside a window -- a card, a list, a text box: the concept's
+--- tab-fill rounded rect with a border, or the Blizzard inset frame.
+function Theme:Inset(frame, colorName)
+	if self:IsBlizzard() then return Modern.Inset(frame) end
+	local fill = self:NineSlice(frame, self.texture.tabFill, "BACKGROUND", colorName or "panel3")
+	local border = self:NineSlice(frame, self.texture.tabBorder, "BORDER", "border")
+	return { fill = fill, border = border }
+end
+
 -- Flat strip used for headers, footers, tab bars and nav rows.
 function Theme:Strip(frame, colorName, alpha)
 	local t = frame:CreateTexture(nil, "BACKGROUND")
 	t:SetTexture(self.texture.solid)
 	t:SetAllPoints(frame)
 	if self:IsBlizzard() then
-		-- On dialog stone a strip is a darker band, not a colour of its own.
-		t:SetVertexColor(0, 0, 0, colorName == "tabbg" and 0.35 or 0.5)
+		-- On the flat panel a strip is a slightly darker band, not a colour of its own.
+		t:SetVertexColor(0, 0, 0, colorName == "tabbg" and 0.18 or 0.28)
 	else
 		self:Tint(t, colorName or "panel2", alpha)
 	end
@@ -543,7 +666,12 @@ function Theme:Divider(parent, anchor, relPoint, x, y, width)
 	t:SetPoint("TOPLEFT", anchor, relPoint or "BOTTOMLEFT", x or 0, y or 0)
 	if not width then t:SetPoint("TOPRIGHT", anchor, "BOTTOMRIGHT", 0, y or 0) end
 	if self:IsBlizzard() then
-		t:SetVertexColor(1, 0.82, 0, 0.25)
+		-- The Options window's own rule, or a faint gold line.
+		if Modern.Atlas(t, "Options_HorizontalDivider") then
+			t:SetHeight(2)
+		else
+			t:SetVertexColor(1, 0.82, 0, 0.25)
+		end
 	else
 		self:Tint(t, "border")
 	end
@@ -593,8 +721,8 @@ function Theme:StepCheck(parent, size)
 	local fill = b:CreateTexture(nil, "ARTWORK")
 	fill:SetAllPoints(b)
 	if self:IsBlizzard() then
-		ring:SetTexture(self.blizzardArt.checkUp)
-		fill:SetTexture(self.blizzardArt.checkCheck)
+		if not Modern.Atlas(ring, "checkbox-minimal") then ring:SetTexture(self.blizzardArt.checkUp) end
+		if not Modern.Atlas(fill, "checkmark-minimal") then fill:SetTexture(self.blizzardArt.checkCheck) end
 	else
 		ring:SetTexture(self.texture.circleBorder)
 		self:Tint(ring, "subtle")
@@ -706,8 +834,9 @@ end
 function Theme:CloseChip(parent, target)
 	local b
 	if self:IsBlizzard() then
-		b = Compat.CreateFrame("Button", nil, parent, "UIPanelCloseButton")
-		b:SetSize(26, 26)
+		-- The red close button of today's windows (RedButton-Exit), without Blizzard's own click handler.
+		b = Compat.CreateFrame("Button", nil, parent, "UIPanelCloseButtonNoScripts", "UIPanelCloseButton")
+		b:SetSize(24, 24)
 		b.fill, b.glyph = NOOP_TINT, b:CreateTexture()
 		function b:SetActive() end
 		function b:SetTints() end
@@ -716,6 +845,17 @@ function Theme:CloseChip(parent, target)
 	end
 	b:SetScript("OnClick", function() (target or parent):Hide() end)
 	return b
+end
+
+--- Where a window's close button goes: on the header's right, or, in the
+--- Blizzard skin, on the metal top-right corner as the game's own windows have it.
+function Theme:PlaceClose(close, frame, header)
+	close:ClearAllPoints()
+	if self:IsBlizzard() then
+		close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, 1)
+	else
+		close:SetPoint("RIGHT", header, "RIGHT", -8, 0)
+	end
 end
 
 --[[ Category tab: uppercase display face, transparent until selected, and
@@ -858,12 +998,16 @@ function Theme:ChipButton(parent, glyphName, size, tip)
 
 	local fill
 	if self:IsBlizzard() then
-		-- On the button itself: a backdrop draws in its lowest layers, under the glyph.
-		self:Backdrop(b, "tooltip")
-		b:SetBackdropColor(0, 0, 0, 0.6)
-		fill = { SetTint = function(_, name)
-			if name == "accent" then b:SetBackdropColor(0.55, 0.43, 0, 0.9) else b:SetBackdropColor(0, 0, 0, 0.6) end
-		end }
+		-- A gold glyph on the title bar, as the game's own title-bar buttons are;
+		-- a soft gold square behind it while what it toggles is on.
+		local back = b:CreateTexture(nil, "BACKGROUND")
+		back:SetAllPoints(b)
+		back:SetColorTexture(1, 0.82, 0, 0.28)
+		back:Hide()
+		local hl = b:CreateTexture(nil, "HIGHLIGHT")
+		hl:SetAllPoints(b)
+		hl:SetColorTexture(1, 1, 1, 0.12)
+		fill = { SetTint = function(_, name) back:SetShown(name == "accent") end }
 		b:SetTints("accent", "text")
 	else
 		fill = self:NineSlice(b, self.texture.tabFill, "BACKGROUND", "text", 0.04)
@@ -878,7 +1022,11 @@ function Theme:ChipButton(parent, glyphName, size, tip)
 		self.__active = active and true or false
 		if self.__active then
 			self.fill:SetTint("accent", 1)
-			self.glyph:SetVertexColor(0.05, 0.10, 0.02, 1)
+			if Theme:IsBlizzard() then
+				Theme:Tint(self.glyph, "text")
+			else
+				self.glyph:SetVertexColor(0.05, 0.10, 0.02, 1)
+			end
 		else
 			self.fill:SetTint("text", 0.04)
 			Theme:Tint(self.glyph, self.__idle)
@@ -907,25 +1055,23 @@ end
 
 --[[ Panel header: a `--panel-2` strip with the PATHFINDER wordmark centred, a
 	1px rule beneath it, and the whole strip as the window's drag handle. In
-	the Blizzard skin the dialog's own title plate, with the name in gold. ]]
+	the Blizzard skin the window's top bar, with its name in gold in the middle
+	of the metal, as the game's own Options window has it. ]]
 function Theme:Header(frame, height, title)
 	local h = CreateFrame("Frame", nil, frame)
-	h:SetHeight(height or 30)
+	local m = self.metrics
+	h:SetHeight(height or m.header)
+	h:SetPoint("TOPLEFT", frame, "TOPLEFT", m.left, -m.top)
+	h:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -m.right, -m.top)
 	if self:IsBlizzard() then
-		h:SetPoint("TOPLEFT", frame, "TOPLEFT", 6, -6)
-		h:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -6)
-		self:Divider(h, h, "BOTTOMLEFT", 0, 0)
-		local plate = h:CreateTexture(nil, "ARTWORK")
-		plate:SetTexture(self.blizzardArt.dialogHeader)
-		plate:SetSize(256, 64)
-		plate:SetPoint("TOP", frame, "TOP", 0, 12)
 		local fs = h:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		fs:SetPoint("TOP", plate, "TOP", 0, -14)
+		fs:SetPoint("TOP", h, "TOP", 0, -5)
+		fs:SetPoint("LEFT", h, "LEFT", 60, 0)
+		fs:SetPoint("RIGHT", h, "RIGHT", -60, 0)
+		fs:SetWordWrap(false)
 		fs:SetText(title or AP.L.TITLE)
-		h.plate, h.title = plate, fs
+		h.title = fs
 	else
-		h:SetPoint("TOPLEFT", frame, "TOPLEFT", 1, -1)
-		h:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -1, -1)
 		self:CapStrip(h, "panel2", "top")
 		self:Divider(h, h, "BOTTOMLEFT", 0, 0)
 
@@ -992,9 +1138,20 @@ function Theme:ScrollBar(parent, width)
 	track:SetVertexColor(0, 0, 0, 0.35)
 
 	if self:IsBlizzard() then
-		f:SetThumbTexture(self.blizzardArt.scrollKnob)
+		-- The minimal scroll bar of today's windows: a thin track and a rounded thumb.
+		if Modern.Atlas(track, "!minimal-scrollbar-track-middle") then
+			track:SetVertexColor(1, 1, 1, 1)
+			track:ClearAllPoints()
+			track:SetPoint("TOP", f, "TOP", 0, 0)
+			track:SetPoint("BOTTOM", f, "BOTTOM", 0, 0)
+			track:SetWidth(8)
+		end
+		f:SetThumbTexture(self.texture.solid)
 		local thumb = f:GetThumbTexture()
-		thumb:SetSize(width + 8, 24)
+		if not Modern.Atlas(thumb, "minimal-scrollbar-small-thumb-middle") then
+			thumb:SetTexture(self.blizzardArt.scrollKnob)
+		end
+		thumb:SetSize(8, 28)
 	else
 		f:SetThumbTexture(self.texture.scrollThumb)
 		local thumb = f:GetThumbTexture()
@@ -1002,15 +1159,21 @@ function Theme:ScrollBar(parent, width)
 		self:Tint(thumb, "subtle")
 	end
 
-	local function StepButton(glyphName, point, rel)
+	local function StepButton(glyphName, point, rel, atlas)
 		local b = self:GlyphButton(f, glyphName, 7, width)
 		b:SetPoint(point, f, rel)
-		b:SetTints(self:IsBlizzard() and "accent" or "textDim", self:IsBlizzard() and "text" or "accent")
+		if self:IsBlizzard() and Modern.Atlas(b.glyph, atlas) then
+			-- The minimal scroll bar's own arrows, lit on hover.
+			b.glyph:SetSize(12, 8)
+			b:SetTints({ 1, 1, 1 }, { 1, 0.82, 0 })
+		else
+			b:SetTints(self:IsBlizzard() and "accent" or "textDim", self:IsBlizzard() and "text" or "accent")
+		end
 		return b
 	end
 
-	local up = StepButton("caretUp", "BOTTOM", "TOP")
-	local down = StepButton("caretDown", "TOP", "BOTTOM")
+	local up = StepButton("caretUp", "BOTTOM", "TOP", "minimal-scrollbar-arrow-top")
+	local down = StepButton("caretDown", "TOP", "BOTTOM", "minimal-scrollbar-arrow-bottom")
 
 	f.step = 1
 	function f:Nudge(delta)
@@ -1035,17 +1198,29 @@ function Theme:SectionHeader(parent, text, width)
 	if width then f:SetWidth(width) end
 
 	local fs = f:CreateFontString(nil, "OVERLAY")
-	self:SetFont(fs, "display", 12)
 	fs:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
-	fs:SetText((text or ""):upper())
-	self:TextColor(fs, "accent")
 
 	local rule = f:CreateTexture(nil, "ARTWORK")
 	rule:SetTexture(self.texture.solid)
 	rule:SetHeight(1)
 	rule:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, 0)
 	rule:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
-	if self:IsBlizzard() then rule:SetVertexColor(1, 0.82, 0, 0.25) else self:Tint(rule, "border") end
+	if self:IsBlizzard() then
+		-- As the Options window's sections: the name in white, the Options rule under it.
+		self:SetFont(fs, "display", 15)
+		fs:SetText(text or "")
+		self:TextColor(fs, "text")
+		if Modern.Atlas(rule, "Options_HorizontalDivider") then
+			rule:SetHeight(2)
+		else
+			rule:SetVertexColor(1, 0.82, 0, 0.25)
+		end
+	else
+		self:SetFont(fs, "display", 12)
+		fs:SetText((text or ""):upper())
+		self:TextColor(fs, "accent")
+		self:Tint(rule, "border")
+	end
 
 	f.label, f.rule = fs, rule
 	return f
@@ -1087,23 +1262,30 @@ local function SetLocked(self, locked)
 	self:SetAlpha(locked and 0.45 or 1)
 end
 
---[[ The Blizzard skin's switch and check box: Blizzard's check box art and a
-	highlight-coloured label, with the row's API. ]]
+--[[ The Blizzard skin's switch and check box: the Options window's own
+	check box (a dark square, a gold tick) and a gold label, with the row's API.
+	The old check box art where a client lacks the new. ]]
 local function BlizzardCheckRow(parent, label, onChange)
 	local row = CreateFrame("Button", nil, parent)
 	row:SetHeight(24)
 	local box = row:CreateTexture(nil, "ARTWORK")
-	box:SetTexture(Theme.blizzardArt.checkUp)
 	box:SetSize(24, 24)
 	box:SetPoint("LEFT", row, "LEFT", -2, 0)
 	local tick = row:CreateTexture(nil, "OVERLAY")
-	tick:SetTexture(Theme.blizzardArt.checkCheck)
 	tick:SetAllPoints(box)
 	local hl = row:CreateTexture(nil, "HIGHLIGHT")
-	hl:SetTexture(Theme.blizzardArt.checkHighlight)
-	hl:SetBlendMode("ADD")
 	hl:SetAllPoints(box)
-	local fs = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	if Modern.Atlas(box, "checkbox-minimal") and Modern.Atlas(tick, "checkmark-minimal") then
+		Modern.Atlas(hl, "checkbox-minimal")
+		hl:SetBlendMode("ADD")
+		hl:SetAlpha(0.4)
+	else
+		box:SetTexture(Theme.blizzardArt.checkUp)
+		tick:SetTexture(Theme.blizzardArt.checkCheck)
+		hl:SetTexture(Theme.blizzardArt.checkHighlight)
+		hl:SetBlendMode("ADD")
+	end
+	local fs = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	fs:SetPoint("LEFT", box, "RIGHT", 4, 0)
 	fs:SetJustifyH("LEFT")
 	fs:SetText(label or "")
@@ -1292,9 +1474,27 @@ function Theme:Slider(parent, label, lo, hi, step, onChange, format)
 
 	local track
 	if self:IsBlizzard() then
-		self:Backdrop(s, "slider")
-		s:SetThumbTexture(self.blizzardArt.sliderThumb)
-		s:GetThumbTexture():SetSize(32, 32)
+		-- The Options window's slider: a thin dark bar and a diamond thumb.
+		local left, middle, right = s:CreateTexture(nil, "BACKGROUND"), s:CreateTexture(nil, "BACKGROUND"),
+			s:CreateTexture(nil, "BACKGROUND")
+		if Modern.Atlas(left, "Minimal_SliderBar_Left", true) and Modern.Atlas(right, "Minimal_SliderBar_Right", true)
+			and Modern.Atlas(middle, "_Minimal_SliderBar_Middle", true) then
+			left:SetPoint("LEFT", s, "LEFT", 0, 0)
+			right:SetPoint("RIGHT", s, "RIGHT", 0, 0)
+			middle:SetPoint("TOPLEFT", left, "TOPRIGHT", 0, 0)
+			middle:SetPoint("BOTTOMRIGHT", right, "BOTTOMLEFT", 0, 0)
+			s:SetThumbTexture(self.texture.solid)
+			if not Modern.Atlas(s:GetThumbTexture(), "Minimal_SliderBar_Button", true) then
+				s:SetThumbTexture(self.blizzardArt.sliderThumb)
+				s:GetThumbTexture():SetSize(32, 32)
+			end
+		else
+			self:Backdrop(s, "slider")
+			s:SetThumbTexture(self.blizzardArt.sliderThumb)
+			s:GetThumbTexture():SetSize(32, 32)
+		end
+		self:TextColor(fs, "accent")
+		self:TextColor(val, "text")
 		track = NOOP_TINT
 	else
 		track = s:CreateTexture(nil, "BACKGROUND")
@@ -1352,9 +1552,19 @@ end
 function Theme:Dropdown(parent, width, onSelect)
 	local b = CreateFrame("Button", nil, parent)
 	b:SetSize(width, 30)
+	local blizzardArrow = false
 	if self:IsBlizzard() then
-		b.fill = self:Backdrop(b, "tooltip")
-		b:SetBackdropColor(0, 0, 0, 0.8)
+		-- The dropdown of today's windows: a dark text holder with a gold arrow button.
+		local holder = b:CreateTexture(nil, "BACKGROUND")
+		holder:SetPoint("TOPLEFT", b, "TOPLEFT", -4, 3)
+		holder:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 4, -4)
+		if Modern.Atlas(holder, "common-dropdown-textholder") then
+			b.fill = NOOP_TINT
+			blizzardArrow = true
+		else
+			holder:Hide()
+			b.fill = Modern.Inset(b)
+		end
 	else
 		b.fill = self:NineSlice(b, self.texture.tabFill, "BACKGROUND", "panel2")
 		self:NineSlice(b, self.texture.tabBorder, "BORDER", "border")
@@ -1371,7 +1581,15 @@ function Theme:Dropdown(parent, width, onSelect)
 	caret:SetTexture(self.glyph.caretDown)
 	caret:SetSize(10, 10)
 	caret:SetPoint("RIGHT", b, "RIGHT", -10, 0)
-	self:Tint(caret, self:IsBlizzard() and "accent" or "textDim")
+	if blizzardArrow and Modern.Atlas(caret, "common-dropdown-a-button", true) then
+		caret:ClearAllPoints()
+		caret:SetPoint("RIGHT", b, "RIGHT", 2, -2)
+		-- The atlas is gold already: untinted, and left out of re-tinting on a theme change.
+		caret:SetVertexColor(1, 1, 1, 1)
+		b.arrowAtlas = true
+	else
+		self:Tint(caret, self:IsBlizzard() and "accent" or "textDim")
+	end
 
 	local list = CreateFrame("Frame", nil, UIParent)
 	list:SetFrameStrata("FULLSCREEN_DIALOG")
@@ -1437,8 +1655,14 @@ function Theme:Dropdown(parent, width, onSelect)
 		self.list:SetShown(not self.list:IsShown())
 	end)
 	b:SetScript("OnHide", function(self) self.list:Hide() end)
-	b:SetScript("OnEnter", function(self) Theme:Tint(self.caret, Theme:IsBlizzard() and "text" or "accent") end)
-	b:SetScript("OnLeave", function(self) Theme:Tint(self.caret, Theme:IsBlizzard() and "accent" or "textDim") end)
+	b:SetScript("OnEnter", function(self)
+		if self.arrowAtlas then Modern.Atlas(self.caret, "common-dropdown-a-button-hover", true) return end
+		Theme:Tint(self.caret, Theme:IsBlizzard() and "text" or "accent")
+	end)
+	b:SetScript("OnLeave", function(self)
+		if self.arrowAtlas then Modern.Atlas(self.caret, "common-dropdown-a-button", true) return end
+		Theme:Tint(self.caret, Theme:IsBlizzard() and "accent" or "textDim")
+	end)
 
 	return b
 end
@@ -1463,6 +1687,68 @@ function Theme:Subhead(frame, anchor, text)
 	return s
 end
 
+--[[ A row in a list of pages or categories -- the options' pages, the guide
+	browser's categories: the concept's faint fill and accent bar, or the
+	Options window's own highlight for the row picked and the row hovered.
+	Returns an object with SetActive(on). ]]
+function Theme:ListRow(row)
+	local art = {}
+	if self:IsBlizzard() then
+		local active = row:CreateTexture(nil, "BACKGROUND")
+		active:SetAllPoints(row)
+		if not Modern.Atlas(active, "Options_List_Active") then active:SetColorTexture(1, 0.82, 0, 0.18) end
+		active:Hide()
+		local hover = row:CreateTexture(nil, "HIGHLIGHT")
+		hover:SetAllPoints(row)
+		if not Modern.Atlas(hover, "Options_List_Hover") then hover:SetColorTexture(1, 1, 1, 0.08) end
+		function art:SetActive(on) active:SetShown(on) end
+		return art
+	end
+	local fill = row:CreateTexture(nil, "BACKGROUND")
+	fill:SetTexture(self.texture.solid)
+	fill:SetAllPoints(row)
+	self:Tint(fill, "text", 0)
+	local mark = row:CreateTexture(nil, "ARTWORK")
+	mark:SetTexture(self.texture.solid)
+	mark:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0)
+	mark:SetPoint("BOTTOMLEFT", row, "BOTTOMLEFT", 0, 0)
+	mark:SetWidth(3)
+	self:Tint(mark, "accent")
+	mark:Hide()
+	row:HookScript("OnEnter", function() if not art.on then Theme:Tint(fill, "text", 0.04) end end)
+	row:HookScript("OnLeave", function() if not art.on then Theme:Tint(fill, "text", 0) end end)
+	function art:SetActive(on)
+		self.on = on
+		Theme:Tint(fill, "text", on and 0.08 or 0)
+		mark:SetShown(on)
+	end
+	return art
+end
+
+--[[ A text box's frame: the concept's dark rounded field, or the search box of
+	today's windows (its rounded left, middle and right). ]]
+function Theme:EditBoxArt(box)
+	if self:IsBlizzard() then
+		local left, middle, right = box:CreateTexture(nil, "BACKGROUND"), box:CreateTexture(nil, "BACKGROUND"),
+			box:CreateTexture(nil, "BACKGROUND")
+		if Modern.Atlas(left, "common-search-border-left") and Modern.Atlas(right, "common-search-border-right")
+			and Modern.Atlas(middle, "common-search-border-middle") then
+			left:SetSize(8, box:GetHeight())
+			left:SetPoint("LEFT", box, "LEFT", -2, 0)
+			right:SetSize(8, box:GetHeight())
+			right:SetPoint("RIGHT", box, "RIGHT", 2, 0)
+			middle:SetPoint("TOPLEFT", left, "TOPRIGHT", 0, 0)
+			middle:SetPoint("BOTTOMRIGHT", right, "BOTTOMLEFT", 0, 0)
+			return
+		end
+		left:Hide(); middle:Hide(); right:Hide()
+		Modern.Inset(box)
+		return
+	end
+	self:NineSlice(box, self.texture.tabFill, "BACKGROUND", "panel2")
+	self:NineSlice(box, self.texture.tabBorder, "BORDER", "subtle")
+end
+
 --[[ The whole window chrome in one call: header, a close chip, the drag
 	wiring, and a subhead when the window names itself. ]]
 function Theme:Chrome(frame, subtitle, onMoved, title)
@@ -1470,7 +1756,7 @@ function Theme:Chrome(frame, subtitle, onMoved, title)
 	header:MakeDragHandle(frame, onMoved)
 
 	local close = self:CloseChip(header, frame)
-	close:SetPoint("RIGHT", header, "RIGHT", self:IsBlizzard() and 2 or -8, 0)
+	self:PlaceClose(close, frame, header)
 
 	local sub = subtitle and self:Subhead(frame, header, subtitle) or nil
 
@@ -1800,16 +2086,137 @@ function AP:SetSwitchColours(style)
 	return self.db.profile.switchcolours
 end
 
-StaticPopupDialogs = StaticPopupDialogs or {}
-StaticPopupDialogs.AEGISPATHFINDER_RELOAD_SKIN = {
-	text = AP.L.RELOAD_FOR_SKIN,
-	button1 = AP.L.RELOAD,
-	button2 = AP.L.LATER,
-	OnAccept = function() ReloadUI() end,
-	timeout = 0,
-	whileDead = true,
-	hideOnEscape = true,
-}
+--[[ A question with two answers, in the addon's own window.
+
+	Not the game's StaticPopup. 0.1.0 wrote `StaticPopupDialogs =
+	StaticPopupDialogs or {}`, which taints that global. Blizzard_Calendar,
+	loaded later on demand, reads it at the top of its file and then calls
+	RegisterGameMenuEscHandler, whose table.sort taints the game's list of
+	Escape handlers. From then on, every Escape fails with "ADDON FORBIDDEN:
+	SpellStopCasting()". This dialog touches nothing of Blizzard's.
+
+	Theme:Confirm{ text =, accept =, cancel =, onAccept = function, onCancel = function,
+		reload = true when Accept reloads the interface (see Theme:OfferReload) }
+]]
+local confirm
+
+function Theme:Confirm(spec)
+	if not confirm then
+		confirm = CreateFrame("Frame", "AegisPathfinderConfirm", UIParent)
+		confirm:SetFrameStrata("FULLSCREEN_DIALOG")
+		confirm:SetSize(340, 150)
+		confirm:SetPoint("CENTER", UIParent, "CENTER", 0, 160)
+		confirm:EnableMouse(true)
+		self:Panel(confirm, "panel")
+		local header = self:Chrome(confirm, nil, nil, AP.L.TITLE)
+		confirm.text = confirm:CreateFontString(nil, "OVERLAY")
+		self:SetFont(confirm.text, "body", 13)
+		self:TextColor(confirm.text, "text")
+		confirm.text:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 16, -14)
+		confirm.text:SetPoint("TOPRIGHT", header, "BOTTOMRIGHT", -16, -14)
+		confirm.text:SetJustifyH("CENTER")
+		confirm.text:SetWordWrap(true)
+		confirm.yes = self:PanelButton(confirm, "", 140, 24)
+		confirm.no = self:PanelButton(confirm, "", 140, 24)
+		local m = self.metrics
+		confirm.yes:SetPoint("BOTTOMLEFT", confirm, "BOTTOMLEFT", 14 + m.left, 12 + m.bottom)
+		confirm.no:SetPoint("BOTTOMRIGHT", confirm, "BOTTOMRIGHT", -14 - m.right, 12 + m.bottom)
+		confirm.yes:SetScript("OnClick", function()
+			local spec = confirm.spec
+			confirm:Hide()
+			if spec and spec.onAccept then spec.onAccept() end
+		end)
+		confirm.no:SetScript("OnClick", function()
+			local spec = confirm.spec
+			confirm:Hide()
+			if spec and spec.onCancel then spec.onCancel() end
+		end)
+		tinsert(UISpecialFrames, "AegisPathfinderConfirm")
+		Theme:OfferReload(confirm.yes, function() return confirm.spec and confirm.spec.reload end)
+		confirm:Hide()
+	end
+	confirm.spec = spec
+	confirm.text:SetText(spec.text or "")
+	confirm.yes:SetText(spec.accept or YES or "Yes")
+	confirm.no:SetText(spec.cancel or NO or "No")
+	confirm:Show()
+	self:BringToFront(confirm)
+	return confirm
+end
+
+--[[ Reloading the interface.
+
+	The game lets only its own code reload the interface: ReloadUI() from an
+	addon is "ADDON BLOCKED: Reload()", even from a click. A secure action
+	button running the /reload macro goes through Blizzard's code instead. So
+	one such button, invisible, sits over whichever of our Reload buttons the
+	mouse is on, and takes the click.
+
+	It belongs to UIParent, not to our windows: a window holding a secure
+	button becomes protected, and could then not be hidden or moved in a fight.
+	A secure button can be set up, moved, shown and hidden only out of combat;
+	in combat our own button takes the click and says to type /reload. ]]
+local reloader
+
+local function Hover(host, on)
+	if not host then return end
+	if host.LockHighlight then
+		if on then host:LockHighlight() else host:UnlockHighlight() end
+	end
+	local script = host:GetScript(on and "OnEnter" or "OnLeave")
+	if script then script(host) end
+end
+
+local function HideReloader()
+	if not reloader or Compat.InCombat() or not reloader:IsShown() then return end
+	local host = reloader.host
+	reloader.host = nil
+	reloader:Hide()
+	Hover(host, false)
+end
+
+local function Reloader()
+	if reloader then return reloader end
+	if Compat.InCombat() then return nil end
+	reloader = CreateFrame("Button", "AegisPathfinderReload", UIParent, "SecureActionButtonTemplate")
+	reloader:RegisterForClicks("AnyUp")
+	reloader:SetAttribute("useOnKeyDown", false)
+	reloader:SetAttribute("type", "macro")
+	reloader:SetAttribute("macrotext", "/reload")
+	reloader:Hide()
+	reloader:SetScript("OnEnter", function(self) Hover(self.host, true) end)
+	reloader:SetScript("OnLeave", HideReloader)
+	reloader:SetScript("OnUpdate", function(self)
+		local host = self.host
+		if not (host and host:IsVisible() and (not host.IsMouseOver or host:IsMouseOver())) then HideReloader() end
+	end)
+	-- Out of the way before combat starts: it couldn't be hidden during it.
+	AP:On("PLAYER_REGEN_DISABLED", HideReloader)
+	return reloader
+end
+
+--- Makes `button` reload the interface when clicked, outside combat, while `active()` (if given) says so.
+--- Its own OnClick still runs when the secure button isn't over it (in combat): have it say to type /reload.
+function Theme:OfferReload(button, active)
+	button:HookScript("OnEnter", function(self)
+		if active and not active() then return end
+		local r = Reloader()
+		if not r or Compat.InCombat() or not self:IsVisible() then return end
+		local x, y = self:GetCenter()
+		if not x then return end
+		local scale = self:GetEffectiveScale() / UIParent:GetEffectiveScale()
+		r:ClearAllPoints()
+		r:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x * scale, y * scale)
+		r:SetSize(self:GetWidth() * scale, self:GetHeight() * scale)
+		r:SetFrameStrata(self:GetFrameStrata())
+		r:SetFrameLevel(self:GetFrameLevel() + 20)
+		r.host = self
+		r:Show()
+	end)
+	button:HookScript("OnHide", function(self)
+		if reloader and reloader.host == self then HideReloader() end
+	end)
+end
 
 --- Save and apply a theme. A colour theme applies at once; moving to or from
 --- the Blizzard skin asks to reload, since its widgets are other frames.
@@ -1817,7 +2224,10 @@ function AP:SetTheme(key)
 	local def = Theme.themeByKey[key] or Theme.themeByKey[Theme.DEFAULT_THEME]
 	self.db.profile.theme = def.key
 	if (def.skin or "pathfinder") ~= Theme.skin then
-		StaticPopup_Show("AEGISPATHFINDER_RELOAD_SKIN")
+		-- The Reload button reloads through the secure button over it (Theme:OfferReload);
+		-- a click that reaches the button itself was in combat.
+		Theme:Confirm({ text = AP.L.RELOAD_FOR_SKIN, accept = AP.L.RELOAD, cancel = AP.L.LATER, reload = true,
+			onAccept = function() AP:Print(AP.L.TYPE_RELOAD) end })
 		return def
 	end
 	Theme:ApplyTheme(def.key)

@@ -33,8 +33,17 @@ local G = {
 	DEFAULT_CAP = 600, MIN_CAP = 260,
 	EMPTY_PAD = 18,
 	MAX_ROWS = 30,
+	EDGE_L = 1, EDGE_R = 1, EDGE_B = 1,
 }
+-- Set from the skin as the window is built (Build): the header's height and the frame's edges.
 G.CHROME_TOP = G.HEADER_H + G.TABBAR_H + G.NAVROW_H + G.PROGRESS_H
+
+local function Measure()
+	local m = Theme.metrics
+	G.HEADER_H = m.header
+	G.CHROME_TOP = m.top + G.HEADER_H + G.TABBAR_H + G.NAVROW_H + G.PROGRESS_H
+	G.EDGE_L, G.EDGE_R, G.EDGE_B = m.left, m.right, m.bottom
+end
 
 local frame, ui
 local rows = {}
@@ -63,7 +72,8 @@ local GUIDE_MENU = {
 		run = function(on) AP:SetGuideTransparent(on) end },
 	"-",
 	{ label = "Reset window", glyph = "reset", run = function() AP:ResetWindowLayout() end },
-	{ label = "Reload", glyph = "reload", run = function() ReloadUI() end },
+	-- Reloads through the secure button over it (Theme:OfferReload); a click that reaches the row was in combat.
+	{ label = "Reload", glyph = "reload", reload = true, run = function() AP:Print(AP.L.TYPE_RELOAD) end },
 	"-",
 	{ label = "Settings", glyph = "gear", run = function() AP:ToggleConfigPanel() end },
 }
@@ -143,6 +153,7 @@ local function MenuRow(menu, item, y)
 	Theme:TextColor(fs, "text")
 	row.item, row.label = item, fs
 	if item.key then MenuBox(row) end
+	if item.reload then Theme:OfferReload(row) end
 	row:SetScript("OnClick", function(self)
 		local it = self.item
 		if it.key then
@@ -198,7 +209,7 @@ end
 local function BuildGrip()
 	local grip = CreateFrame("Frame", nil, frame)
 	grip:SetSize(14, 14)
-	grip:SetPoint("BOTTOMRIGHT", Theme:IsBlizzard() and -8 or -4, Theme:IsBlizzard() and 8 or 4)
+	grip:SetPoint("BOTTOMRIGHT", -(G.EDGE_R + 3), G.EDGE_B + 3)
 	grip:EnableMouse(true)
 	grip:SetFrameLevel(frame:GetFrameLevel() + 6)
 	local tex = grip:CreateTexture(nil, "OVERLAY")
@@ -414,7 +425,7 @@ local function PaintEmpty()
 	empty.auto:SetOn(AP.Collector:IsAuto())
 	empty.status:SetText((running and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. " -- " .. AP.Collector:StatsText())
 	Theme:TextColor(empty.status, running and "accent" or "textDim")
-	empty.text:SetWidth(math.max(100, frame:GetWidth() - 2 * G.EMPTY_PAD - 2))
+	empty.text:SetWidth(math.max(100, frame:GetWidth() - 2 * G.EMPTY_PAD - G.EDGE_L - G.EDGE_R))
 	-- A wrapped string can measure nothing before its first frame on screen: never less than three lines.
 	local textH = math.max(empty.text:GetStringHeight() or 0, 48)
 	local h = 40 + 12 + textH + 14 + 26 + 10 + 24
@@ -529,7 +540,7 @@ function AP:RefreshObjectivePanel()
 	end
 	ui.footerRight:SetText(guide and string.format("%d%%", count > 0 and math.floor(done / count * 100) or 0) or "")
 
-	local height = G.CHROME_TOP + bodyH + G.FOOTER_H + (Theme:IsBlizzard() and 12 or 2)
+	local height = G.CHROME_TOP + bodyH + G.FOOTER_H + G.EDGE_B
 	frame:SetHeight(math.min(height, AP:GetPanelCap()))
 end
 
@@ -553,6 +564,7 @@ end
 --[[ Building it ]]
 
 local function Build()
+	Measure()
 	frame = CreateFrame("Frame", "AegisPathfinderObjectives", UIParent)
 	AP.objectiveframe = frame
 	Theme:TipOutside(frame)
@@ -573,7 +585,7 @@ local function Build()
 	frame.savePosition = Theme:PositionSaver("objframe")
 	header:MakeDragHandle(frame, frame.savePosition)
 	frame.header = header
-	local inset = Theme:IsBlizzard() and 2 or 8
+	local inset = Theme:IsBlizzard() and 0 or 8
 
 	local menuChip = Theme:ChipButton(header, "menu", nil, "Menu")
 	menuChip:SetPoint("LEFT", header, "LEFT", inset, 0)
@@ -599,7 +611,7 @@ local function Build()
 	ui.collectChip = collectChip
 
 	local close = Theme:CloseChip(header, frame)
-	close:SetPoint("RIGHT", header, "RIGHT", Theme:IsBlizzard() and 2 or -8, 0)
+	Theme:PlaceClose(close, frame, header)
 	close:HookScript("OnClick", function() Char().panelopen = false end)
 
 	-- Tab bar.
@@ -691,8 +703,8 @@ local function Build()
 
 	-- Body.
 	local body = CreateFrame("Frame", nil, frame)
-	body:SetPoint("TOPLEFT", frame, "TOPLEFT", Theme:IsBlizzard() and 6 or 1, -(G.CHROME_TOP + (Theme:IsBlizzard() and 6 or 0)))
-	body:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", Theme:IsBlizzard() and -6 or -1, G.FOOTER_H)
+	body:SetPoint("TOPLEFT", frame, "TOPLEFT", G.EDGE_L, -G.CHROME_TOP)
+	body:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -G.EDGE_R, G.FOOTER_H + G.EDGE_B)
 	ui.body = body
 	body:EnableMouseWheel(true)
 	body:SetScript("OnMouseWheel", function(_, delta)
@@ -717,8 +729,8 @@ local function Build()
 	-- Footer.
 	local footer = CreateFrame("Frame", nil, frame)
 	footer:SetHeight(G.FOOTER_H)
-	footer:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", Theme:IsBlizzard() and 6 or 1, Theme:IsBlizzard() and 6 or 1)
-	footer:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", Theme:IsBlizzard() and -6 or -1, Theme:IsBlizzard() and 6 or 1)
+	footer:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", G.EDGE_L, G.EDGE_B)
+	footer:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -G.EDGE_R, G.EDGE_B)
 	Theme:CapStrip(footer, "panel2", "bottom")
 	ui.footerLeft = footer:CreateFontString(nil, "OVERLAY")
 	Theme:SetFont(ui.footerLeft, "display", 11)
@@ -742,7 +754,7 @@ local function Build()
 		C_Timer.After(0, function() AP:RefreshObjectivePanel() end)
 	end)
 	frame:HookScript("OnSizeChanged", function()
-		if ui.empty and ui.empty:IsShown() then ui.empty.text:SetWidth(math.max(100, frame:GetWidth() - 2 * G.EMPTY_PAD - 2)) end
+		if ui.empty and ui.empty:IsShown() then ui.empty.text:SetWidth(math.max(100, frame:GetWidth() - 2 * G.EMPTY_PAD - G.EDGE_L - G.EDGE_R)) end
 	end)
 	AP.Collector:OnChange(function() if frame:IsShown() then AP:RefreshObjectivePanel() end end)
 end

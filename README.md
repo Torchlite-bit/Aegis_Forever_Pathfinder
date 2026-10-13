@@ -1,4 +1,4 @@
-# Aegis: Pathfinder — Forever (v0.1.0)
+# Aegis: Pathfinder — Forever (v0.2.0)
 
 **The Pathfinder leveling guide, ported to WoW: Forever. No guides yet, so for
 now it collects the data to write them.**
@@ -22,11 +22,13 @@ browser, the options window and the minimap button are the Turtle WoW
 addon's, panel for panel: same layout, same fonts, same colour themes (Day,
 Night, Pathfinder green, OctoWoW, RavenCraft, Capybara Paradise, Aegis).
 
-**A Blizzard skin.** One more theme, **Blizzard**, draws the same windows with
-the client's own art: dialog frames and title plate, Blizzard's red buttons and
-check boxes, Friz Quadrata, gold headings and the game's tooltip. Pick it under
-*Settings → Appearance → Theme*. Switching to or from it reloads the
-interface.
+**A Blizzard skin.** One more theme, **Blizzard**, draws the same windows the
+way today's game draws its own, like its Options window: the smooth metal
+frame with a solid dark background (nothing shows through), the red close
+button, Blizzard's red buttons, the slim check boxes, sliders, scroll bars and
+drop-downs, gold Friz Quadrata labels, the Options list highlight and section
+rules, and the game's tooltip. Pick it under *Settings → Appearance → Theme*.
+Switching to or from it reloads the interface.
 
 **No guides yet.** WoW: Forever is new, so the guide window says so and offers
 to **start collecting data** instead. The engine that follows guides is there
@@ -51,7 +53,8 @@ Switch it on and play normally. Pathfinder writes down:
 Repeat sightings are merged: counts add up, and the lowest and highest XP,
 money and coordinates are kept. Each record is stamped with the client build
 and the race, class and faction that saw it, **never your character's name**.
-Nothing is sent anywhere. It stays in your saved variables until you export it.
+The addon sends nothing by itself: it stays in your saved variables until you
+press **Submit data**.
 
 **The data collection window** (the ● chip on the guide, shift-click the
 minimap button, or `/apg collect`):
@@ -60,21 +63,55 @@ minimap button, or `/apg collect`):
 - ☑ **Automatically run**: starts collecting at every login on this
   character. New characters take the last choice you made.
 - What it has so far, and the last things it wrote down
-- **Export**: everything as text to copy. Paste it in the Discord or a GitHub
-  issue.
+- **Submit data**: packs it to send to us (below)
 - **Clear data**
+
+The guide window has the **Automatically run** box too, while it has no
+guide.
 
 What every field means: [docs/data-schema.md](docs/data-schema.md).
 
+### Sending us your data
+
+Addons can't reach the internet or write files, so the game can't send it for
+you, but it's two keystrokes. **Submit data** opens a window with:
+
+- **A share code**: everything you collected, compressed into one line
+  (`APF1:…`) and already selected. Press **Ctrl+C**.
+- **Where to paste it**, as links to copy:
+  - **[The GitHub form](https://github.com/Torchlite-bit/Aegis_Forever_Pathfinder/issues/new?template=submit-data.yml)**:
+    paste the code and submit. A GitHub Action reads it, adds it to the
+    collected data and credits you, with no one copying anything by hand.
+    It answers on the issue when it's done.
+  - **[Our Discord](https://discord.gg/Hr66t25vE7)**: paste it there. A long
+    paste turns into a text file by itself, and that's fine.
+- **Credit me as**: the name for the contributors list (empty: your
+  character's name in the code; the file carries only a name you typed).
+- **Or the file**: everything is also in
+  `WTF/Account/<account>/SavedVariables/Aegis_Forever_Pathfinder.lua` after a
+  `/reload` (the window has a button). Drop it in Discord, or rename it to
+  `.txt` (or zip it) and drag it into the GitHub form. That's the way for
+  very large collections, which don't fit in an issue as a code.
+
+Send again whenever you like, without clearing: each collection has an id,
+and a newer copy replaces the older one instead of counting twice.
+**As text** shows exactly what goes out. Everyone who sends data is listed in
+the Submit window, on the *About* page and in
+[CONTRIBUTORS.md](CONTRIBUTORS.md). How the intake works:
+[docs/data-submission.md](docs/data-submission.md).
+
 ### Also working without guides
 
-- **Automation**: accept and hand in quests (all of them, since no guide says
-  which are "its"; never a grey quest and never a reward choice), pick quests
-  from an NPC's list, a *Sell greys* button, selling greys, repairing (your
-  money, or the guild's first). Hold Shift to suspend.
+- **Automation**: accept and hand in quests, on by default as in the Turtle
+  addon (all of them, since no guide says which are "its"; never a grey quest
+  and never a reward choice), pick quests from an NPC's list, selling greys
+  (with the game's own *Sell All Junk*, or a *Sell greys* button where the
+  vendor has none), repairing (your money, or the guild's first). Hold Shift
+  to suspend. These are per character: *Settings → Automation*.
 - **Extras**: detailed reputation gains ("Stormwind +25: Honored 4,350 /
   12,000, 7,650 to Revered"), and level-up announcements to emote, party or
-  guild.
+  guild: a card with a button for each, since the game lets addons post in
+  chat only when you click.
 - **Window settings**: lock, transparency, opacity, step text size, window
   scale, hiding in dungeons or combat.
 
@@ -101,7 +138,7 @@ What came over from the Turtle addon, and what didn't and why:
 | `/apg collect` | The data collection window |
 | `/apg start`, `/apg stop` | Start or stop collecting |
 | `/apg status` | What has been collected so far |
-| `/apg export` | The export window |
+| `/apg submit` (or `/apg export`) | The Submit data window |
 | `/apg config` | Settings |
 | `/apg browser` | The guide browser |
 | `/apg next`, `/apg prev` | Step forward or back (with a guide) |
@@ -126,25 +163,44 @@ Core/Theme.lua                 the look: tokens, themes, every widget, both skin
 Core/Guides.lua                guide registration and the engine that follows one
 Core/Startup.lua               slash commands and key bindings
 Collector/Collector.lua        the data collector
-Collector/Export.lua           the export (header line + JSON)
+Collector/Export.lua           what is sent: the envelope, the share code, the credit name
+Contributors.lua               the contributors list (generated by Tools/ingest.py)
 UI/*.lua                       the guide window, data collection, guide browser, options, minimap
 Features/*.lua                 automation and chat extras
 media/                         the generated art and the Rajdhani and Inter fonts
 Tools/smoke_test.py            loads the addon against a mock client and plays it through
-Tools/merge_exports.py         merges players' exports into one file
-docs/                          feature inventory, API migration, data schema, guide API
+Tools/ingest.py                reads submissions (codes, text, files), merges them, credits contributors
+Tools/ingest_issue.py          the GitHub Action's side of ingest.py
+Tools/savedvariables.py        reads a SavedVariables file as data, never running it
+Tools/merge_exports.py         merges codes, exports and data files into one file, storing nothing
+.github/                       the Submit data issue form and the Action that ingests it
+data/                          what players sent, and everything merged
+docs/                          feature inventory, API migration, data schema, guide API, CurseForge
+Tools/package.py               builds the release zip; Tools/curseforge_upload.py uploads it
 ```
 
 ```sh
 pip install lupa
-python Tools/smoke_test.py          # 200+ checks, once per skin
-python Tools/merge_exports.py a.txt b.txt -o merged.json
+python Tools/smoke_test.py          # once per skin, and on a client without the modern art
+python Tools/test_ingest.py         # the intake: decoding, cleaning, merging, credits
+python Tools/ingest.py file.lua --credit Name   # add a file sent on Discord
+python Tools/merge_exports.py code.txt Aegis_Forever_Pathfinder.lua -o merged.json
 ```
 
 The API this is written against, and what still needs checking in a live
 client: [docs/api-migration.md](docs/api-migration.md).
 
+**Releases are automatic**, as for the Instance Journal. Every merge to `main`
+publishes a GitHub release named after the `.toc` version, with the addon zip
+and that version's changelog entry; a merge that keeps the version refreshes
+that release's zip. Each new version also goes to CurseForge, once: bump the
+version for CurseForge to get a new file. Setup and the project page's text:
+[docs/curseforge.md](docs/curseforge.md).
+
 ## Credits
+
+**The players who send their data** are listed in
+[CONTRIBUTORS.md](CONTRIBUTORS.md) and in the game.
 
 A port of **Aegis: Pathfinder** (Torchlite and its contributors), which
 descends from **TourGuide** (Tekkub), **VanillaGuide** (isalcedo) and

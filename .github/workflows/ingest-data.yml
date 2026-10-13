@@ -1,0 +1,290 @@
+name: Ingest submitted data
+
+# Players send collected data through the "Submit collected data" issue form
+# (.github/ISSUE_TEMPLATE/submit-data.yml). This job reads it with
+# Tools/ingest_issue.py, adds it to the data-submissions branch, keeps one pull
+# request open from that branch, and answers on the issue.
+# docs/data-submission.md has the whole story, and the one-time setup.
+#
+# Safety:
+# - The issue is the player's text. It is fetched into a file and reaches the
+#   scripts only through files and the environment: nothing from the event is
+#   ever pasted into a script below.
+# - Only the default branch's code runs. It is checked out on its own
+#   ("trusted/"); the data-submissions branch is only written to ("work/"),
+#   never run from.
+
+on:
+  issues:
+    types: [opened, edited, labeled]
+  # For maintainers: read an issue again, by its number.
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: The issue number to read again
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  ingest:
+    # Data submissions: the form's label, or the form's own heading (so the very
+    # first submission is read even before the label exists). A label added later
+    # starts a run only when it is the data-submission label itself, and an edit
+    # only when it changed the text (not just the title).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      ((github.event.action != 'labeled' || github.event.label.name == 'data-submission') &&
+       (github.event.action != 'edited' || github.event.changes.body) &&
+       (contains(github.event.issue.labels.*.name, 'data-submission') ||
+        contains(github.event.issue.body, '### Share code or data file')))
+    # Edits to one issue wait their turn. Different issues run side by side and
+    # take turns at the branch through the retry below (one shared group would keep
+    # only one waiting run and cancel the rest). Set on the job, so a run skipped
+    # by the if: above never joins the queue.
+    concurrency:
+      group: data-ingest-${{ github.event.issue.number || inputs.issue }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue }}
+      # A maintainer re-reading an issue wants an answer, as after an edit.
+      EVENT_ACTION: ${{ github.event.action || 'edited' }}
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+      DATA_BRANCH: data-submissions
+      TRUSTED: ${{ github.workspace }}/trusted
+      WORK: ${{ github.workspace }}/work
+    steps:
+      - name: Check out the default branch (the code that runs)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: trusted
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install lupa
+
+      - name: Read the issue
+        id: issue
+        run: |
+          case "$ISSUE_NUMBER" in ''|*[!0-9]*) echo "Not an issue number: $ISSUE_NUMBER"; exit 1;; esac
+          gh api "repos/$GH_REPO/issues/$ISSUE_NUMBER" > "$RUNNER_TEMP/issue.json"
+          if [ "$(jq -r 'has("pull_request")' "$RUNNER_TEMP/issue.json")" = true ]; then
+            echo "#$ISSUE_NUMBER is a pull request, not an issue."; exit 1
+          fi
+          jq -r '.body // ""' "$RUNNER_TEMP/issue.json" > "$RUNNER_TEMP/body.md"
+          login=$(jq -r '.user.login' "$RUNNER_TEMP/issue.json")
+          id=$(jq -r '.user.id' "$RUNNER_TEMP/issue.json")
+          # GitHub's own values, checked all the same before they go anywhere.
+          printf '%s' "$login" | grep -Eqx '[A-Za-z0-9][A-Za-z0-9-]{0,38}(\[bot\])?' || login=""
+          printf '%s' "$id" | grep -Eqx '[0-9]{1,15}' || id=""
+          echo "login=$login" >> "$GITHUB_OUTPUT"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
+      - name: Make sure the labels exist, and this issue has its label
+        run: |
+          gh label create data-submission --color 1D76DB --description "Collected data sent through the form" 2> /dev/null || true
+          gh label create ingested --color 0E8A16 --description "The data was added to the data-submissions branch" 2> /dev/null || true
+          gh label create needs-attention --color D93F0B --description "The data could not be read: a person needs to look" 2> /dev/null || true
+          gh issue edit "$ISSUE_NUMBER" --add-label data-submission > /dev/null || true
+
+      # Read the submission onto the data-submissions branch, check it, push it.
+      # Runs for other issues may push in between: then it all starts again from
+      # the branch as it is now, up to twelve times, after a random wait so runs
+      # that collided don't collide again.
+      - name: Read the submission, store it and push it
+        id: ingest
+        env:
+          ISSUE_USER: ${{ steps.issue.outputs.login }}
+          ISSUE_USER_ID: ${{ steps.issue.outputs.id }}
+          ISSUE_BODY_FILE: ${{ runner.temp }}/body.md
+          SUMMARY_PATH: ${{ runner.temp }}/summary.md
+        run: |
+          cd "$TRUSTED"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          outputs="$RUNNER_TEMP/ingest-outputs.txt"
+          status=1 changed=0 attention=0 saved=none
+          for attempt in $(seq 1 12); do
+            echo "::group::Attempt $attempt"
+            rm -rf "$WORK"
+            git worktree prune
+            git fetch --no-tags --quiet origin "+refs/heads/$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH"
+            lease=""
+            if git ls-remote --exit-code --heads origin "$DATA_BRANCH" > /dev/null; then
+              git fetch --no-tags --quiet origin "+refs/heads/$DATA_BRANCH:refs/remotes/origin/$DATA_BRANCH"
+              git worktree add --quiet -f -B "$DATA_BRANCH" "$WORK" "origin/$DATA_BRANCH"
+              # Kept current with the default branch. The generated files are made
+              # again below, so where both sides changed them, this branch's side stands.
+              if ! git -C "$WORK" merge --quiet --no-edit -X ours "origin/$DEFAULT_BRANCH"; then
+                # A merge git can't settle by itself: start again from the default
+                # branch, carrying the stored submissions over.
+                git -C "$WORK" merge --abort || true
+                git -C "$WORK" reset --quiet --hard "origin/$DEFAULT_BRANCH"
+                git -C "$WORK" checkout "origin/$DATA_BRANCH" -- data/submissions 2> /dev/null || true
+                lease="$(git rev-parse "origin/$DATA_BRANCH")"
+              fi
+            else
+              git worktree add --quiet -f -B "$DATA_BRANCH" "$WORK" "origin/$DEFAULT_BRANCH"
+            fi
+
+            : > "$outputs"
+            status=0
+            REPO_ROOT="$WORK" GITHUB_OUTPUT="$outputs" python Tools/ingest_issue.py || status=$?
+            changed=$(sed -n 's/^changed=//p' "$outputs" | tail -n 1)
+            attention=$(sed -n 's/^attention=//p' "$outputs" | tail -n 1)
+            if [ "$status" != 0 ] || [ "${changed:-0}" = 0 ]; then
+              echo "::endgroup::"
+              break
+            fi
+
+            # The pushes here use the workflow's own token, which starts no other
+            # workflows: the smoke test runs now instead, the default branch's
+            # addon with the new contributors list in it.
+            cp "$WORK/Contributors.lua" "$TRUSTED/Contributors.lua"
+            smoke=0
+            python Tools/smoke_test.py || smoke=$?
+            git checkout --quiet -- Contributors.lua
+            if [ "$smoke" != 0 ]; then
+              saved=failure
+              echo "::endgroup::"
+              break
+            fi
+
+            git -C "$WORK" add -A data Contributors.lua CONTRIBUTORS.md
+            if ! git -C "$WORK" diff --cached --quiet; then
+              # No player text in the message: a credit name such as "fixes #1" would
+              # close issues once this reaches the default branch. The name is in the data.
+              {
+                printf 'Data from #%s\n' "$ISSUE_NUMBER"
+                if [ -n "$ISSUE_USER" ] && [ -n "$ISSUE_USER_ID" ]; then
+                  printf '\nCo-authored-by: %s <%s+%s@users.noreply.github.com>\n' "$ISSUE_USER" "$ISSUE_USER_ID" "$ISSUE_USER"
+                fi
+              } > "$RUNNER_TEMP/commit-message.txt"
+              git -C "$WORK" commit --quiet -F "$RUNNER_TEMP/commit-message.txt"
+            fi
+            if [ -n "$lease" ]; then
+              pushed=0; git -C "$WORK" push --quiet --force-with-lease="refs/heads/$DATA_BRANCH:$lease" origin "HEAD:refs/heads/$DATA_BRANCH" || pushed=$?
+            else
+              pushed=0; git -C "$WORK" push --quiet origin "HEAD:refs/heads/$DATA_BRANCH" || pushed=$?
+            fi
+            echo "::endgroup::"
+            if [ "$pushed" = 0 ]; then saved=success; break; fi
+            saved=failure
+            echo "The branch moved while this ran; starting again."
+            sleep $((RANDOM % 8 + attempt * 2))
+          done
+          {
+            echo "status=$status"
+            echo "changed=${changed:-0}"
+            echo "attention=${attention:-0}"
+            echo "saved=$saved"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open the pull request
+        if: steps.ingest.outputs.saved == 'success'
+        env:
+          SUMMARY_PATH: ${{ runner.temp }}/summary.md
+        run: |
+          # This repository's own pull request only (a fork's branch can have the same
+          # name). A lookup that fails counts as "none", so the create is still tried.
+          has_pr() {
+            local open
+            open=$(gh pr list --head "$DATA_BRANCH" --base "$DEFAULT_BRANCH" --state open \
+              --json isCrossRepository --jq 'map(select(.isCrossRepository | not)) | length') || return 1
+            [ -n "$open" ] && [ "$open" != 0 ]
+          }
+          if has_pr; then
+            echo "The pull request is already open: this push added to it."
+            exit 0
+          fi
+          cat > "$RUNNER_TEMP/pr-body.md" << 'EOF'
+          Collected data players sent through the **Submit collected data** issue form.
+
+          The *Ingest submitted data* workflow adds each submission to the `data-submissions`
+          branch: `data/submissions/` (one file per collection), and, made again from all of
+          them, `data/merged.json`, `data/contributors.json`, `Contributors.lua` and
+          `CONTRIBUTORS.md`. Each commit names the issue it came from.
+
+          Merge it to take the data in. The next submission opens a new pull request.
+          Pushes made by the workflow don't start the other checks (the workflow runs the
+          smoke test itself before each push): close and reopen this pull request to run
+          them. See docs/data-submission.md.
+          EOF
+          if ! gh pr create --head "$DATA_BRANCH" --base "$DEFAULT_BRANCH" \
+              --title "Collected data from players" --body-file "$RUNNER_TEMP/pr-body.md" 2> "$RUNNER_TEMP/pr-error.txt"; then
+            cat "$RUNNER_TEMP/pr-error.txt"
+            # Another run may have opened it a moment ago.
+            if has_pr; then exit 0; fi
+            compare="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/$DEFAULT_BRANCH...$DATA_BRANCH?expand=1"
+            if grep -qi "not permitted to create or approve pull requests" "$RUNNER_TEMP/pr-error.txt"; then
+              reason="(For maintainers: GitHub Actions isn't allowed to open pull requests here yet. Turn on *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests*, or open it by hand:"
+            else
+              reason="(For maintainers: the pull request could not be opened automatically. Open it by hand:"
+            fi
+            printf '\n---\n%s %s)\n' "$reason" "$compare" >> "$SUMMARY_PATH"
+          fi
+
+      # Every run that read the issue answers it, even when a step before this one
+      # failed, was cancelled or timed out (that counts as our own error).
+      - name: Answer on the issue
+        if: always() && steps.issue.outcome == 'success'
+        env:
+          SUMMARY_PATH: ${{ runner.temp }}/summary.md
+          STATUS: ${{ steps.ingest.outputs.status || '1' }}
+          CHANGED: ${{ steps.ingest.outputs.changed || '0' }}
+          ATTENTION: ${{ steps.ingest.outputs.attention || '0' }}
+          SAVED: ${{ steps.ingest.outputs.saved || 'none' }}
+        run: |
+          labels=$(gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' || true)
+          has_label() { printf '%s\n' "$labels" | grep -qx "$1"; }
+          # Opening an issue with a label sends two events (opened, labeled): the
+          # second run finds it answered already and stays quiet. An edit is
+          # always answered.
+          answered() { has_label "$1" && [ "$EVENT_ACTION" != edited ]; }
+          reply() { gh issue comment "$ISSUE_NUMBER" --body-file "$1" || echo "Could not comment on #$ISSUE_NUMBER."; }
+          # Needs a person: labelled, reopened if it was closed, never left marked as ingested.
+          needs_attention() {
+            gh issue edit "$ISSUE_NUMBER" --add-label needs-attention || true
+            if has_label ingested; then gh issue edit "$ISSUE_NUMBER" --remove-label ingested || true; fi
+            gh issue reopen "$ISSUE_NUMBER" > /dev/null 2>&1 || true
+          }
+
+          if [ "$STATUS" = 0 ] && [ "$CHANGED" != 0 ] && [ "$SAVED" != success ]; then
+            cat > "$RUNNER_TEMP/not-saved.md" << 'EOF'
+          **Your data was read, but saving it failed on our side**, so it hasn't been added yet.
+          A maintainer will look at it; there's nothing more you need to do.
+          EOF
+            answered needs-attention || reply "$RUNNER_TEMP/not-saved.md"
+            needs_attention
+          elif [ "$STATUS" = 0 ]; then
+            if [ "$CHANGED" = 0 ] && has_label ingested && [ "$EVENT_ACTION" != edited ]; then
+              echo "Answered already, and nothing new came in."
+            else
+              reply "$SUMMARY_PATH"
+            fi
+            if [ "$ATTENTION" = 1 ]; then
+              # Some of it was taken in, and some (another account's collection) needs a person.
+              gh issue edit "$ISSUE_NUMBER" --add-label needs-attention || true
+              gh issue reopen "$ISSUE_NUMBER" > /dev/null 2>&1 || true
+            else
+              gh issue edit "$ISSUE_NUMBER" --add-label ingested || true
+              if has_label needs-attention; then gh issue edit "$ISSUE_NUMBER" --remove-label needs-attention || true; fi
+              gh issue close "$ISSUE_NUMBER" --reason completed || true
+            fi
+          else
+            # 2: nothing usable (the summary says how to fix it); 1: our own error.
+            [ -s "$SUMMARY_PATH" ] || echo "Something went wrong on our side. A maintainer will look at it; there's nothing more you need to do." > "$SUMMARY_PATH"
+            answered needs-attention || reply "$SUMMARY_PATH"
+            needs_attention
+          fi

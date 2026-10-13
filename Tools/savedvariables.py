@@ -17,15 +17,19 @@ import re
 MAX_DEPTH = 64
 MAX_SIZE = 64 * 1024 * 1024
 
+# Every alternative here is linear on any text: the files come from strangers.
+# A string's two kinds of letter can't overlap (a backslash always starts an
+# escape, which with DOTALL takes a line break too), and long [[ ]] strings and
+# --[[ ]] comments are found with str.find in _tokens, not with a lazy .*?.
 _TOKEN = re.compile(r"""
     (?P<space>\s+)
-  | (?P<comment>--\[(?P<eq>=*)\[.*?\](?P=eq)\]|--[^\n]*)
-  | (?P<string>"(?:[^"\\\n]|\\.|\\\n)*"|'(?:[^'\\\n]|\\.|\\\n)*')
-  | (?P<long>\[(?P<leq>=*)\[.*?\](?P=leq)\])
+  | (?P<comment>--(?!\[=*\[)[^\n]*)
+  | (?P<string>"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')
   | (?P<number>0[xX][0-9a-fA-F]+|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)
   | (?P<name>[A-Za-z_][A-Za-z0-9_]*)
   | (?P<op>[{}\[\]=,;\-])
 """, re.VERBOSE | re.DOTALL)
+_LONG_OPEN = re.compile(r"(--)?\[(=*)\[")
 
 _ESCAPES = {"n": "\n", "t": "\t", "r": "\r", "a": "\a", "b": "\b", "f": "\f", "v": "\v",
             "\\": "\\", '"': '"', "'": "'", "\n": "\n"}
@@ -70,20 +74,27 @@ def _unescape(body):
 def _tokens(text):
     pos = 0
     while pos < len(text):
+        opening = _LONG_OPEN.match(text, pos)
+        if opening:
+            closer = "]" + opening.group(2) + "]"
+            end = text.find(closer, opening.end())
+            if end < 0:
+                raise ParseError("a long %s is never closed" % ("comment" if opening.group(1) else "string"))
+            body = text[opening.end():end]
+            pos = end + len(closer)
+            if not opening.group(1):
+                yield ("string", body[1:] if body.startswith("\n") else body)
+            continue
         match = _TOKEN.match(text, pos)
         if not match:
             raise ParseError("unexpected %r at character %d" % (text[pos:pos + 20], pos))
         pos = match.end()
         kind = match.lastgroup
-        if kind in ("space", "comment") or match.group("comment") is not None:
+        if kind in ("space", "comment"):
             continue
         value = match.group(0)
         if match.group("string") is not None:
             yield ("string", _unescape(value[1:-1]))
-        elif match.group("long") is not None:
-            level = len(match.group("leq"))
-            body = value[level + 2:-(level + 2)]
-            yield ("string", body[1:] if body.startswith("\n") else body)
         elif match.group("number") is not None:
             yield ("number", int(value, 16) if value[:2].lower() == "0x" else
                    (float(value) if any(ch in value for ch in ".eE") else int(value)))

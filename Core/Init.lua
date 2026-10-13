@@ -17,7 +17,7 @@ local L = AP.L
 AegisPathfinder = AP
 AP.name = addonName
 AP.title = L.TITLE
-AP.version = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version")) or "0.1.0"
+AP.version = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version")) or "0.2.0"
 AP.media = "Interface\\AddOns\\" .. addonName .. "\\media\\"
 
 AP.PROFILE_DEFAULTS = {
@@ -36,8 +36,9 @@ AP.CHAR_DEFAULTS = {
 	overviewmode = false,
 	showminimapbutton = true,
 	chatmessages = true,
-	-- Automation. With no guide to say which quests are its own, "all quests" is the default.
-	autoquest = false,
+	-- Automation. On, as in the Turtle addon. With no guide to say which quests are its own,
+	-- that is every quest.
+	autoquest = true,
 	allquests = true,
 	autogossip = true,
 	sellbutton = true,
@@ -121,6 +122,17 @@ AP:On("ADDON_LOADED", function(_, loaded)
 	local db = AegisPathfinderDB
 	db.profile = Fill(db.profile or {}, AP.PROFILE_DEFAULTS)
 	AP.db = { profile = db.profile, char = Fill(AegisPathfinderCharDB, AP.CHAR_DEFAULTS), global = db }
+	-- 0.2.0: quest automation is on by default, as in the Turtle addon. Earlier versions wrote
+	-- "off" into every character's settings, so it is turned on once, and the chat says where
+	-- to turn it off again.
+	local char = AP.db.char
+	if not char.autoquestdefault then
+		char.autoquestdefault = true
+		if char.autoquest == false then
+			char.autoquest = true
+			AP.autoquestNotice = true
+		end
+	end
 	RunAll(onInit)
 end)
 
@@ -128,6 +140,10 @@ AP:On("PLAYER_LOGIN", function()
 	RunAll(onLogin)
 	if AP.db.char.chatmessages ~= false then
 		AP:Print(string.format(L.LOADED, AP.title, AP.version))
+	end
+	if AP.autoquestNotice then
+		AP:Print(L.AUTOQUEST_ON)
+		AP.autoquestNotice = nil
 	end
 end)
 

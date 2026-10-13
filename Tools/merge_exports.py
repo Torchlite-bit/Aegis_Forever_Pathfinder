@@ -1,27 +1,34 @@
 """
-Merges players' exports (the data collection window's Export, or /apg export) into
-one file to write guides from.
+Merges players' data into one file to write guides from, without storing it
+(Tools/ingest.py stores it and merges with the same rules).
 
-    python Tools/merge_exports.py export1.txt export2.txt ... -o merged.json
+    python Tools/merge_exports.py code.txt export.txt Aegis_Forever_Pathfinder.lua ... -o merged.json
 
-Each input is the text the export window shows: a header line, then JSON. The
-merge follows the collector's own rules (docs/data-schema.md): counts add up,
-ranges keep the lowest and highest, coordinates average by how many positions
-each side had, sets join, and text keeps the first seen.
+Each input is anything Tools/ingest.py reads: share codes, the Submit window's
+text (format 1 or 2), or a SavedVariables file, zipped or not. Each is cleaned
+as ingest stores it. The merge follows the collector's own rules
+(docs/data-schema.md): counts add up, ranges keep the lowest and highest,
+coordinates average by how many positions each side had, sets join, and text
+keeps the first seen.
 """
 
 import argparse
 import json
+import os
 import sys
 
 HEADER = "AEGIS PATHFINDER FOREVER DATA"
 RANGE_KEYS = {"min", "max", "count", "last"}
 # Tables whose values are counts that add up: "who saw it", "how often", map cells.
-COUNT_TABLES = {"by", "seen", "observers", "objective", "turnin", "available"}
+COUNT_TABLES = {"by", "seen", "observers", "objective", "turnin", "available", "counts"}
+# Tables of such tables: progress keeps map cells per objective, and chosen keeps
+# item counts per class. Their entries merge as "counts".
+COUNT_PARENTS = {"progress", "chosen"}
 
 
 def is_range(value):
-    return isinstance(value, dict) and value and set(value) <= RANGE_KEYS | {"factionID"} and "count" in value
+    # min and max, not just count: a reward item without a name is {"count": n}.
+    return isinstance(value, dict) and {"min", "max", "count"} <= set(value) <= RANGE_KEYS | {"factionID"}
 
 
 def is_place(value):
@@ -78,7 +85,7 @@ def merge(a, b, key=None):
                         and not isinstance(v, bool):
                     out[k] = out[k] + v
                 else:
-                    out[k] = merge(out[k], v, k)
+                    out[k] = merge(out[k], v, "counts" if key in COUNT_PARENTS else k)
             else:
                 out[k] = v
         return out
@@ -90,14 +97,21 @@ def merge(a, b, key=None):
     return a
 
 
-def read_export(path):
-    with open(path, encoding="utf-8") as handle:
-        text = handle.read().strip()
-    header, _, body = text.partition("\n")
-    if not header.startswith(HEADER):
-        raise ValueError("%s: not a Pathfinder export (no %r header)" % (path, HEADER))
-    fields = header.split(";")
-    return {"format": int(fields[1]), "addon": fields[2], "build": fields[3]}, json.loads(body)
+def read_inputs(path):
+    """Every collection in a file, as cleaned envelopes (Tools/ingest.py reads it)."""
+    import ingest  # here rather than at the top: ingest imports this file
+    with open(path, "rb") as handle:
+        content = handle.read()
+    problems = []
+    envelopes = []
+    for submission in ingest.decode(content, os.path.basename(path), problems):
+        try:
+            envelopes.append(ingest.sanitize(submission.envelope))
+        except ingest.IngestError as error:
+            problems.append("%s: %s" % (os.path.basename(path), error))
+    for problem in problems:
+        print(problem, file=sys.stderr)
+    return envelopes
 
 
 def main(argv=None):
@@ -108,9 +122,12 @@ def main(argv=None):
 
     merged, sources = None, []
     for path in args.exports:
-        meta, data = read_export(path)
-        sources.append(dict(meta, file=path))
-        merged = merge(merged, data)
+        for envelope in read_inputs(path):
+            data = dict(envelope["data"])
+            sources.append({"file": path, "id": data.pop("id", None), "format": envelope["format"],
+                            "addonVersion": envelope["addonVersion"], "build": envelope["build"],
+                            "contributor": envelope["contributor"]})
+            merged = merge(merged, data)
     merged = merged or {}
     merged["sources"] = sources
 

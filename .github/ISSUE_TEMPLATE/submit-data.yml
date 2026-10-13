@@ -1,0 +1,40 @@
+name: Submit collected data
+description: Send the quest and leveling data Pathfinder collected in game. It's added automatically and helps build the guides.
+title: "[Data] "
+labels: [data-submission]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping build Pathfinder's guides for WoW: Forever!
+
+        A bot reads what you send, adds it, answers here and closes the issue, usually within a few minutes.
+        Send again whenever you've collected more: the newest copy replaces the old one, so nothing is counted twice.
+        The data names no character and no realm: characters are written as race, class and faction.
+        The one name in it is the one you're credited under (docs/data-schema.md, "Privacy").
+  - type: input
+    id: credit
+    attributes:
+      label: Credit me as
+      description: The name for the contributors list, in game and on GitHub. Leave it empty to use the name in your share code (the addon's "Credit me as", or your character's name if you left that empty); a data file without one is credited to your GitHub name.
+      placeholder: e.g. Goldshire Gary
+    validations:
+      required: false
+  - type: textarea
+    id: data
+    attributes:
+      label: Share code or data file
+      description: >-
+        Paste the share code from the addon's Submit window (it starts with APF1:), or drag in your data file.
+        The file is WTF/Account/<your account>/SavedVariables/Aegis_Forever_Pathfinder.lua after /reload.
+        GitHub doesn't take .lua files, so rename it to .txt or zip it first.
+      placeholder: "APF1:..."
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything to add
+      description: Optional. Where you played, anything that looked odd.
+    validations:
+      required: false

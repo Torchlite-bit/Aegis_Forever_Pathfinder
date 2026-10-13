@@ -54,8 +54,28 @@ function Region:GetName() return self._name end
 function Region:GetParent() return self._parent end
 function Region:SetParent(parent) self._parent = parent end
 function Region:GetChildren() return unpack(rawget(self, "_children") or {}) end
-function Region:Show() local was = self._shown; self._shown = true; if not was then self:_Run("OnShow") end end
-function Region:Hide() local was = self._shown; self._shown = false; if was then self:_Run("OnHide") end end
+-- A secure frame can't be shown or hidden by an addon in combat: the client blocks it.
+local function Protected(self, action)
+	if rawget(self, "_secure") and Mock.inCombat then
+		table.insert(Mock.blocked, { action, rawget(self, "_name") })
+		return true
+	end
+end
+function Region:Show()
+	if Protected(self, "Show") then return end
+	local was = self._shown; self._shown = true; if not was then self:_Run("OnShow") end
+end
+function Region:Hide()
+	if Protected(self, "Hide") then return end
+	local was = self._shown; self._shown = false; if was then self:_Run("OnHide") end
+end
+function Region:SetAttribute(key, value)
+	if Protected(self, "SetAttribute") then return end
+	self._attributes = self._attributes or {}
+	self._attributes[key] = value
+end
+function Region:GetAttribute(key) return self._attributes and self._attributes[key] end
+function Region:IsMouseOver() return true end
 function Region:SetShown(shown) if shown then self:Show() else self:Hide() end end
 function Region:IsShown() return self._shown end
 function Region:IsVisible()
@@ -201,6 +221,7 @@ function CreateFrame(frameType, name, parent, template)
 		end
 	end
 	local frame = NewRegion(frameType, name, parent or UIParent)
+	if template and tostring(template):find("Secure") then frame._secure = true end
 	if template then
 		for t in tostring(template):gmatch("[^,%s]+") do
 			if TEMPLATE_SETUP[t] then TEMPLATE_SETUP[t](frame) end
@@ -225,8 +246,10 @@ STANDARD_TEXT_FONT = "Fonts\\FRIZQT__.TTF"
 UISpecialFrames = {}
 SlashCmdList = {}
 StaticPopupDialogs = {}
+Mock.staticPopupDialogs = StaticPopupDialogs
 function StaticPopup_Show(name) table.insert(Mock.popups, name) return {} end
-function ReloadUI() Mock.reloaded = true end
+-- Only the game's own code may reload: an addon's call is "ADDON BLOCKED: Reload()".
+function ReloadUI() table.insert(Mock.blocked, { "ReloadUI" }) end
 
 Mixin = function(object, ...)
 	for index = 1, select("#", ...) do
@@ -263,7 +286,7 @@ function GetTime() return Mock.now end
 function GetServerTime() return 1760000000 + math.floor(Mock.now) end
 function GetBuildInfo() return "1.60.1", "70338", "Oct 10 2026", 16001 end
 function issecretvalue(value) return Mock.secret ~= nil and Mock.secret[value] == true end
-function InCombatLockdown() return false end
+function InCombatLockdown() return Mock.inCombat == true end
 function IsInInstance() return Mock.state.inInstance or false, "none" end
 function IsShiftKeyDown() return Mock.state.shift == true end
 function IsMouseButtonDown() return false end
@@ -279,7 +302,7 @@ for index, label in ipairs({ "Hated", "Hostile", "Unfriendly", "Neutral", "Frien
 end
 NUM_BAG_SLOTS = 4
 
-C_AddOns = { GetAddOnMetadata = function(_, key) if key == "Version" then return "0.1.0" end end }
+C_AddOns = { GetAddOnMetadata = function(_, key) if key == "Version" then return "0.2.0" end end }
 C_Timer = {
 	After = function(seconds, fn) table.insert(Mock.timers, { at = Mock.now + seconds, fn = fn }) end,
 }
@@ -298,6 +321,98 @@ function Mock.Advance(seconds)
 			end
 		end
 	end
+end
+
+--[[ The client's modern art, as the Forever client has it: the atlases the
+	Blizzard skin asks for, and NineSliceUtil drawing a layout as textures on a
+	frame. Mock.noModernArt (the "blizzard-plain" run) takes them away, so the
+	skin's fallbacks are exercised too. ]]
+Mock.atlases = {}
+for name in ([[UI-Frame-Metal-CornerTopLeft Tooltip-NineSlice-CornerTopLeft UI-Frame-InnerTopLeft
+	Options_HorizontalDivider checkbox-minimal checkmark-minimal !minimal-scrollbar-track-middle
+	minimal-scrollbar-small-thumb-middle minimal-scrollbar-arrow-top minimal-scrollbar-arrow-bottom
+	Minimal_SliderBar_Left Minimal_SliderBar_Right _Minimal_SliderBar_Middle Minimal_SliderBar_Button
+	common-dropdown-textholder common-dropdown-a-button common-dropdown-a-button-hover Options_List_Active
+	Options_List_Hover Options_CategoryHeader_1 common-search-border-left common-search-border-middle
+	common-search-border-right]]):gmatch("%S+") do Mock.atlases[name] = true end
+function Region:SetAtlas(name)
+	assert(Mock.atlases[name], "no such atlas: " .. tostring(name))
+	self._atlas = name
+	return true
+end
+function Region:SetColorTexture(r, g, b, a) self._color = { r, g, b, a } end
+function Region:SetBlendMode(mode) self._blend = mode end
+local LAYOUT_PIECES = { "TopLeftCorner", "TopRightCorner", "BottomLeftCorner", "BottomRightCorner", "TopEdge",
+	"BottomEdge", "LeftEdge", "RightEdge", "Center" }
+function Mock.InstallModernArt()
+	C_Texture = { GetAtlasInfo = function(name) if Mock.atlases[name] then return { width = 16, height = 16 } end end }
+	NineSliceUtil = {
+		GetLayout = function(name)
+			if name == "ButtonFrameTemplateNoPortrait" or name == "TooltipDefaultLayout" or name == "InsetFrameTemplate" then
+				return {}
+			end
+		end,
+		ApplyLayoutByName = function(frame, name)
+			assert(NineSliceUtil.GetLayout(name), "no such layout " .. tostring(name))
+			for _, piece in ipairs(LAYOUT_PIECES) do rawset(frame, piece, rawget(frame, piece) or frame:CreateTexture()) end
+			frame._layout = name
+		end,
+	}
+	PANEL_BACKGROUND_COLOR = { GetRGB = function() return 0.08, 0.08, 0.08 end }
+end
+
+--[[ C_EncodingUtil, for the share code: Base64 as the client writes it, and a zlib
+	stream made of stored (uncompressed) deflate blocks -- real zlib that any inflater
+	reads, without writing a compressor in Lua. Clients without it get the plain text. ]]
+local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+local function Base64(s)
+	local out = {}
+	for i = 1, #s, 3 do
+		local a, b, c = s:byte(i, i + 2)
+		local n = a * 65536 + (b or 0) * 256 + (c or 0)
+		local digits = { math.floor(n / 262144) % 64, math.floor(n / 4096) % 64, math.floor(n / 64) % 64, n % 64 }
+		for k = 1, 4 do digits[k] = B64:sub(digits[k] + 1, digits[k] + 1) end
+		if not b then digits[3] = "=" end
+		if not c then digits[4] = "=" end
+		out[#out + 1] = table.concat(digits)
+	end
+	return table.concat(out)
+end
+
+local function Zlib(s)
+	local out = { string.char(0x78, 0x01) }
+	local pos = 1
+	repeat
+		local chunk = s:sub(pos, pos + 65534)
+		pos = pos + #chunk
+		local len, nlen = #chunk, 65535 - #chunk
+		out[#out + 1] = string.char(pos > #s and 1 or 0, len % 256, math.floor(len / 256), nlen % 256,
+			math.floor(nlen / 256)) .. chunk
+	until pos > #s
+	local a, b = 1, 0
+	for i = 1, #s do
+		a = (a + s:byte(i)) % 65521
+		b = (b + a) % 65521
+	end
+	out[#out + 1] = string.char(math.floor(b / 256), b % 256, math.floor(a / 256), a % 256)
+	return table.concat(out)
+end
+
+function Mock.InstallEncoding()
+	Enum = Enum or {}
+	Enum.CompressionMethod = { Deflate = 0, Zlib = 1, Gzip = 2 }
+	C_EncodingUtil = {
+		CompressString = function(source, method)
+			assert(type(source) == "string", "CompressString needs a string")
+			assert(method == Enum.CompressionMethod.Zlib, "the share code is zlib")
+			return Zlib(source)
+		end,
+		EncodeBase64 = function(source)
+			assert(type(source) == "string", "EncodeBase64 needs a string")
+			return Base64(source)
+		end,
+	}
 end
 
 Settings = {
@@ -457,7 +572,39 @@ C_Container = {
 }
 Mock.sold = {}
 C_GossipInfo = { GetActiveQuests = function() return {} end, GetAvailableQuests = function() return {} end }
-C_ChatInfo = { SendChatMessage = function(message, channel) table.insert(Mock.sent, { message, channel }) end }
+-- Chat goes out only from a click: anything else is what the client reports as
+-- "ADDON BLOCKED". Mock.Click is the click (the hardware event).
+Mock.blocked = {}
+C_ChatInfo = {
+	SendChatMessage = function(message, channel)
+		if not Mock.hardware then
+			table.insert(Mock.blocked, { message, channel })
+			return
+		end
+		table.insert(Mock.sent, { message, channel })
+	end,
+	InChatMessagingLockdown = function() return Mock.chatLockdown == true end,
+}
+-- Blizzard's own "Sell All Junk" (Mainline MerchantFrame).
+C_MerchantFrame = {
+	GetNumJunkItems = function() return #Mock.Junk() end,
+	IsSellAllJunkEnabled = function() return Mock.sellAllJunk ~= false end,
+	SellAllJunkItems = function()
+		for _, item in ipairs(Mock.Junk()) do table.insert(Mock.sold, item) end
+	end,
+}
+function Mock.Junk()
+	local out = {}
+	for slot = 1, C_Container.GetContainerNumSlots(0) do
+		local info = C_Container.GetContainerItemInfo(0, slot)
+		if info and info.quality == 0 and not Mock.soldSlot(0, slot) then out[#out + 1] = { 0, slot } end
+	end
+	return out
+end
+function Mock.soldSlot(bag, slot)
+	for _, item in ipairs(Mock.sold) do if item[1] == bag and item[2] == slot then return true end end
+	return false
+end
 C_CurrencyInfo = { GetCoinTextureString = function(copper) return tostring(copper) .. "c" end }
 function CanMerchantRepair() return true end
 function GetRepairAllCost() return 250, true end
@@ -475,9 +622,21 @@ function Mock.Fire(event, ...)
 	for _, frame in ipairs(list) do frame:_Run("OnEvent", event, ...) end
 end
 
+--- A click on a secure action button: Blizzard's code runs its action. Only /reload is modelled.
+function Mock.ClickSecure(frame)
+	assert(frame and rawget(frame, "_secure"), "not a secure button")
+	assert(frame:IsShown(), "the secure button isn't shown")
+	if frame:GetAttribute("type") == "macro" and frame:GetAttribute("macrotext") == "/reload" then
+		Mock.reloaded = true
+	end
+end
+
 function Mock.Click(frame, button)
 	assert(frame, "nothing to click")
-	frame:_Run("OnClick", button or "LeftButton")
+	Mock.hardware = true
+	local ok, err = pcall(frame._Run, frame, "OnClick", button or "LeftButton")
+	Mock.hardware = false
+	if not ok then error(err, 0) end
 end
 
 --- Every frame whose text is `text`, or a button whose label is.

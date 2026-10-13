@@ -1,0 +1,83 @@
+# Tests every push and pull request; every push to main also publishes a release.
+# Made after the Aegis: Forever Instance Journal's own.
+#
+# The release is named after the TOC's ## Version (v0.2.0, say), with the addon zip and that
+# version's CHANGELOG entry as its notes. A push that keeps the same version refreshes that
+# release's zip and notes, so its download is always the latest push (merged player data
+# included). Bump the version (and add a CHANGELOG entry) for a new release. Each new version
+# is also uploaded to CurseForge, once, when the CF_API_KEY secret and the
+# CURSEFORGE_PROJECT_ID variable are set; "Run workflow" on the Actions tab uploads the
+# current version after they first are.
+#
+# Nothing here runs for a branch other than main: a release only follows a merge.
+
+name: Test and release
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the test tools
+        run: pip install lupa==2.8
+
+      - name: Run the tests
+        run: |
+          python Tools/smoke_test.py
+          python Tools/test_ingest.py
+
+      - name: Build the release zip
+        id: build
+        run: python Tools/package.py dist
+
+      - name: Publish the release
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ steps.build.outputs.version }}
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" dist/*.zip --clobber
+            gh release edit "$TAG" --notes-file dist/notes.md
+            echo "Refreshed $TAG with this push."
+          else
+            gh release create "$TAG" dist/*.zip --target "$GITHUB_SHA" \
+              --title "Aegis: Pathfinder (Forever) $TAG" --notes-file dist/notes.md
+            echo "Published $TAG."
+          fi
+
+      # Each version goes to CurseForge once: the release keeps a curseforge.txt once uploaded.
+      # Needs the CF_API_KEY secret and the CURSEFORGE_PROJECT_ID variable (Tools/curseforge_upload.py).
+      - name: Upload to CurseForge
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ steps.build.outputs.version }}
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          CURSEFORGE_GAME_VERSION_IDS: ${{ vars.CURSEFORGE_GAME_VERSION_IDS }}
+          CURSEFORGE_RELEASE_TYPE: ${{ vars.CURSEFORGE_RELEASE_TYPE }}
+        run: |
+          if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx curseforge.txt; then
+            echo "$TAG is on CurseForge already."
+          else
+            python Tools/curseforge_upload.py dist
+            if [ -f dist/curseforge.txt ]; then gh release upload "$TAG" dist/curseforge.txt --clobber; fi
+          fi

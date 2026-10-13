@@ -2,7 +2,7 @@
 ## Title: Aegis: Pathfinder (Forever)
 ## Notes: Leveling guide window for WoW: Forever. No guides yet: it collects quest and leveling data to build them from.|nPart of the Aegis addon suite.
 ## Author: Aegis: Pathfinder Contributors
-## Version: 0.1.0
+## Version: 0.2.0
 ## X-Category: Quest
 ## SavedVariables: AegisPathfinderDB
 ## SavedVariablesPerCharacter: AegisPathfinderCharDB
@@ -19,6 +19,9 @@ Core\Guides.lua
 # The data collector: what the client says about quests and levels.
 Collector\Collector.lua
 Collector\Export.lua
+
+# Who sent their data in, for the Submit window and About: written by Tools/ingest.py.
+Contributors.lua
 
 # The windows. The guide window is built first: the others open beside it.
 UI\ObjectivesFrame.lua

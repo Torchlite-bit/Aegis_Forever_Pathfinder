@@ -29,8 +29,8 @@ collector** records quests and levels so guides can be written from real data.
 | Options window: category list, scrolling pages, subhead naming the page | `OptionsFrame.lua` | **Adapted.** Same 150 + 396 px layout and widgets. Pages: Data Collection (new), Appearance, Navigation, Automation, Extras, Maintenance, About. The width/height grip is not ported (fixed 546×560). |
 | Minimap button: click guide, right-click options, drag round the edge | `MinimapButton.lua` | **Ported**, plus shift-click for data collection. The Blizzard skin gives it the standard gold tracking ring. |
 | Tooltips: the theme's own hint card, opened beside the guide | `Theme.lua` | **Ported.** The Blizzard skin uses `GameTooltip`. |
-| Data collection window | — | **New.** Start/Stop, **Automatically run**, counts, recent activity, Export, Clear. |
-| Export window | — | **New.** The collected data as text to copy. |
+| Data collection window | — | **New.** Start/Stop, **Automatically run**, counts, recent activity, Submit data, Clear. The guide window's empty state has Start collecting and **Automatically run** too. |
+| Submit data window | — | **New.** The share code (compressed, one line) or the text, **Credit me as**, the GitHub form and Discord links to copy, the file route with a /reload button, contributors. |
 | Setup wizard (first login: guide, features, dungeons) | `SetupFrame.lua` | **Waits for guides** |
 | "Where next?" between guides | `NextGuideFrame.lua` | **Waits for guides** |
 | Active Items / Active Targets / Macros windows | `ActiveFrames.lua` | **Waits for guides** (they act on the step's items and targets) |
@@ -49,7 +49,7 @@ collector** records quests and levels so guides can be written from real data.
 | Design tokens (`Theme.color`), Rajdhani + Inter fonts, nine-sliced rounded panels, drop-shadow ring, cap strips, chips, pills, tabs, badges, bands, switches, check boxes, sliders, dropdowns, scrollbar, window stacking, window scale, position saving | **Ported** unchanged (`Core/Theme.lua`), with the same generated `media/` art |
 | Themes: Day, Night, Turtle WoW (green), OctoWoW, RavenCraft, Capybara Paradise, Aegis | **Ported.** "Turtle WoW" is renamed **Pathfinder** (same green, still the default). A saved `turtle` is read as `pathfinder`. |
 | Switch colours (theme / red-green) | **Ported** |
-| **Blizzard skin** | **New.** A theme that swaps the art for the client's own: dialog-box frames, the dialog title plate, `UIPanelButtonTemplate`, Blizzard check boxes, `UIPanelCloseButton`, slider and scroll-knob art, the status bar texture, Friz Quadrata, gold headings, `GameTooltip`. Switching to or from it reloads the UI. |
+| **Blizzard skin** | **New.** A theme that swaps the art for today's client art, like the game's Options window: the metal nine-slice frame on a solid dark fill, the red close button, `UIPanelButtonTemplate`, the slim check boxes, sliders, scroll bars and drop-downs, the Options list highlight, category bar and section rules, Friz Quadrata, gold labels, `GameTooltip`. Older dialog art where the client lacks it. Switching to or from it reloads the UI. |
 | Turtle loading screens and custom-zone maps (`media/loadscreens`, `media/maps`) | **Not ported** (Turtle WoW content) |
 
 ## Settings
@@ -90,7 +90,7 @@ collector** records quests and levels so guides can be written from real data.
 | `/apg resetpanels`, `/apg minimapbutton` | **Ported** |
 | `/apg goto`, `/apg reset`, `/apg setup`, `/apg ssf`, `/apg share`, `/apg target`, `/apg useitem` | **Wait for guides** |
 | `/apg materials`, `/apg craft`, `/apg exchange`, `/apg gear`, `/apg finder`, `/apg talents` | **Not ported** (see above) |
-| — | **New:** `/apg collect`, `/apg start`, `/apg stop`, `/apg export`, `/apg status`, `/apg config`, `/apg browser`, `/apg help` |
+| — | **New:** `/apg collect`, `/apg start`, `/apg stop`, `/apg submit` (or `/apg export`), `/apg status`, `/apg config`, `/apg browser`, `/apg help` |
 
 Key bindings (**New**): *Show or hide the guide* and *Data collection window*,
 under AddOns in the game's key bindings.

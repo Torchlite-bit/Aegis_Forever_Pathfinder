@@ -67,6 +67,12 @@ left out).
 | Interface Options panel | — | `Settings.RegisterCanvasLayoutCategory`, `Settings.RegisterAddOnCategory` | A page under AddOns that opens our window |
 | `UIDropDownMenu` (not used, the theme draws its own) | 0 | — | |
 | AceLibrary / AceDB-2.0 / AceConsole-2.0 / AceEvent-2.0 / AceHook-2.1 | — | plain saved variables, `SlashCmdList`, one event frame (`AP:On`) | Ace2 is a 1.12 library |
+| `StaticPopupDialogs[...] = { ... }` / `StaticPopup_Show` | — | **the addon's own dialog** (`Theme:Confirm`) | Not a missing API but taint. 0.1.0 wrote `StaticPopupDialogs = StaticPopupDialogs or {}`, which taints the global. Blizzard's on-demand calendar (`Blizzard_Calendar`) reads it at the top of its file and then calls `RegisterGameMenuEscHandler`. That call's `table.insert` and `table.sort` then run tainted and taint Blizzard's list of Escape handlers. After that, every Escape runs the handlers from a tainted list: "ADDON FORBIDDEN … SpellStopCasting()", "SpellStopTargeting()" and `ClearTarget` ("UNKNOWN()"), via `ToggleGameMenu`. The port never touches the popup system. Never reassign a Blizzard global, even to itself. |
+| Closing windows on Escape: `UISpecialFrames` | — | unchanged | Blizzard reads the list inside `CloseSpecialWindows` without the addon's code on the stack, so adding a window name is safe. Close buttons use `UIPanelCloseButtonNoScripts` with their own `OnClick` (`HideUIPanel` refuses insecure callers in combat). |
+| `ReloadUI()` | — | a secure action button running the `/reload` macro (`Theme:OfferReload`) | `C_UI.Reload` is protected here, though its documentation says nothing: an addon's call is "ADDON BLOCKED: Reload()", even from a click. One invisible `SecureActionButtonTemplate` button (type `macro`, macrotext `/reload`) is parented to UIParent and moved over whichever Reload button the mouse is on, out of combat only. It is not parented to our windows, because a window holding a secure button becomes protected and couldn't be hidden or moved in combat. |
+| `SendChatMessage` from a timer or event | — | only from a click (`C_ChatInfo.SendChatMessage`, `HasRestrictions`), and not during chat lockdown (`C_ChatInfo.InChatMessagingLockdown`) | The level-up announcement is a card with a button per channel. |
+| Text to copy out of the game | — | an `EditBox` with the text selected, and **Ctrl+C** | `CopyToClipboard` and `LaunchURL` are restricted to Blizzard's code, and addons have no network or file access: what leaves the game is pasted by the player, or read from the saved variables file. |
+| Compressing it | — | `C_EncodingUtil.CompressString(text, Enum.CompressionMethod.Zlib)` and `C_EncodingUtil.EncodeBase64` | Present on Forever (Blizzard's cooldown viewer uses them). The share code (`Collector/Export.lua`); without them the plain text is shown |
 
 ## What the client gives, and what the collector has to observe
 
@@ -102,12 +108,19 @@ mock client (`Tools/smoke_test.py`). These need a real session:
    the collector reads the guid without asking `UnitExists("npc")`.
 4. **TGA textures and TTF fonts** load from `media/` as in the Instance
    Journal (same format, RLE 32-bit).
-5. The **Blizzard skin's art paths** (`DialogFrame\UI-DialogBox-*`,
-   `Buttons\UI-CheckBox-*`, `Buttons\UI-SliderBar-*`,
-   `Buttons\UI-ScrollBar-Knob`, `Minimap\MiniMap-TrackingBorder`) are all
-   referenced by Forever's own interface code, but should be looked at in game.
+5. The **Blizzard skin's art**: the nine-slice layouts
+   (`ButtonFrameTemplateNoPortrait`, `TooltipDefaultLayout`,
+   `InsetFrameTemplate`, applied with `NineSliceUtil.ApplyLayoutByName`), the
+   `PANEL_BACKGROUND_COLOR` fill, and the atlases (`checkbox-minimal`,
+   `Minimal_SliderBar_*`, `minimal-scrollbar-*`, `common-dropdown-*`,
+   `Options_*`, `common-search-border-*`). Forever's own interface code uses
+   them all, and each one is checked with `C_Texture.GetAtlasInfo`, with the
+   older art (`DialogFrame\UI-DialogBox-*`, `Buttons\UI-CheckBox-*`, …) as
+   the fallback. They should still be looked at in game.
 6. **`C_ChatInfo.SendChatMessage(…, "EMOTE")`** for the level-up emote is
    allowed outside a hardware event.
 7. Whether **secret values** turn up in the quest frame inside Forever's
    dungeons. Everything is guarded, so a secret value shows up as a missing
    field, not an error.
+8. **`C_EncodingUtil`** for addons: compressing and Base64-encoding a large
+   string (the share code) outside combat.
