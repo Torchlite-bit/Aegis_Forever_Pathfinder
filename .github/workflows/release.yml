@@ -71,9 +71,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: v${{ steps.build.outputs.version }}
           CF_API_KEY: ${{ secrets.CF_API_KEY }}
-          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
-          CURSEFORGE_GAME_VERSION_IDS: ${{ vars.CURSEFORGE_GAME_VERSION_IDS }}
-          CURSEFORGE_RELEASE_TYPE: ${{ vars.CURSEFORGE_RELEASE_TYPE }}
+          # A variable, or a secret if it was saved as one.
+          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID || secrets.CURSEFORGE_PROJECT_ID }}
+          CURSEFORGE_GAME_VERSION_IDS: ${{ vars.CURSEFORGE_GAME_VERSION_IDS || secrets.CURSEFORGE_GAME_VERSION_IDS }}
+          CURSEFORGE_RELEASE_TYPE: ${{ vars.CURSEFORGE_RELEASE_TYPE || secrets.CURSEFORGE_RELEASE_TYPE }}
         run: |
           if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx curseforge.txt; then
             echo "$TAG is on CurseForge already."

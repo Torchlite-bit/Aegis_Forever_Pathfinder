@@ -385,11 +385,22 @@ if skin == "pathfinder" then
 	check(not cover:IsShown(), "and stays aside in combat")
 	Mock.Click(yes)
 	check(Chat("Type /reload to reload: in combat"), "Reload in combat says to type /reload")
+	check(not confirm():IsShown(), "and the dialog goes")
 	Mock.inCombat = false
 	Mock.Fire("PLAYER_REGEN_ENABLED")
 	check(not cover:IsShown(), "after combat it stays away from a dialog that closed")
 	AP:SetTheme("blizzard")
 	check(cover:IsShown(), "and is back over Reload when the dialog is")
+	-- A click that reaches our own Reload outside combat missed the secure button: it says
+	-- what it can see, and the dialog stays for another try.
+	Mock.Click(yes)
+	check(Chat("That didn't reload"), "a missed Reload says so")
+	check(Chat("Reload check: secure button shown true"), "with what the secure button was doing")
+	check(confirm():IsShown(), "and the dialog stays")
+	SlashCmdList.AEGISPATHFINDER("reloaddebug")
+	check(cover.tint:IsShown(), "/apg reloaddebug tints the secure buttons")
+	SlashCmdList.AEGISPATHFINDER("reloaddebug")
+	check(not cover.tint:IsShown(), "and again stops")
 	Mock.Click(confirm().no)
 	check(not cover:IsShown(), "Later takes it away")
 	-- The other two Reload buttons: the guide menu's and the Submit window's Save it now.
@@ -404,8 +415,14 @@ if skin == "pathfinder" then
 	guide.ui.menu:Hide()
 	check(not menuCover:IsShown(), "and leaves with the menu")
 	guide.ui.menu:Show()
+	local mark = #Mock.chat
 	Mock.Click(menuReload)
-	check(Chat("That didn't reload"), "a click that reaches the menu's own Reload out of combat says so")
+	local said = {}
+	for i = mark + 1, #Mock.chat do said[#said + 1] = Mock.chat[i] end
+	said = table.concat(said, "\n")
+	check(said:find("That didn't reload") and said:find("secure button shown true"),
+		"a click that reaches the menu's own Reload says so, with what it saw")
+	check(not guide.ui.menu:IsShown(), "and the menu closes")
 	guide.ui.menu:Hide()
 	AP:ShowSubmit()
 	local save = Mock.FindText(AP.L.SUBMIT_SAVE, _G.AegisPathfinderSubmit)[1]

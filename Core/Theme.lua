@@ -2121,8 +2121,14 @@ function Theme:Confirm(spec)
 		local m = self.metrics
 		confirm.yes:SetPoint("BOTTOMLEFT", confirm, "BOTTOMLEFT", 14 + m.left, 12 + m.bottom)
 		confirm.no:SetPoint("BOTTOMRIGHT", confirm, "BOTTOMRIGHT", -14 - m.right, 12 + m.bottom)
-		confirm.yes:SetScript("OnClick", function()
+		confirm.yes:SetScript("OnClick", function(self)
 			local spec = confirm.spec
+			if spec and spec.reload then
+				-- Reached only when the secure button over it wasn't there (Theme:OfferReload):
+				-- in combat the dialog goes; outside it, it stays for another try.
+				if Theme:ReloadFallback(self) then confirm:Hide() end
+				return
+			end
 			confirm:Hide()
 			if spec and spec.onAccept then spec.onAccept() end
 		end)
@@ -2211,12 +2217,17 @@ local Sync
 
 local function NewCover(host)
 	local cover = CreateFrame("Button", nil, UIParent, "SecureActionButtonTemplate")
+	cover:EnableMouse(true)
 	cover:RegisterForClicks("AnyUp")
 	cover:SetAttribute("useOnKeyDown", false)
 	cover:SetAttribute("type", "macro")
 	cover:SetAttribute("macrotext", "/reload")
 	cover:Hide()
 	cover.host = host
+	cover.tint = cover:CreateTexture(nil, "OVERLAY")
+	cover.tint:SetAllPoints(cover)
+	cover.tint:SetColorTexture(1, 0.1, 0.1, 0.4)
+	cover.tint:SetShown(Theme.reloadDebug == true)
 	cover:SetScript("OnEnter", function(self) self.hovered = true; Hover(self.host, true) end)
 	cover:SetScript("OnLeave", function(self) self.hovered = nil; Hover(self.host, false) end)
 	cover:HookScript("OnMouseDown", function(self)
@@ -2278,10 +2289,74 @@ function Theme:SyncReload(button) Sync(button) end
 --- The secure button over `button`, if it has one (for the smoke test).
 function Theme:ReloadCover(button) return covers[button] and covers[button].cover end
 
---- Our own Reload button was clicked: in combat that's expected; outside it, the
---- secure button wasn't there, and the player should know to type /reload.
-function Theme:ReloadFallback()
-	AP:Print(Compat.InCombat() and AP.L.TYPE_RELOAD or AP.L.TYPE_RELOAD_MISSED)
+-- Where a frame is, in UIParent's units: "left,bottom widthxheight".
+local function Where(f)
+	local left, bottom = f:GetLeft(), f:GetBottom()
+	if not left then return "nowhere" end
+	local s = f:GetEffectiveScale() / UIParent:GetEffectiveScale()
+	local function n(v) return math.floor((v or 0) * s + 0.5) end
+	return n(left) .. "," .. n(bottom) .. " " .. n(f:GetWidth()) .. "x" .. n(f:GetHeight())
+end
+
+local function Named(f)
+	if not f then return "nothing" end
+	if f == UIParent or f == WorldFrame then return f:GetName() end
+	for host, entry in pairs(covers) do
+		if entry.cover == f then return "the secure button" end
+		if host == f then return "our Reload" end
+	end
+	local ok, name = pcall(function() return f.GetDebugName and f:GetDebugName() or f:GetName() end)
+	return ok and name and name ~= "" and name or "a frame"
+end
+
+local function UnderMouse()
+	if GetMouseFoci then
+		local names = {}
+		for _, f in ipairs(GetMouseFoci() or {}) do
+			names[#names + 1] = Named(f)
+			if #names == 3 then break end
+		end
+		return #names > 0 and table.concat(names, ", ") or "nothing"
+	end
+	return GetMouseFocus and Named(GetMouseFocus()) or "?"
+end
+
+--- One line on the secure button over `host`: whether it is there, where, in which
+--- layer, and what has the mouse. For a click that missed it, and /apg reloaddebug.
+function Theme:ReloadReport(host)
+	local entry = host and covers[host]
+	local cover = entry and entry.cover
+	if not cover then
+		return "no secure button yet (wanted: " .. tostring(host ~= nil and Wanted(host)) .. ")"
+	end
+	local mouse = cover.IsMouseClickEnabled and cover:IsMouseClickEnabled() or cover:IsMouseEnabled()
+	return ("secure button shown %s, visible %s, takes clicks %s, under the mouse %s; %s %d over Reload's %s %d;"
+		.. " at %s, Reload at %s; the mouse is on %s"):format(
+		tostring(cover:IsShown()), tostring(cover:IsVisible()), tostring(mouse), tostring(cover:IsMouseOver()),
+		tostring(cover:GetFrameStrata()), cover:GetFrameLevel() or -1, tostring(host:GetFrameStrata()),
+		host:GetFrameLevel() or -1, Where(cover), Where(host), UnderMouse())
+end
+
+--- Our own Reload button was clicked. In combat that's expected: true, say to type
+--- /reload. Outside it the secure button wasn't there: say so, with what we can see.
+function Theme:ReloadFallback(host)
+	if Compat.InCombat() then
+		AP:Print(AP.L.TYPE_RELOAD)
+		return true
+	end
+	AP:Print(AP.L.TYPE_RELOAD_MISSED)
+	AP:Print(AP.L.RELOAD_CHECK .. self:ReloadReport(host))
+	return false
+end
+
+--- /apg reloaddebug: tints the secure buttons red, and reports each one on screen.
+function Theme:ToggleReloadDebug()
+	self.reloadDebug = not self.reloadDebug
+	AP:Print(self.reloadDebug and AP.L.RELOAD_DEBUG_ON or AP.L.RELOAD_DEBUG_OFF)
+	for host, entry in pairs(covers) do
+		if entry.cover then entry.cover.tint:SetShown(self.reloadDebug) end
+		if self.reloadDebug and host:IsVisible() then AP:Print(AP.L.RELOAD_CHECK .. self:ReloadReport(host)) end
+	end
 end
 
 --- Save and apply a theme. A colour theme applies at once; moving to or from
@@ -2292,8 +2367,7 @@ function AP:SetTheme(key)
 	if (def.skin or "pathfinder") ~= Theme.skin then
 		-- The Reload button reloads through the secure button over it (Theme:OfferReload);
 		-- a click that reaches the button itself was in combat.
-		Theme:Confirm({ text = AP.L.RELOAD_FOR_SKIN, accept = AP.L.RELOAD, cancel = AP.L.LATER, reload = true,
-			onAccept = function() Theme:ReloadFallback() end })
+		Theme:Confirm({ text = AP.L.RELOAD_FOR_SKIN, accept = AP.L.RELOAD, cancel = AP.L.LATER, reload = true })
 		return def
 	end
 	Theme:ApplyTheme(def.key)

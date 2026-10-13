@@ -72,8 +72,8 @@ local GUIDE_MENU = {
 		run = function(on) AP:SetGuideTransparent(on) end },
 	"-",
 	{ label = "Reset window", glyph = "reset", run = function() AP:ResetWindowLayout() end },
-	-- Reloads through the secure button over it (Theme:OfferReload); a click that reaches the row was in combat.
-	{ label = "Reload", glyph = "reload", reload = true, run = function() Theme:ReloadFallback() end },
+	-- Reloads through the secure button over it (Theme:OfferReload); see the row's OnClick.
+	{ label = "Reload", glyph = "reload", reload = true },
 	"-",
 	{ label = "Settings", glyph = "gear", run = function() AP:ToggleConfigPanel() end },
 }
@@ -159,6 +159,10 @@ local function MenuRow(menu, item, y)
 		if it.key then
 			it.run(not self.on)
 			self:SetChecked(Profile()[it.key])
+		elseif it.reload then
+			-- Reached only when the secure button over it wasn't there: reported before the menu goes.
+			Theme:ReloadFallback(self)
+			ui.menu:Hide()
 		else
 			ui.menu:Hide()
 			it.run()
