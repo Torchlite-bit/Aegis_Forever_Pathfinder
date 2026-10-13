@@ -11,6 +11,12 @@ local Call, Readable = Compat.Call, Compat.Readable
 	    and the same news to your party and guild, each off until ticked. The
 	    time is how long you spent at the level just left, when the collector
 	    saw all of it.
+
+	This client lets an addon post in chat only from a click, and not at all
+	while chat is locked down (boss fights, rated PvP). Posting by itself, as
+	the Turtle addon did, is blocked ("ADDON BLOCKED: UNKNOWN()"). So a
+	level-up brings a small card with a button for each place ticked, and a
+	click sends it.
 ]]
 
 local Extras = {}
@@ -101,31 +107,112 @@ function Extras.LevelMessages(from, to, secs)
 		"Pathfinder: I leveled up from " .. from .. " to " .. to .. "!" .. time
 end
 
+--- Only ever from a click (see the top of this file).
 local function Send(message, channel)
 	local send = C_ChatInfo and C_ChatInfo.SendChatMessage or SendChatMessage
 	return pcall(send, message, channel)
 end
 
---- Announce a level up to `level` where it is ticked. Returns how many went out.
-function Extras:AnnounceLevel(level)
+local function ChatLocked()
+	return C_ChatInfo and C_ChatInfo.InChatMessagingLockdown and Call(C_ChatInfo.InChatMessagingLockdown) == true
+end
+
+--- Where a level up to `level` can be told now, as ticked: { { label, channel, message } }.
+function Extras:LevelChoices(level)
 	local char = Char()
-	if not (char and level) then return 0 end
+	if not (char and level) then return {} end
 	local from = level - 1
 	local clock = char.lastlevelclock
 	local secs = clock and clock.level == from and clock.whole and clock.seconds or nil
 	local emote, group = Extras.LevelMessages(from, level, secs)
-	local sent = 0
-	if char.levelemote ~= false and Send(emote, "EMOTE") then sent = sent + 1 end
-	if char.levelparty and IsInGroup() and Send(group, IsInRaid() and "RAID" or "PARTY") then sent = sent + 1 end
-	if char.levelguild and IsInGuild() and Send(group, "GUILD") then sent = sent + 1 end
-	return sent
+	local out = {}
+	if char.levelemote ~= false then out[#out + 1] = { label = "Emote", channel = "EMOTE", message = emote } end
+	if char.levelparty and IsInGroup() then
+		out[#out + 1] = IsInRaid() and { label = "Raid", channel = "RAID", message = group }
+			or { label = "Party", channel = "PARTY", message = group }
+	end
+	if char.levelguild and IsInGuild() then out[#out + 1] = { label = "Guild", channel = "GUILD", message = group } end
+	return out, secs
+end
+
+--[[ The level-up card: "Level 23!", how long the last level took, and a button
+	for each place to tell. It goes by itself after a minute. ]]
+local CARD_SECONDS = 60
+local card
+
+local function BuildCard()
+	local Theme = AP.Theme
+	card = CreateFrame("Frame", "AegisPathfinderLevelUp", UIParent)
+	card:SetFrameStrata("DIALOG")
+	card:SetSize(300, 96)
+	card:SetPoint("TOP", UIParent, "TOP", 0, -150)
+	card:EnableMouse(true)
+	Theme:Panel(card, "panel")
+	local m = Theme.metrics
+	card.title = card:CreateFontString(nil, "OVERLAY")
+	Theme:SetFont(card.title, "display", 16)
+	Theme:TextColor(card.title, "accent")
+	card.title:SetPoint("TOP", card, "TOP", 0, -10 - m.top)
+	card.note = Theme:FinePrint(card, 300 - 24 - m.left - m.right)
+	card.note:SetJustifyH("CENTER")
+	card.note:SetPoint("TOP", card.title, "BOTTOM", 0, -4)
+	card.close = Theme:CloseChip(card, card)
+	card.close:SetPoint("TOPRIGHT", card, "TOPRIGHT", -4 - m.right, -4 - m.top)
+	card.buttons = {}
+	for index = 1, 3 do
+		local b = Theme:PanelButton(card, "", 84, 22)
+		b:SetScript("OnClick", function(self)
+			if ChatLocked() then
+				AP:Print("Chat is locked for addons right now (a boss fight or rated PvP): try again after it.")
+				return
+			end
+			Send(self.message, self.channel)
+			self:Disable()
+			self.sent = true
+			for _, other in ipairs(card.buttons) do
+				if other:IsShown() and not other.sent then return end
+			end
+			card:Hide()
+		end)
+		card.buttons[index] = b
+	end
+	tinsert(UISpecialFrames, "AegisPathfinderLevelUp")
+	card:Hide()
+end
+
+--- Offers to tell others about a level up to `level`. Returns how many buttons the card has.
+function Extras:OfferAnnouncement(level)
+	local choices, secs = self:LevelChoices(level)
+	if #choices == 0 then return 0 end
+	if not card then BuildCard() end
+	card.level = level
+	card.title:SetText("Level " .. level .. "!")
+	card.note:SetText((secs and ("Level " .. (level - 1) .. " took " .. Extras.Duration(secs) .. ". ") or "")
+		.. "Tell others?")
+	local width = #choices * 84 + (#choices - 1) * 8
+	for index, b in ipairs(card.buttons) do
+		local choice = choices[index]
+		b:ClearAllPoints()
+		if choice then
+			b:SetPoint("BOTTOMLEFT", card, "BOTTOM", -width / 2 + (index - 1) * 92, 12 + AP.Theme.metrics.bottom)
+			b:SetText(choice.label)
+			b.channel, b.message, b.sent = choice.channel, choice.message, nil
+			b:Enable()
+		end
+		b:SetShown(choice ~= nil)
+	end
+	card:Show()
+	C_Timer.After(CARD_SECONDS, function()
+		if card.level == level then card:Hide() end
+	end)
+	return #choices
 end
 
 AP:OnLogin(function()
 	AP:On("PLAYER_LEVEL_UP", function(_, level)
 		level = Readable(level)
 		-- After the collector has put the level's time aside.
-		C_Timer.After(0.5, function() Extras:AnnounceLevel(level) end)
+		C_Timer.After(0.5, function() Extras:OfferAnnouncement(level) end)
 	end)
 	AP:On("CHAT_MSG_COMBAT_FACTION_CHANGE", function(_, text)
 		local char = Char()

@@ -36,6 +36,16 @@
   Blizzard's popup system is touched.
 - Export format 2: the envelope above, with the collection's id and the
   contributor. The tools still read format 1.
+- **Quest automation is on by default**, as in the Turtle addon: quests are
+  accepted and turned in by themselves (hold Shift to skip one). Characters
+  that had it saved as off get it turned on once, with a chat line saying
+  where to turn it off.
+- **Selling greys uses the game's own Sell All Junk**, and the *Sell greys*
+  button shows only on a vendor without one. Errors in quest and vendor
+  automation are reported now, not swallowed.
+- **Fixed: "ADDON BLOCKED: UNKNOWN()" on level-up.** This client lets addons
+  post in chat only from a click, so the level-up announcement is now a card
+  with a button for each place ticked (Emote, Party, Guild).
 - **Fixed: data dropped from exports.** A table with gaps in its numbers (levels
   5 and 6, say) could be written as a short or empty list, losing what came
   after the gap. Such tables are now written whole.

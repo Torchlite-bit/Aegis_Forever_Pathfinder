@@ -102,13 +102,16 @@ the Submit window, on the *About* page and in
 
 ### Also working without guides
 
-- **Automation**: accept and hand in quests (all of them, since no guide says
-  which are "its"; never a grey quest and never a reward choice), pick quests
-  from an NPC's list, a *Sell greys* button, selling greys, repairing (your
-  money, or the guild's first). Hold Shift to suspend.
+- **Automation**: accept and hand in quests, on by default as in the Turtle
+  addon (all of them, since no guide says which are "its"; never a grey quest
+  and never a reward choice), pick quests from an NPC's list, selling greys
+  (with the game's own *Sell All Junk*, or a *Sell greys* button where the
+  vendor has none), repairing (your money, or the guild's first). Hold Shift
+  to suspend. These are per character: *Settings → Automation*.
 - **Extras**: detailed reputation gains ("Stormwind +25: Honored 4,350 /
   12,000, 7,650 to Revered"), and level-up announcements to emote, party or
-  guild.
+  guild: a card with a button for each, since the game lets addons post in
+  chat only when you click.
 - **Window settings**: lock, transparency, opacity, step text size, window
   scale, hiding in dungeons or combat.
 

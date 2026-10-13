@@ -74,6 +74,9 @@ def run(skin):
         lua.execute("WOWMOCK.InstallEncoding()")
     if skin.startswith("blizzard"):
         lua.execute('AegisPathfinderDB = { profile = { theme = "blizzard" } }')
+    else:
+        # A character 0.1.0 saved, with quest automation written as off.
+        lua.execute('AegisPathfinderCharDB = { autoquest = false }')
 
     before = set(lua.eval("function() local t = {} for k in pairs(_G) do t[#t + 1] = k end return t end")().values())
     # Each file runs with every global write passing through `written`, so an assignment

@@ -550,7 +550,39 @@ C_Container = {
 }
 Mock.sold = {}
 C_GossipInfo = { GetActiveQuests = function() return {} end, GetAvailableQuests = function() return {} end }
-C_ChatInfo = { SendChatMessage = function(message, channel) table.insert(Mock.sent, { message, channel }) end }
+-- Chat goes out only from a click: anything else is what the client reports as
+-- "ADDON BLOCKED". Mock.Click is the click (the hardware event).
+Mock.blocked = {}
+C_ChatInfo = {
+	SendChatMessage = function(message, channel)
+		if not Mock.hardware then
+			table.insert(Mock.blocked, { message, channel })
+			return
+		end
+		table.insert(Mock.sent, { message, channel })
+	end,
+	InChatMessagingLockdown = function() return Mock.chatLockdown == true end,
+}
+-- Blizzard's own "Sell All Junk" (Mainline MerchantFrame).
+C_MerchantFrame = {
+	GetNumJunkItems = function() return #Mock.Junk() end,
+	IsSellAllJunkEnabled = function() return Mock.sellAllJunk ~= false end,
+	SellAllJunkItems = function()
+		for _, item in ipairs(Mock.Junk()) do table.insert(Mock.sold, item) end
+	end,
+}
+function Mock.Junk()
+	local out = {}
+	for slot = 1, C_Container.GetContainerNumSlots(0) do
+		local info = C_Container.GetContainerItemInfo(0, slot)
+		if info and info.quality == 0 and not Mock.soldSlot(0, slot) then out[#out + 1] = { 0, slot } end
+	end
+	return out
+end
+function Mock.soldSlot(bag, slot)
+	for _, item in ipairs(Mock.sold) do if item[1] == bag and item[2] == slot then return true end end
+	return false
+end
 C_CurrencyInfo = { GetCoinTextureString = function(copper) return tostring(copper) .. "c" end }
 function CanMerchantRepair() return true end
 function GetRepairAllCost() return 250, true end
@@ -570,7 +602,10 @@ end
 
 function Mock.Click(frame, button)
 	assert(frame, "nothing to click")
-	frame:_Run("OnClick", button or "LeftButton")
+	Mock.hardware = true
+	local ok, err = pcall(frame._Run, frame, "OnClick", button or "LeftButton")
+	Mock.hardware = false
+	if not ok then error(err, 0) end
 end
 
 --- Every frame whose text is `text`, or a button whose label is.

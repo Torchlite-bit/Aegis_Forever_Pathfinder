@@ -10,12 +10,15 @@ local Call, Readable = Compat.Call, Compat.Readable
 	  * Quests: accept what an NPC offers, hand in what is done, and pick a
 	    quest out of an NPC's list. Never a grey quest, never a reward choice
 	    (that is the player's), never past two free places in the quest log.
-	  * A "Sell greys" button on the vendor window, and selling greys by
-	    themselves as it opens.
+	  * Selling greys by themselves as a vendor opens, with the game's own
+	    "Sell All Junk" where it has it; and a "Sell greys" button on the vendor
+	    window when the game has no button of its own.
 	  * Repairing as the vendor opens: with your own money, or the guild's first.
 
 	Holding Shift as a window opens does none of it. Everything waits a moment
 	after the window's event, so the data collector reads the quest frame first.
+	An error on the way is reported, not swallowed, so a step that fails in a
+	client shows why.
 ]]
 
 local Auto = {}
@@ -32,7 +35,9 @@ end
 
 local function Later(fn)
 	C_Timer.After(DELAY, function()
-		if not IsShiftKeyDown() then pcall(fn) end
+		if IsShiftKeyDown() then return end
+		local ok, err = pcall(fn)
+		if not ok then geterrorhandler()(err) end
 	end)
 end
 
@@ -127,21 +132,35 @@ function Auto.Greys()
 	return out
 end
 
+-- The game's own "Sell All Junk" (Mainline's merchant window), when it has one.
+local function GameSellsJunk()
+	return C_MerchantFrame and C_MerchantFrame.SellAllJunkItems and C_MerchantFrame.GetNumJunkItems and true or false
+end
+
 function Auto:SellGreys(quiet)
 	if not (MerchantFrame and MerchantFrame:IsVisible()) then return 0 end
-	local greys = Auto.Greys()
-	if #greys == 0 then
+	local count
+	if GameSellsJunk() then
+		count = Call(C_MerchantFrame.GetNumJunkItems) or 0
+	else
+		count = #Auto.Greys()
+	end
+	if count == 0 then
 		if not quiet then AP:Print("No grey items to sell.") end
 		return 0
 	end
 	local before = GetMoney()
-	for _, g in ipairs(greys) do C_Container.UseContainerItem(g[1], g[2]) end
+	if GameSellsJunk() then
+		C_MerchantFrame.SellAllJunkItems()
+	else
+		for _, g in ipairs(Auto.Greys()) do C_Container.UseContainerItem(g[1], g[2]) end
+	end
 	C_Timer.After(1, function()
 		local gained = GetMoney() - before
-		AP:Say(string.format("Sold %d grey item%s%s.", #greys, #greys == 1 and "" or "s",
+		AP:Say(string.format("Sold %d grey item%s%s.", count, count == 1 and "" or "s",
 			gained > 0 and (" for " .. Compat.MoneyText(gained)) or ""))
 	end)
-	return #greys
+	return count
 end
 
 function Auto:PlaceButton()
@@ -153,7 +172,10 @@ function Auto:PlaceButton()
 		b:SetScript("OnClick", function() Auto:SellGreys() end)
 		self.button = b
 	end
-	if b then b:SetShown(Char().sellbutton ~= false) end
+	-- Not beside the game's own Sell All Junk button.
+	local gameButton = C_MerchantFrame and C_MerchantFrame.IsSellAllJunkEnabled
+		and Call(C_MerchantFrame.IsSellAllJunkEnabled)
+	if b then b:SetShown(Char().sellbutton ~= false and not gameButton) end
 end
 
 --[[ Repairing ]]

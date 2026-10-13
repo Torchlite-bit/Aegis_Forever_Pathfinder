@@ -295,7 +295,7 @@ function Pages.Automation(k)
 		.. "a reward to choose from (the choice is yours), and two places are always left in your quest log.")
 	k.space(SECTION_GAP)
 	k.section("Inventory")
-	k.switch("char", "sellbutton", "\"Sell greys\" button on the vendor window", function()
+	k.switch("char", "sellbutton", "\"Sell greys\" button (where the vendor has no Sell All Junk)", function()
 		if AP.Automation then AP.Automation:PlaceButton() end
 	end, { defaultOn = true })
 	k.switch("char", "autosell", "Sell greys automatically")
@@ -320,7 +320,8 @@ function Pages.Extras(k)
 	k.boxes("Announce level-ups to:", { { "levelemote", "Emote" }, { "levelparty", "Party chat", true },
 		{ "levelguild", "Guild chat", true } })
 	k.note("\"Pathfinder: I just leveled up from 22 to 23! (2 hours 1 minute)\". The time is how long "
-		.. "you spent at the level, when the collector saw all of it. Nothing goes to a party or guild you are not in.")
+		.. "you spent at the level, when the collector saw all of it. A level-up shows a card with a "
+		.. "button for each: the game lets addons post in chat only when you click.")
 	k.space(SECTION_GAP)
 end
 

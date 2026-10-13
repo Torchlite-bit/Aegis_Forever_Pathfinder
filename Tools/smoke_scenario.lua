@@ -207,7 +207,20 @@ S.level, S.xp, S.xpMax = 6, 0, 4500
 Mock.Advance(1.5)
 equal(data.levels[6].xpMax.last, 4500, "the XP level 6 needs")
 check(data.levels[5].seconds and data.levels[5].seconds.last >= 600, "how long level 5 took, seen from its start")
-check(#Mock.sent >= 1 and Mock.sent[1][1]:find("leveled up from 5 to 6"), "the level-up emote")
+-- The game lets an addon post in chat only from a click: a card offers it instead.
+equal(#Mock.sent, 0, "nothing goes to chat by itself")
+equal(#Mock.blocked, 0, "and nothing is tried without a click")
+local levelCard = _G.AegisPathfinderLevelUp
+check(levelCard and levelCard:IsShown(), "a level-up shows the card")
+check(levelCard.title:GetText():find("Level 6", 1, true), "naming the level")
+Mock.chatLockdown = true
+Mock.Click(levelCard.buttons[1])
+equal(#Mock.sent, 0, "chat lockdown: the click sends nothing")
+Mock.chatLockdown = nil
+Mock.Click(levelCard.buttons[1])
+check(Mock.sent[1] and Mock.sent[1][1]:find("leveled up from 5 to 6") and Mock.sent[1][2] == "EMOTE",
+	"a click sends the emote")
+check(not levelCard:IsShown(), "and the card goes once all it offers is sent")
 
 ------------------------------------------------------------------------------------------
 -- The windows show it
@@ -367,7 +380,11 @@ end
 -- Automation
 ------------------------------------------------------------------------------------------
 
-AP.db.char.autoquest = true
+check(AP.db.char.autoquest, "quests are accepted and turned in by default, as in the Turtle addon")
+if skin == "pathfinder" then
+	-- This run starts from a character 0.1.0 saved with automation off: it is turned on once.
+	check(Chat("accepted and turned in by themselves"), "and an old character is told it was turned on")
+end
 S.frame = { questID = 500, title = "Auto", text = "", objective = "" }
 Mock.Fire("QUEST_DETAIL", 0)
 QuestFrame:Show()
@@ -387,9 +404,18 @@ AP.db.char.autoquest = false
 AP.db.char.autosell, AP.db.char.autorepair = true, "own"
 MerchantFrame:Show()
 Mock.Fire("MERCHANT_SHOW")
-equal(#Mock.sold, 1, "greys are sold")
+equal(#Mock.sold, 1, "greys are sold, with the game's own Sell All Junk")
 equal(Mock.repaired, "own", "and gear repaired")
-check(AP.Automation.button, "the Sell greys button is on the vendor window")
+check(AP.Automation.button and not AP.Automation.button:IsShown(), "no Sell greys button beside the game's own")
+-- A client without Sell All Junk: one item at a time, and the button.
+local gameJunk = C_MerchantFrame
+C_MerchantFrame, Mock.sold = nil, {}
+MerchantFrame:Hide()
+MerchantFrame:Show()
+Mock.Fire("MERCHANT_SHOW")
+equal(#Mock.sold, 1, "greys are sold one by one without it")
+check(AP.Automation.button:IsShown(), "and the Sell greys button is there")
+C_MerchantFrame = gameJunk
 
 ------------------------------------------------------------------------------------------
 -- A guide, through the registration API
@@ -442,6 +468,8 @@ check(confirm():IsShown(), "Clear data asks first")
 Mock.Click(confirm().yes)
 equal(next(AP.Collector:GetData().quests), nil, "Clear data forgets the quests")
 Mock.export = exportText
+
+equal(#Mock.blocked, 0, "nothing the client would block was tried")
 
 -- Nothing of Blizzard's popup system was touched: writing into it taints Escape.
 equal(next(StaticPopupDialogs), nil, "StaticPopupDialogs is left alone")
