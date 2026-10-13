@@ -1,0 +1,9 @@
+# GitHub's "Download ZIP" (and any release made with git archive) gives players
+# the addon alone. The tools, docs, workflows and the data players sent stay in
+# the repository; developers clone it.
+/.github export-ignore
+/Tools export-ignore
+/docs export-ignore
+/data export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore

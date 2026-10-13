@@ -14,3 +14,4 @@ jobs:
           python-version: "3.12"
       - run: pip install lupa
       - run: python Tools/smoke_test.py
+      - run: python Tools/test_ingest.py

@@ -17,7 +17,10 @@ import sys
 HEADER = "AEGIS PATHFINDER FOREVER DATA"
 RANGE_KEYS = {"min", "max", "count", "last"}
 # Tables whose values are counts that add up: "who saw it", "how often", map cells.
-COUNT_TABLES = {"by", "seen", "observers", "objective", "turnin", "available"}
+COUNT_TABLES = {"by", "seen", "observers", "objective", "turnin", "available", "counts"}
+# Tables of such tables: progress keeps map cells per objective, and chosen keeps
+# item counts per class. Their entries merge as "counts".
+COUNT_PARENTS = {"progress", "chosen"}
 
 
 def is_range(value):
@@ -78,7 +81,7 @@ def merge(a, b, key=None):
                         and not isinstance(v, bool):
                     out[k] = out[k] + v
                 else:
-                    out[k] = merge(out[k], v, k)
+                    out[k] = merge(out[k], v, "counts" if key in COUNT_PARENTS else k)
             else:
                 out[k] = v
         return out

@@ -21,7 +21,7 @@ Collector\Collector.lua
 Collector\Export.lua
 
 # Who sent their data in, for the Submit window and About: written by Tools/ingest.py.
-Data\Contributors.lua
+Contributors.lua
 
 # The windows. The guide window is built first: the others open beside it.
 UI\ObjectivesFrame.lua
