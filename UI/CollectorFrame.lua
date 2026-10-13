@@ -276,9 +276,8 @@ local function BuildSubmit()
 	fileText:SetText(L.SUBMIT_FILE_TEXT)
 	local save = Theme:PanelButton(right, L.SUBMIT_SAVE, 170, 24)
 	save:SetPoint("TOPLEFT", fileText, "BOTTOMLEFT", 0, -8)
-	-- Reloads through the secure button over it (Theme:OfferReload); a click that reaches it missed that.
-	save:SetScript("OnClick", function(self) Theme:ReloadFallback(self) end)
-	Theme:OfferReload(save)
+	-- Only the game's own code can reload: this asks through the Reload dialog (Theme:AskReload).
+	save:SetScript("OnClick", function() Theme:AskReload(L.SUBMIT_SAVE_RELOAD) end)
 
 	local thanksHead = Theme:SectionHeader(right, L.CONTRIBUTORS, RIGHT_W)
 	thanksHead:SetPoint("TOPLEFT", save, "BOTTOMLEFT", 0, -16)

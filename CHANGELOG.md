@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.1 — Reload that reloads
+
+- **Fixed: Reload did nothing.** Switching skins, the guide menu's Reload and
+  *Save it now* only said to type /reload. Only the game's own code may reload,
+  and 0.2.0 laid an invisible secure /reload button over our own buttons: this
+  client gave our button the mouse even with the secure one shown on top of it.
+  Every Reload now asks through one small dialog whose Reload button *is* the
+  secure button. In combat that dialog can't be shown: Reload says to type
+  /reload, and the dialog opens when the fight is over.
+- The Reload check and `/apg reloaddebug` from 0.2.0 are gone with the overlay.
+
+---
+
 ## 0.2.0 — sending it in
 
 - **New: Submit data.** Replaces Export. It packs everything collected into a

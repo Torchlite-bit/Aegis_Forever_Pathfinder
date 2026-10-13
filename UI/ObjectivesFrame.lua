@@ -72,8 +72,8 @@ local GUIDE_MENU = {
 		run = function(on) AP:SetGuideTransparent(on) end },
 	"-",
 	{ label = "Reset window", glyph = "reset", run = function() AP:ResetWindowLayout() end },
-	-- Reloads through the secure button over it (Theme:OfferReload); see the row's OnClick.
-	{ label = "Reload", glyph = "reload", reload = true },
+	-- Only the game's own code can reload: this asks through the Reload dialog (Theme:AskReload).
+	{ label = "Reload", glyph = "reload", run = function() Theme:AskReload() end },
 	"-",
 	{ label = "Settings", glyph = "gear", run = function() AP:ToggleConfigPanel() end },
 }
@@ -153,16 +153,11 @@ local function MenuRow(menu, item, y)
 	Theme:TextColor(fs, "text")
 	row.item, row.label = item, fs
 	if item.key then MenuBox(row) end
-	if item.reload then Theme:OfferReload(row) end
 	row:SetScript("OnClick", function(self)
 		local it = self.item
 		if it.key then
 			it.run(not self.on)
 			self:SetChecked(Profile()[it.key])
-		elseif it.reload then
-			-- Reached only when the secure button over it wasn't there: reported before the menu goes.
-			Theme:ReloadFallback(self)
-			ui.menu:Hide()
 		else
 			ui.menu:Hide()
 			it.run()

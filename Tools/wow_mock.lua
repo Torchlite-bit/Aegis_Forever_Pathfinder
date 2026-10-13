@@ -54,9 +54,18 @@ function Region:GetName() return self._name end
 function Region:GetParent() return self._parent end
 function Region:SetParent(parent) self._parent = parent end
 function Region:GetChildren() return unpack(rawget(self, "_children") or {}) end
--- A secure frame can't be shown or hidden by an addon in combat: the client blocks it.
+-- A secure frame, and any frame holding one, can't be shown, hidden, moved or scaled by an
+-- addon in combat: the client blocks it.
+local function IsProtected(self)
+	if rawget(self, "_secure") then return true end
+	for _, child in ipairs(rawget(self, "_children") or {}) do
+		if IsProtected(child) then return true end
+	end
+	return false
+end
+Mock.IsProtected = IsProtected
 local function Protected(self, action)
-	if rawget(self, "_secure") and Mock.inCombat then
+	if Mock.inCombat and IsProtected(self) then
 		table.insert(Mock.blocked, { action, rawget(self, "_name") })
 		return true
 	end
@@ -102,8 +111,14 @@ function Region:IsVisible()
 	if parent and parent ~= UIParent and parent.IsVisible then return parent:IsVisible() end
 	return true
 end
-function Region:SetPoint(...) self._points[#self._points + 1] = { ... } end
-function Region:ClearAllPoints() self._points = {} end
+function Region:SetPoint(...)
+	if Protected(self, "SetPoint") then return end
+	self._points[#self._points + 1] = { ... }
+end
+function Region:ClearAllPoints()
+	if Protected(self, "ClearAllPoints") then return end
+	self._points = {}
+end
 function Region:GetNumPoints() return #self._points end
 function Region:GetPoint(index)
 	local p = self._points[index or 1]
@@ -134,7 +149,10 @@ function Region:GetTop() return 700 end
 function Region:GetBottom() return 700 - self._height end
 function Region:GetCenter() return 600, 600 end
 function Region:GetEffectiveScale() return 1 end
-function Region:SetScale(scale) self._scale = scale end
+function Region:SetScale(scale)
+	if Protected(self, "SetScale") then return end
+	self._scale = scale
+end
 function Region:GetScale() return self._scale end
 function Region:SetAlpha(alpha) self._alpha = alpha end
 function Region:GetAlpha() return self._alpha end
@@ -325,7 +343,7 @@ for index, label in ipairs({ "Hated", "Hostile", "Unfriendly", "Neutral", "Frien
 end
 NUM_BAG_SLOTS = 4
 
-C_AddOns = { GetAddOnMetadata = function(_, key) if key == "Version" then return "0.2.0" end end }
+C_AddOns = { GetAddOnMetadata = function(_, key) if key == "Version" then return "0.2.1" end end }
 C_Timer = {
 	After = function(seconds, fn) table.insert(Mock.timers, { at = Mock.now + seconds, fn = fn }) end,
 }
