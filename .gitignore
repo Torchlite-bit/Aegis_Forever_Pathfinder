@@ -44,3 +44,6 @@ luac.out
 __pycache__/
 *.pyc
 .DS_Store
+
+# Built releases (Tools/package.py)
+dist/
