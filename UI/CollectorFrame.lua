@@ -112,7 +112,9 @@ local function FillSubmit(f)
 	f.scroll:SetVerticalScroll(0)
 
 	local canCode = Export.CanEncode()
-	f.codeHead.label:SetText(code and L.SUBMIT_CODE or L.SUBMIT_TEXT)
+	local head = code and L.SUBMIT_CODE or L.SUBMIT_TEXT
+	-- As Theme:SectionHeader sets every other heading: upper case in the Pathfinder skin.
+	f.codeHead.label:SetText(Theme:IsBlizzard() and head or head:upper())
 	f.intro:SetText(canCode and L.SUBMIT_INTRO or L.SUBMIT_INTRO_TEXT)
 	f.as:SetShown(canCode)
 	f.as:SetText(f.asText and L.SUBMIT_AS_CODE or L.SUBMIT_AS_TEXT)

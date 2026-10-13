@@ -29,23 +29,25 @@ permissions:
   pull-requests: write
   issues: write
 
-# Edits to one issue wait their turn. Different issues run side by side and
-# take turns at the branch through the retry below, so no submission is
-# dropped (a single shared group keeps only one waiting run and cancels the rest).
-concurrency:
-  group: data-ingest-${{ github.event.issue.number || inputs.issue }}
-  cancel-in-progress: false
-
 jobs:
   ingest:
     # Data submissions: the form's label, or the form's own heading (so the very
     # first submission is read even before the label exists). A label added later
-    # starts a run only when it is the data-submission label itself.
+    # starts a run only when it is the data-submission label itself, and an edit
+    # only when it changed the text (not just the title).
     if: >-
       github.event_name == 'workflow_dispatch' ||
       ((github.event.action != 'labeled' || github.event.label.name == 'data-submission') &&
+       (github.event.action != 'edited' || github.event.changes.body) &&
        (contains(github.event.issue.labels.*.name, 'data-submission') ||
         contains(github.event.issue.body, '### Share code or data file')))
+    # Edits to one issue wait their turn. Different issues run side by side and
+    # take turns at the branch through the retry below (one shared group would keep
+    # only one waiting run and cancel the rest). Set on the job, so a run skipped
+    # by the if: above never joins the queue.
+    concurrency:
+      group: data-ingest-${{ github.event.issue.number || inputs.issue }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -98,7 +100,8 @@ jobs:
 
       # Read the submission onto the data-submissions branch, check it, push it.
       # Runs for other issues may push in between: then it all starts again from
-      # the branch as it is now, up to five times.
+      # the branch as it is now, up to twelve times, after a random wait so runs
+      # that collided don't collide again.
       - name: Read the submission, store it and push it
         id: ingest
         env:
@@ -111,8 +114,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           outputs="$RUNNER_TEMP/ingest-outputs.txt"
-          status=1 changed=0 credit="" saved=none
-          for attempt in 1 2 3 4 5; do
+          status=1 changed=0 attention=0 saved=none
+          for attempt in $(seq 1 12); do
             echo "::group::Attempt $attempt"
             rm -rf "$WORK"
             git worktree prune
@@ -139,7 +142,7 @@ jobs:
             status=0
             REPO_ROOT="$WORK" GITHUB_OUTPUT="$outputs" python Tools/ingest_issue.py || status=$?
             changed=$(sed -n 's/^changed=//p' "$outputs" | tail -n 1)
-            credit=$(sed -n 's/^credit=//p' "$outputs" | tail -n 1)
+            attention=$(sed -n 's/^attention=//p' "$outputs" | tail -n 1)
             if [ "$status" != 0 ] || [ "${changed:-0}" = 0 ]; then
               echo "::endgroup::"
               break
@@ -160,8 +163,10 @@ jobs:
 
             git -C "$WORK" add -A data Contributors.lua CONTRIBUTORS.md
             if ! git -C "$WORK" diff --cached --quiet; then
+              # No player text in the message: a credit name such as "fixes #1" would
+              # close issues once this reaches the default branch. The name is in the data.
               {
-                printf 'Data from #%s by %s\n' "$ISSUE_NUMBER" "${credit:-${ISSUE_USER:-a player}}"
+                printf 'Data from #%s\n' "$ISSUE_NUMBER"
                 if [ -n "$ISSUE_USER" ] && [ -n "$ISSUE_USER_ID" ]; then
                   printf '\nCo-authored-by: %s <%s+%s@users.noreply.github.com>\n' "$ISSUE_USER" "$ISSUE_USER_ID" "$ISSUE_USER"
                 fi
@@ -177,11 +182,12 @@ jobs:
             if [ "$pushed" = 0 ]; then saved=success; break; fi
             saved=failure
             echo "The branch moved while this ran; starting again."
-            sleep $((attempt * 3))
+            sleep $((RANDOM % 8 + attempt * 2))
           done
           {
             echo "status=$status"
             echo "changed=${changed:-0}"
+            echo "attention=${attention:-0}"
             echo "saved=$saved"
           } >> "$GITHUB_OUTPUT"
 
@@ -190,8 +196,13 @@ jobs:
         env:
           SUMMARY_PATH: ${{ runner.temp }}/summary.md
         run: |
+          # This repository's own pull request only (a fork's branch can have the same
+          # name). A lookup that fails counts as "none", so the create is still tried.
           has_pr() {
-            [ "$(gh pr list --head "$DATA_BRANCH" --base "$DEFAULT_BRANCH" --state open --json number --jq 'length')" != 0 ]
+            local open
+            open=$(gh pr list --head "$DATA_BRANCH" --base "$DEFAULT_BRANCH" --state open \
+              --json isCrossRepository --jq 'map(select(.isCrossRepository | not)) | length') || return 1
+            [ -n "$open" ] && [ "$open" != 0 ]
           }
           if has_pr; then
             echo "The pull request is already open: this push added to it."
@@ -224,21 +235,30 @@ jobs:
             printf '\n---\n%s %s)\n' "$reason" "$compare" >> "$SUMMARY_PATH"
           fi
 
+      # Every run that read the issue answers it, even when a step before this one
+      # failed, was cancelled or timed out (that counts as our own error).
       - name: Answer on the issue
-        if: always() && steps.ingest.outcome == 'success'
+        if: always() && steps.issue.outcome == 'success'
         env:
           SUMMARY_PATH: ${{ runner.temp }}/summary.md
-          STATUS: ${{ steps.ingest.outputs.status }}
-          CHANGED: ${{ steps.ingest.outputs.changed }}
-          SAVED: ${{ steps.ingest.outputs.saved }}
+          STATUS: ${{ steps.ingest.outputs.status || '1' }}
+          CHANGED: ${{ steps.ingest.outputs.changed || '0' }}
+          ATTENTION: ${{ steps.ingest.outputs.attention || '0' }}
+          SAVED: ${{ steps.ingest.outputs.saved || 'none' }}
         run: |
-          labels=$(gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name')
+          labels=$(gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' || true)
           has_label() { printf '%s\n' "$labels" | grep -qx "$1"; }
           # Opening an issue with a label sends two events (opened, labeled): the
           # second run finds it answered already and stays quiet. An edit is
           # always answered.
           answered() { has_label "$1" && [ "$EVENT_ACTION" != edited ]; }
-          reply() { gh issue comment "$ISSUE_NUMBER" --body-file "$1"; }
+          reply() { gh issue comment "$ISSUE_NUMBER" --body-file "$1" || echo "Could not comment on #$ISSUE_NUMBER."; }
+          # Needs a person: labelled, reopened if it was closed, never left marked as ingested.
+          needs_attention() {
+            gh issue edit "$ISSUE_NUMBER" --add-label needs-attention || true
+            if has_label ingested; then gh issue edit "$ISSUE_NUMBER" --remove-label ingested || true; fi
+            gh issue reopen "$ISSUE_NUMBER" > /dev/null 2>&1 || true
+          }
 
           if [ "$STATUS" = 0 ] && [ "$CHANGED" != 0 ] && [ "$SAVED" != success ]; then
             cat > "$RUNNER_TEMP/not-saved.md" << 'EOF'
@@ -246,19 +266,25 @@ jobs:
           A maintainer will look at it; there's nothing more you need to do.
           EOF
             answered needs-attention || reply "$RUNNER_TEMP/not-saved.md"
-            gh issue edit "$ISSUE_NUMBER" --add-label needs-attention || true
+            needs_attention
           elif [ "$STATUS" = 0 ]; then
             if [ "$CHANGED" = 0 ] && has_label ingested && [ "$EVENT_ACTION" != edited ]; then
               echo "Answered already, and nothing new came in."
             else
               reply "$SUMMARY_PATH"
             fi
-            gh issue edit "$ISSUE_NUMBER" --add-label ingested || true
-            if has_label needs-attention; then gh issue edit "$ISSUE_NUMBER" --remove-label needs-attention || true; fi
-            gh issue close "$ISSUE_NUMBER" --reason completed || true
+            if [ "$ATTENTION" = 1 ]; then
+              # Some of it was taken in, and some (another account's collection) needs a person.
+              gh issue edit "$ISSUE_NUMBER" --add-label needs-attention || true
+              gh issue reopen "$ISSUE_NUMBER" > /dev/null 2>&1 || true
+            else
+              gh issue edit "$ISSUE_NUMBER" --add-label ingested || true
+              if has_label needs-attention; then gh issue edit "$ISSUE_NUMBER" --remove-label needs-attention || true; fi
+              gh issue close "$ISSUE_NUMBER" --reason completed || true
+            fi
           else
             # 2: nothing usable (the summary says how to fix it); 1: our own error.
-            [ -s "$SUMMARY_PATH" ] || echo "Something went wrong on our side. A maintainer will look at it." > "$SUMMARY_PATH"
+            [ -s "$SUMMARY_PATH" ] || echo "Something went wrong on our side. A maintainer will look at it; there's nothing more you need to do." > "$SUMMARY_PATH"
             answered needs-attention || reply "$SUMMARY_PATH"
-            gh issue edit "$ISSUE_NUMBER" --add-label needs-attention || true
+            needs_attention
           fi

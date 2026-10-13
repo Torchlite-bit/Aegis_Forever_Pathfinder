@@ -36,6 +36,9 @@
   Blizzard's popup system is touched.
 - Export format 2: the envelope above, with the collection's id and the
   contributor. The tools still read format 1.
+- **Fixed: data dropped from exports.** A table with gaps in its numbers (levels
+  5 and 6, say) could be written as a short or empty list, losing what came
+  after the gap. Such tables are now written whole.
 
 ## 0.1.0 — the Forever port
 

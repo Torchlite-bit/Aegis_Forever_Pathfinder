@@ -17,15 +17,15 @@ contributors.json                  who sent what: name, GitHub login,
 
 - **One file per collection.** The addon gives each collection a random id and
   keeps it until the player clears their data. Players send the same growing
-  collection again and again, so a newer copy *replaces* the file and nothing is
-  counted twice.
+  collection again and again, so a newer copy (one that holds more) *replaces*
+  the file and nothing is counted twice.
 - **Cleaned.** Only the fields [docs/data-schema.md](../docs/data-schema.md)
   lists are kept, with the right types and sensible sizes. The data names no
   character: players are race, class and faction. The one name kept is the
   contributor's chosen credit name.
 - **merged.json** follows `Tools/merge_exports.py`'s rules: counts add up,
   ranges keep the lowest and highest, positions average, text keeps the first
-  seen (collections are merged oldest first).
+  sent (collections are merged in the order they first arrived).
 - The same submissions always give the same `merged.json` and
   `contributors.json`, so a diff shows only what changed.
 

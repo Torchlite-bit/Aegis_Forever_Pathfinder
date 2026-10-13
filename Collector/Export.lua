@@ -49,13 +49,16 @@ local function EncodeString(s)
 	end) .. '"'
 end
 
+-- An array only when its keys are exactly 1..n. Not `#t`: in Lua 5.1 a table
+-- with gaps can report any border, and ipairs would then drop what follows a gap.
 local function IsArray(t)
-	local count = 0
+	local count, largest = 0, 0
 	for key in pairs(t) do
 		if type(key) ~= "number" or key < 1 or key % 1 ~= 0 then return false end
 		count = count + 1
+		if key > largest then largest = key end
 	end
-	return count == #t
+	return count == largest
 end
 
 local function SortKeys(a, b)

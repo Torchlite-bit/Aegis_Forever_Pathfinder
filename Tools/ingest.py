@@ -39,6 +39,7 @@ Tools/ingest_issue.py, which uses this file.
 import argparse
 import base64
 import binascii
+import bisect
 import datetime
 import glob
 import hashlib
@@ -68,7 +69,7 @@ HEADER = merge_exports.HEADER  # "AEGIS PATHFINDER FOREVER DATA"
 
 # Limits on what is read.
 MAX_INPUT = 25 * 1024 * 1024        # a pasted text, a file or a download
-MAX_UNPACKED = 50 * 1024 * 1024     # what a zip, gzip or share code unpacks to, in all
+MAX_UNPACKED = 50 * 1024 * 1024     # what each zip, gzip or share code unpacks to
 MAX_ZIP_MEMBERS = 20
 # Limits on what is kept.
 MAX_NAME = 40
@@ -76,7 +77,7 @@ MAX_TEXT = 2000
 MAX_QUESTS = 20000
 MAX_LEVELS = 100
 MAX_CELLS = 40                      # the collector's own limit per list of map cells
-COUNT_MAX = 10 ** 9
+COUNT_MAX = 10 ** 6                 # more than one player's addon could count; keeps one copy from swamping a merge
 ID_MAX = 2 ** 31 - 1
 MONEY_MAX = 10 ** 12                # copper
 XP_MAX = 10 ** 9
@@ -338,11 +339,32 @@ def _utc_seconds(value):
 # SavedVariables files -------------------------------------------------------------------
 
 _SV_START = re.compile(r"^[ \t]*AegisPathfinderDB[ \t]*=", re.M)
-_FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})[^\n]*\n(.*?)^[ \t]*\1[ \t]*$", re.M | re.S)
+_FENCE_OPEN = re.compile(r"[ \t]*(`{3,}|~{3,})")
+_FENCE_ONLY = re.compile(r"`{3,}|~{3,}")
 
 
 def _fenced_blocks(text):
-    return [match.group(2) for match in _FENCE.finditer(text)]
+    """The text inside ``` (or ~~~) fences: from an opening line to the next line
+    that is the same fence alone. Found line by line, so text with many fences
+    that never close takes no longer than any other (a regex took quadratic time)."""
+    lines = text.split("\n")
+    closers = {}
+    for number, line in enumerate(lines):
+        bare = line.strip(" \t")
+        if _FENCE_ONLY.fullmatch(bare):
+            closers.setdefault(bare, []).append(number)
+    blocks, index = [], 0
+    while index < len(lines):
+        opening = _FENCE_OPEN.match(lines[index])
+        if opening:
+            ends = closers.get(opening.group(1), [])
+            at = bisect.bisect_right(ends, index)
+            if at < len(ends):
+                blocks.append("\n".join(lines[index + 1:ends[at]]))
+                index = ends[at] + 1
+                continue
+        index += 1
+    return blocks
 
 
 def _saved_variables(text, filename):
@@ -659,7 +681,8 @@ def _place(value):
     extremes and how many positions went into it."""
     if not isinstance(value, dict):
         return None
-    out = {"kind": value.get("kind") if value.get("kind") in PLACE_KINDS else "unknown",
+    kind = value.get("kind")
+    out = {"kind": kind if isinstance(kind, str) and kind in PLACE_KINDS else "unknown",
            "count": _integer(value.get("count"), 1, COUNT_MAX) or 1}
     _put(out, "id", _integer(value.get("id"), 0, ID_MAX))
     _put(out, "name", _text(value.get("name"), 200))
@@ -926,11 +949,50 @@ def _source(source):
     return {
         "kind": _text(source.get("kind"), 40) or "file",
         "via": _text(source.get("via"), 40),
-        "issue": _integer(source.get("issue"), 1, COUNT_MAX),
+        "issue": _integer(source.get("issue"), 1, ID_MAX),
         "github_login": clean_login(source.get("github_login")),
+        # The account's number: a login can be renamed and then taken by someone else.
+        "github_id": _integer(source.get("github_id"), 1, 10 ** 15),
         "received": received,
         "first_received": _iso(source.get("first_received")) or received,
     }
+
+
+def _seconds(iso):
+    return int(datetime.datetime.strptime(iso, "%Y-%m-%dT%H:%M:%SZ")
+               .replace(tzinfo=datetime.timezone.utc).timestamp())
+
+
+def _same_owner(old, new):
+    """Whether a copy sent by `new` may replace one sent by `old` (both sources).
+
+    A copy sent without a GitHub account (the maintainers' command line) may
+    replace anything. One sent from GitHub replaces only what the same account
+    sent: not another account's, and not one a maintainer added from a file,
+    since collection ids are public and anyone could send one."""
+    if not (new.get("github_id") or new.get("github_login")):
+        return True
+    if old.get("github_id") and new.get("github_id"):
+        return old["github_id"] == new["github_id"]
+    if old.get("github_login") and new.get("github_login"):
+        return old["github_login"].lower() == new["github_login"].lower()
+    return False
+
+
+def _amount(data):
+    """How much a collection holds. The addon only ever adds to a collection (Clear
+    starts a new one, with a new id), so of two copies the bigger is the newer, even
+    when one is a data file, which has no export time of its own."""
+    total = len(data.get("quests") or {}) + len(data.get("levels") or {})
+    for quest in (data.get("quests") or {}).values():
+        total += sum((quest.get("seen") or {}).values())
+        for places in ("pickups", "turnins"):
+            total += sum(place.get("count", 0) for place in (quest.get(places) or {}).values())
+        for cells in list((quest.get("progress") or {}).values()) + list((quest.get("poi") or {}).values()):
+            total += sum(cells.values())
+    for level in (data.get("levels") or {}).values():
+        total += sum((level.get(key) or {}).get("count", 0) for key in ("xpMax", "seconds"))
+    return total
 
 
 def _read_json(path):
@@ -951,14 +1013,17 @@ def _json_text(value):
     return json.dumps(value, indent=1, sort_keys=True, ensure_ascii=False) + "\n"
 
 
-def store(envelope, repo_root, source=None):
+def store(envelope, repo_root, source=None, fallback_name=None):
     """Saves one collection as data/submissions/<collection id>.json, cleaned,
-    with where it came from (`source`: kind, issue, github_login, received).
+    with where it came from (`source`: kind, via, issue, github_login,
+    github_id, received).
 
     Players send the same growing collection again and again, so a collection
-    already stored is replaced only by a newer copy (a later exportedAt; on a
-    tie, the one received later). A copy first sent from one GitHub account is
-    not replaced from another. Returns a Stored saying what happened."""
+    already stored is replaced only by a newer copy: one that holds more (see
+    _amount), then a later exportedAt, then the one received later. A copy sent
+    from GitHub replaces only what the same account sent (_same_owner). The
+    contributor is the name sent, else the stored copy's, else `fallback_name`.
+    Returns a Stored saying what happened."""
     clean = sanitize(envelope)
     if not has_data(clean):
         raise IngestError("the data is empty: no quests or levels yet. Play a while with collecting on, "
@@ -969,14 +1034,17 @@ def store(envelope, repo_root, source=None):
         data["id"] = hashlib.sha256(_canonical(data).encode("utf-8")).hexdigest()
     collection_id = data["id"]
     source = _source(source)
+    # The sender's clock decides nothing beyond a day past when it arrived: a copy
+    # dated 2099 must not win against every real copy that comes after it.
+    if clean["exportedAt"]:
+        clean["exportedAt"] = min(clean["exportedAt"], _seconds(source["received"]) + 86400)
     path = os.path.join(repo_root, SUBMISSIONS, collection_id + ".json")
     result = Stored(collection_id, "new", path, len(data.get("quests") or {}), len(data.get("levels") or {}))
 
     if os.path.exists(path):
         old = _read_json(path)
-        old_source = old.get("source") or {}
-        old_login, new_login = old_source.get("github_login"), source["github_login"]
-        if old_login and new_login and old_login.lower() != new_login.lower():
+        old_source = _source(old.get("source"))
+        if not _same_owner(old_source, source):
             result.status = "taken"
             return result
         same = old.get("data") == data and old.get("exportedAt") == clean["exportedAt"] \
@@ -985,19 +1053,21 @@ def store(envelope, repo_root, source=None):
             result.status = "unchanged"
             result.contributor = old.get("contributor")
             return result
-        newer = (clean["exportedAt"] or 0, source["received"]) > \
-            (old.get("exportedAt") or 0, old_source.get("received") or "")
+        newer = (_amount(data), clean["exportedAt"] or 0, source["received"]) > \
+            (_amount(sanitize(old)["data"]), old.get("exportedAt") or 0, old_source["received"])
         if not newer:
             result.status = "older"
             result.contributor = old.get("contributor")
             return result
         result.status = "replaced"
-        source["first_received"] = old_source.get("first_received") or old_source.get("received") \
-            or source["first_received"]
+        source["first_received"] = old_source["first_received"]
         # A copy sent without a name keeps the name the last one had.
         clean["contributor"] = clean["contributor"] or clean_name(old.get("contributor"))
-        source["github_login"] = new_login or clean_login(old_login)
+        # Sent from the command line: the collection stays with the account that sent it.
+        if not (source["github_id"] or source["github_login"]):
+            source["github_login"], source["github_id"] = old_source["github_login"], old_source["github_id"]
 
+    clean["contributor"] = clean["contributor"] or clean_name(fallback_name)
     result.contributor = clean["contributor"]
     _write(path, _json_text(dict(clean, source=source)))
     return result
@@ -1028,9 +1098,10 @@ def rebuild(repo_root):
     submission. The same submissions always give the same files."""
     records = load_submissions(repo_root)
 
-    # Merged oldest collection first, so the text kept for a quest is the first seen.
+    # Merged in the order the collections first arrived (not by their own "created",
+    # which the sender chooses), so the text kept for a quest is the first sent.
     merged, sources = None, []
-    for record in sorted(records, key=lambda record: (record["data"].get("created") or 0, record["data"]["id"])):
+    for record in sorted(records, key=lambda record: (record["source"]["first_received"], record["data"]["id"])):
         data = dict(record["data"])
         collection_id = data.pop("id")
         merged = merge_exports.merge(merged, data)

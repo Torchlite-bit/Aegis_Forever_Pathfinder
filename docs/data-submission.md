@@ -63,25 +63,30 @@ issue form ──► Ingest submitted data (Action) ──► data-submissions b
    issue and downloads the files attached to it, then reads, cleans and stores
    each collection with `Tools/ingest.py`:
    - `data/submissions/<collection id>.json`: one file per collection. A newer
-     copy (later `exportedAt`; on a tie, received later) replaces the file; an
-     older or identical one changes nothing.
+     copy replaces the file; an older or identical one changes nothing. Newer
+     means it holds more (the addon only ever adds to a collection), then a
+     later `exportedAt` (never more than a day past when it arrived), then
+     received later.
    - made again from every submission: `data/merged.json`,
      `data/contributors.json`, `Contributors.lua` (the names the addon
      shows) and the list in `CONTRIBUTORS.md`.
 3. The Action runs `Tools/smoke_test.py` on the default branch's addon with
    the new contributors list in it, to prove it still loads, then commits to
-   the `data-submissions` branch as `Data from #<issue> by <name>`, with the
-   player as co-author.
+   the `data-submissions` branch as `Data from #<issue>`, with the player as
+   co-author. (No player text goes into commit messages: a credit name such as
+   "fixes #1" would close issues once the commit reached the default branch.)
 4. It opens a pull request from `data-submissions` (*Collected data from
    players*), or adds to the open one.
 5. It answers on the issue, labels it `ingested` and closes it. When nothing
-   usable was found, it answers with help, labels it `needs-attention` and
-   leaves it open.
+   usable was found, or something needs a person (a collection it may not
+   replace, or a step that failed), it answers, labels it `needs-attention`
+   and leaves it open (reopening it if it was closed).
 
 The `data-submissions` branch is kept current: each run first merges the
 default branch into it. Runs for different issues go side by side: if another
-run pushed first, a run starts again from the branch as it is now (up to five
-times), so no submission is dropped. Runs for the same issue wait their turn.
+run pushed first, a run starts again from the branch as it is now, after a
+random wait, up to twelve times. Runs for the same issue wait their turn. A run
+that still can't push says so on the issue and labels it `needs-attention`.
 
 ## For maintainers
 
@@ -121,19 +126,35 @@ It reads share codes, exports (format 1 and 2), SavedVariables files (renamed,
 zipped or gzipped), stores each collection the same way the Action does, and
 makes the generated files again. `--credit` names the contributor (otherwise:
 the name set in game, else "Anonymous", which is counted but not listed).
-Then commit `data/`, `Contributors.lua` and `CONTRIBUTORS.md`.
+
+**Do this on the `data-submissions` branch**, and push it there: the open pull
+request picks it up. All data comes in through that one branch. If `main` and
+the branch both changed the same submission file, the Action's merge would
+have to pick between two copies line by line.
+
+```sh
+git switch data-submissions && git pull
+python Tools/ingest.py Aegis_Forever_Pathfinder.lua --credit "Their Name"
+git add data Contributors.lua CONTRIBUTORS.md && git commit -m "Data from Discord" && git push
+```
+
+A collection added this way belongs to the maintainers: a GitHub issue can't
+replace it later (collection ids are public). If the same player sends it from
+GitHub later, delete the file, read the issue again (below), and it is theirs.
 
 ### Fixing things by hand
 
-- **Remove a submission**: delete its `data/submissions/<id>.json`, run
-  `python Tools/ingest.py`, commit.
+- **Remove a submission**: on the `data-submissions` branch, delete its
+  `data/submissions/<id>.json`, run `python Tools/ingest.py`, commit, push.
 - **Read an issue again**: *Actions → Ingest submitted data → Run workflow*,
   with the issue's number. (Editing the issue, or removing and re-adding its
   `data-submission` label, does it too.)
-- **"First sent from another GitHub account"**: a collection id can only be
-  replaced from the account that first sent it, so no one can overwrite
-  someone else's data. If it really is the same player, delete the old file
-  and read the issue again.
+- **"Sent before from another GitHub account, or added by a maintainer"**: a
+  collection can only be replaced from the GitHub account that first sent it
+  (its number, so a renamed login keeps it), or by a maintainer, so no one can
+  overwrite someone else's data. The issue stays open with `needs-attention`.
+  If it really is the same player, delete the old file and read the issue
+  again.
 
 ## Safety
 
@@ -172,8 +193,9 @@ Everything a player sends is untrusted, and the Action that reads it can push.
 ## Credits
 
 Each collection is credited to the form's **Credit me as**, else the name set
-in game (which is the character's name if the player left it empty), else the
-GitHub login. Names are listed in the order players first sent data:
+in game, else the name it was credited to before, else the GitHub login. The
+share code carries the character's name when the in-game box is left empty;
+a data file carries only a name typed there. Names are listed in the order players first sent data:
 in game (Submit window, About page), in `CONTRIBUTORS.md`, and in
 `data/contributors.json` with counts. Collections sent without any name are
 counted, not listed. To change or remove a name, send again with a new

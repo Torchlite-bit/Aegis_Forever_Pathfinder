@@ -9,10 +9,12 @@ in through the environment:
   ISSUE_BODY_FILE    a file holding its text: the form's answers, as Markdown
                      (or ISSUE_BODY, the text itself)
   ISSUE_USER         the GitHub login of whoever opened it
+  ISSUE_USER_ID      that account's number (a login can change hands; the number can't)
   REPO_ROOT          the repository checkout to write into
   GITHUB_REPOSITORY  owner/repo, for the repository's own attachment links
   SUMMARY_PATH       where to write the answer for the issue, as Markdown
-  GITHUB_OUTPUT      (set by Actions) gets stored=, changed= and credit=
+  GITHUB_OUTPUT      (set by Actions) gets stored=, changed=, attention= and credit=
+                     (attention=1: something needs a maintainer, so the issue stays open)
 
 It finds share codes and exports pasted in the issue, and files attached to it
 (GitHub's own attachment links only), reads them, stores them and makes the
@@ -40,11 +42,14 @@ import ingest  # noqa: E402
 CREDIT_FIELD = "Credit me as"
 NO_RESPONSE = "_No response_"
 MAX_ATTACHMENTS = 10
+MAX_DOWNLOADS = 2 * 25 * 1024 * 1024    # all the attachments of one issue together
 DOWNLOAD_TIMEOUT = 30
 # Downloads may only be sent on to these hosts (and their subdomains), over https.
 ALLOWED_HOSTS = ("github.com", "githubusercontent.com")
 
-_HEADING = re.compile(r"^###[ \t]+(.+?)[ \t]*$", re.M)
+# The heading's words are trimmed in parse_form: a lazy (.+?) before trailing
+# spaces took quadratic time on a long line of spaces.
+_HEADING = re.compile(r"^###[ \t]+([^\n]*)$", re.M)
 # A link in the text, up to where Markdown would end it.
 _LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
 
@@ -212,40 +217,58 @@ def run(environ):
     number = (environ.get("ISSUE_NUMBER") or "").strip()
     issue = int(number) if number.isdigit() else None
     login = ingest.clean_login(environ.get("ISSUE_USER"))
+    user_id = (environ.get("ISSUE_USER_ID") or "").strip()
+    user_id = int(user_id) if re.fullmatch(r"[0-9]{1,15}", user_id) else None
     root = environ.get("REPO_ROOT") or ingest.ROOT
     credit = credit_from_form(body)
 
-    problems, found = [], []
+    problems, results = [], []
+    found_any = False
+
+    def take(found):
+        """Cleans and stores each collection as soon as it is read, so no more
+        than one source's unpacked data is held at a time."""
+        nonlocal found_any
+        for submission in found:
+            found_any = True
+            label = submission.kind if submission.origin == "text" else submission.origin
+            try:
+                envelope = ingest.sanitize(submission.envelope)
+                # Credit: the form's "Credit me as", else the name set in game, else the one stored,
+                # else the GitHub login (store() works through the last two).
+                envelope["contributor"] = credit or envelope["contributor"]
+                stored = ingest.store(envelope, root, {
+                    "kind": "github-issue", "via": submission.kind, "issue": issue,
+                    "github_login": login, "github_id": user_id}, fallback_name=login)
+            except ingest.IngestError as error:
+                problems.append("%s: %s" % (label, error))
+                continue
+            finally:
+                submission.envelope = None
+            results.append((submission, stored))
+            if stored.status == "taken":
+                problems.append("%s: collection %s was sent before from another GitHub account, or added "
+                                "by a maintainer, so it wasn't replaced. If it is yours, say so here and a "
+                                "maintainer will sort it out." % (label, stored.id[:12]))
+
     # Codes and exports pasted anywhere in the issue.
-    found += ingest.decode(body, "The issue text", problems, report_empty=False)
+    take(ingest.decode(body, "The issue text", problems, report_empty=False))
+    downloaded = 0
     for url in attachment_urls(body, environ.get("GITHUB_REPOSITORY")):
         name = file_name(url)
+        if downloaded >= MAX_DOWNLOADS:
+            problems.append("%s: not read: the files in this issue are more than 50 MB together." % name)
+            continue
         try:
             content = fetch(url)
         except ingest.IngestError as error:
             problems.append("%s: %s" % (name, error))
             continue
-        found += ingest.decode(content, name, problems)
-    if not found and not problems:
+        downloaded += len(content)
+        take(ingest.decode(content, name, problems))
+        content = None
+    if not found_any and not problems:
         problems.append("There is no share code, export or attached data file in the issue.")
-
-    results = []
-    for submission in found:
-        label = submission.kind if submission.origin == "text" else submission.origin
-        try:
-            envelope = ingest.sanitize(submission.envelope)
-            # Credit: the form's "Credit me as", else the name set in game, else the GitHub login.
-            envelope["contributor"] = credit or envelope["contributor"] or ingest.clean_name(login)
-            stored = ingest.store(envelope, root, {
-                "kind": "github-issue", "via": submission.kind, "issue": issue, "github_login": login})
-        except ingest.IngestError as error:
-            problems.append("%s: %s" % (label, error))
-            continue
-        results.append((submission, stored))
-        if stored.status == "taken":
-            problems.append("%s: collection %s was first sent from another GitHub account, so it wasn't "
-                            "replaced. If it is yours, say so here and a maintainer will sort it out."
-                            % (label, stored.id[:12]))
 
     taken = [stored for _, stored in results if stored.status in ingest.ACCEPTED]
     changed = [stored for stored in taken if stored.status in ingest.CHANGED]
@@ -258,6 +281,8 @@ def run(environ):
     outputs = {
         "stored": str(len(taken)),
         "changed": str(len(changed)),
+        "attention": "1" if any(stored.status == "taken" for _, stored in results) else "0",
+        # For the log only: player text never goes into a commit message.
         "credit": ", ".join(names)[:100] or (login or ""),
     }
     return (0 if taken else 2), _summary(results, problems, names), outputs
@@ -278,7 +303,8 @@ def main(environ=None):
         status, summary, outputs = run(environ)
     except Exception:  # noqa: BLE001 -- anything unexpected is reported, not hidden
         traceback.print_exc()
-        status, summary, outputs = 1, INTERNAL_ERROR + "\n", {"stored": "0", "changed": "0", "credit": ""}
+        status, summary, outputs = 1, INTERNAL_ERROR + "\n", {"stored": "0", "changed": "0", "attention": "1",
+                                                                "credit": ""}
     if environ.get("SUMMARY_PATH"):
         with open(environ["SUMMARY_PATH"], "w", encoding="utf-8") as handle:
             handle.write(summary)

@@ -232,7 +232,8 @@ check(submit:IsShown(), "the Submit window opens")
 check(submit.box:HasFocus(), "with the code in the box, ready for Ctrl+C")
 if C_EncodingUtil then
 	check(submit.text:find("^APF1:"), "it shows the share code")
-	equal(submit.codeHead.label:GetText(), L.SUBMIT_CODE, "under its name")
+	equal(submit.codeHead.label:GetText(), skin == "blizzard" and L.SUBMIT_CODE or L.SUBMIT_CODE:upper(),
+		"under its name, cased like the skin's other headings")
 	check(submit.as:IsShown(), "As text is offered")
 	Mock.Click(submit.as)
 	check(submit.text:find("^AEGIS PATHFINDER FOREVER DATA;2;"), "As text shows the plain export")
@@ -276,6 +277,18 @@ local envelope = AP.Export.Envelope()
 Mock.export = AP.Export.Build(envelope)
 Mock.shareCode = AP.Export.ShareCode(envelope)
 check(Mock.export:find('"Wanted: Hogger"', 1, true), "the export holds the quest")
+
+-- Tables with gaps stay whole: an array only when the keys are exactly 1..n.
+local ToJSON = AP.Export.ToJSON
+equal(ToJSON({ "a", "b", "c" }), '["a","b","c"]', "a list is a JSON array")
+equal(ToJSON({ [2] = "b", [4] = "d" }), '{"2":"b","4":"d"}', "levels 2 and 4 are kept, not an empty array")
+equal(ToJSON({ [1] = "a", [3] = "c", [5] = "e" }), '{"1":"a","3":"c","5":"e"}', "nothing after a gap is lost")
+equal(ToJSON({ [1] = 1.5, [2] = -0.25 }), "[1.5,-0.25]", "fractions are written plainly")
+-- A layout where Lua 5.1's #t reports 4 for keys 1, 3, 4 and 6: the old check took it
+-- for an array and ipairs kept only the first value.
+local gappy = { "a", nil, "c", "d" }
+gappy[6] = "f"
+equal(ToJSON(gappy), '{"1":"a","3":"c","4":"d","6":"f"}', "a gap that fools #t loses nothing")
 
 -- The contributors: none yet, or as many as fit and "and N more".
 local listed = AP.CONTRIBUTORS

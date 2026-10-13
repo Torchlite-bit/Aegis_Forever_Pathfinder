@@ -22,6 +22,7 @@ import shutil
 import stat
 import sys
 import tempfile
+import time
 import unittest
 import urllib.error
 import urllib.request
@@ -34,6 +35,8 @@ sys.path.insert(0, TOOLS)
 
 import ingest  # noqa: E402
 import ingest_issue  # noqa: E402
+import merge_exports  # noqa: E402
+import savedvariables  # noqa: E402
 
 try:
     import lupa.lua51 as lupa  # WoW's Lua version, as Tools/smoke_test.py uses
@@ -641,6 +644,15 @@ class Sanitizer(unittest.TestCase):
         self.assertEqual(len(cells), 40)
         self.assertEqual(min(cells.values()), 21)  # the 40 seen most often
 
+    def test_wrong_types_are_dropped_not_raised(self):
+        # Found by fuzzing: a table where a word belongs raised TypeError, and the
+        # whole issue was answered as our own error.
+        for kind in ([], {}, ["npc"], {"npc": 1}, 3, None):
+            value = envelope()
+            value["data"]["quests"]["176"]["pickups"]["npc:240@1429"]["kind"] = kind
+            place = ingest.sanitize(value)["data"]["quests"]["176"]["pickups"]["npc:240@1429"]
+            self.assertEqual(place["kind"], "unknown")
+
     def test_other_addons_data_is_refused(self):
         with self.assertRaises(ingest.IngestError):
             ingest.sanitize(envelope(addon="SomethingElse"))
@@ -711,6 +723,52 @@ class Store(TempRepo):
         self.assertEqual(self.store(1760009000, "2025-10-11T00:00:00Z", login="mallory").status, "taken")
         self.assertEqual(self.stored()["exportedAt"], 1760001000)
         self.assertEqual(self.store(1760009000, "2025-10-11T00:00:00Z", login="Gary").status, "replaced")
+
+    def test_a_maintainers_copy_cant_be_taken_from_github(self):
+        # Collection ids are public: one a maintainer added from a file isn't anyone's to claim.
+        self.store(1760001000, "2025-10-10T00:00:00Z")
+        self.assertEqual(self.store(1760009000, "2025-10-11T00:00:00Z", login="mallory").status, "taken")
+        self.assertIsNone(self.stored()["source"]["github_login"])
+        self.assertEqual(self.store(1760009000, "2025-10-11T00:00:00Z").status, "replaced")
+
+    def test_a_maintainers_resend_keeps_the_owner(self):
+        self.store(1760001000, "2025-10-10T00:00:00Z", login="gary")
+        self.assertEqual(self.store(1760009000, "2025-10-11T00:00:00Z").status, "replaced")
+        self.assertEqual(self.stored()["source"]["github_login"], "gary")
+        self.assertEqual(self.store(1760019000, "2025-10-12T00:00:00Z", login="gary").status, "replaced")
+
+    def test_the_account_number_decides_not_the_login(self):
+        def send(exported_at, received, login, number):
+            return ingest.store(envelope(exported_at=exported_at), self.root,
+                                {"received": received, "github_login": login, "github_id": number}).status
+        send(1760001000, "2025-10-10T00:00:00Z", "gary", 101)
+        self.assertEqual(send(1760002000, "2025-10-11T00:00:00Z", "gary-renamed", 101), "replaced")
+        # Someone who took the old login after the rename:
+        self.assertEqual(send(1760003000, "2025-10-12T00:00:00Z", "gary", 202), "taken")
+
+    def test_a_far_future_date_cant_lock_a_collection(self):
+        self.store(4102444000, "2025-10-10T00:00:00Z", login="gary")
+        self.assertEqual(self.stored()["exportedAt"], 1760054400 + 86400)  # a day past arriving, at most
+        self.assertEqual(self.store(1760150000, "2025-10-12T00:00:00Z", login="gary").status, "replaced")
+
+    def test_the_copy_that_holds_more_is_the_newer(self):
+        # A data file has no export time (its newest stamp stands in), and much of what
+        # the addon adds stamps nothing: a file holding more must still win.
+        self.store(1760005000, "2025-10-10T00:00:00Z")
+        more = envelope(exported_at=1760001000)
+        more["data"]["quests"]["176"]["seen"]["offered"] += 3
+        self.assertEqual(ingest.store(more, self.root, {"received": "2025-10-11T00:00:00Z"}).status, "replaced")
+        self.assertEqual(self.store(1760009000, "2025-10-12T00:00:00Z").status, "older")
+
+    def test_a_resend_without_a_name_keeps_the_chosen_one(self):
+        source = {"received": "2025-10-10T00:00:00Z", "github_login": "gary-g"}
+        ingest.store(envelope(contributor="Chosen Name"), self.root, source, fallback_name="gary-g")
+        again = ingest.store(envelope(contributor=None, exported_at=1760002000), self.root,
+                             dict(source, received="2025-10-11T00:00:00Z"), fallback_name="gary-g")
+        self.assertEqual((again.status, self.stored()["contributor"]), ("replaced", "Chosen Name"))
+        other = ingest.store(envelope(collection("eeee0001", [1]), contributor=None), self.root, source,
+                             fallback_name="gary-g")
+        self.assertEqual(other.contributor, "gary-g")
 
     def test_no_id_gets_one_from_its_content(self):
         collect = copy.deepcopy(COLLECT)
@@ -814,6 +872,26 @@ class Rebuild(TempRepo):
         self.assertIn("1 collection sent without a name", markdown)
         self.assertNotIn("<script>", markdown)
         self.assertNotIn("@everyone", markdown)
+
+    def test_reward_items_without_names_merge(self):
+        # The game doesn't always know an item's name yet: such an item is {"count": n},
+        # which once looked like a number range to the merge and stopped it.
+        for index, collection_id in enumerate(("aaaa0001", "bbbb0002")):
+            collect = collection(collection_id, [5])
+            collect["quests"]["5"]["rewards"]["items"] = {"2224": {"count": index + 1}}
+            ingest.store(envelope(collect), self.root, {"received": "2025-10-1%dT00:00:00Z" % index})
+        ingest.rebuild(self.root)
+        merged = json.loads(self.read("data", "merged.json"))
+        self.assertEqual(merged["quests"]["5"]["rewards"]["items"]["2224"], {"count": 1})
+
+    def test_merged_in_the_order_collections_arrived(self):
+        # Not by "created", which the sender chooses: the first sent keeps its text.
+        first, second = collection("aaaa0001", [5]), collection("bbbb0002", [5], created=1000000000)
+        first["quests"]["5"]["title"], second["quests"]["5"]["title"] = "First sent", "Sent later"
+        ingest.store(envelope(first), self.root, {"received": "2025-10-10T00:00:00Z"})
+        ingest.store(envelope(second), self.root, {"received": "2025-10-11T00:00:00Z"})
+        ingest.rebuild(self.root)
+        self.assertEqual(json.loads(self.read("data", "merged.json"))["quests"]["5"]["title"], "First sent")
 
     def test_contributors_lua_is_safe(self):
         self.fill()
@@ -989,7 +1067,7 @@ class IssueForm(TempRepo):
         status, summary, outputs, fetched = self.run_issue(issue_body(data=data), {attachment: zipped})
         self.assertEqual(status, 0, summary)
         self.assertEqual(fetched, [attachment])
-        self.assertEqual(outputs, {"stored": "2", "changed": "2", "credit": "Goldshire Gary"})
+        self.assertEqual(outputs, {"stored": "2", "changed": "2", "attention": "0", "credit": "Goldshire Gary"})
         self.assertIn("Thanks for sending your data", summary)
         self.assertIn("credited as **Goldshire Gary**", summary)
         stored = json.loads(self.read("data", "submissions", COLLECTION_ID + ".json"))
@@ -1012,6 +1090,14 @@ class IssueForm(TempRepo):
             status, _, outputs, _ = self.run_issue(issue_body(credit=form,
                                                               data=share_code(envelope(collect, contributor=game))))
             self.assertEqual((status, outputs["credit"]), (0, expected), form)
+
+    def test_another_accounts_collection_needs_a_person(self):
+        data = share_code(envelope())
+        status, _, outputs, _ = self.run_issue(issue_body(data=data), login="gary-g")
+        self.assertEqual((status, outputs["attention"]), (0, "0"))
+        status, summary, outputs, _ = self.run_issue(issue_body(data=data), login="mallory")
+        self.assertEqual((status, outputs["stored"], outputs["attention"]), (2, "0", "1"))
+        self.assertIn("another GitHub account", summary)
 
     def test_nothing_usable(self):
         status, summary, outputs, _ = self.run_issue(issue_body(data="I played a lot!"))
@@ -1043,6 +1129,63 @@ class IssueForm(TempRepo):
         self.assertEqual(status, 1)
         self.assertIn("went wrong on our side", summary)
         self.assertEqual(outputs["stored"], "0")
+
+
+##########################################################################################
+# The merge command, and text built to be slow
+##########################################################################################
+
+class MergeCommand(TempRepo):
+    def test_reads_codes_and_both_export_formats(self):
+        files = {"code.txt": share_code(envelope(collection("aaaa0001", [1]))),
+                 "export2.txt": plain_export(envelope(collection("bbbb0002", [2]))),
+                 "export1.txt": plain_export(collection("cccc0003", [3]), fmt=1)}
+        paths = []
+        for name, text in files.items():
+            paths.append(os.path.join(self.root, name))
+            with open(paths[-1], "w", encoding="utf-8") as handle:
+                handle.write(text)
+        out = os.path.join(self.root, "merged.json")
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(merge_exports.main(paths + ["-o", out]), 0)
+        with open(out, encoding="utf-8") as handle:
+            merged = json.load(handle)
+        self.assertEqual(sorted(merged["quests"]), ["1", "2", "3"])
+        self.assertNotIn("data", merged)
+        self.assertEqual(sorted(source["id"] for source in merged["sources"]), ["aaaa0001", "bbbb0002", "cccc0003"])
+
+
+class SlowText(unittest.TestCase):
+    """Text that once took exponential or quadratic time. Anyone can open an issue."""
+
+    def quick(self, call):
+        started = time.monotonic()
+        try:
+            call()
+        except (savedvariables.ParseError, ingest.IngestError):
+            pass
+        self.assertLess(time.monotonic() - started, 2.0)
+
+    def test_backslashes_and_line_breaks_in_a_string(self):
+        self.quick(lambda: savedvariables.load('AegisPathfinderDB = "' + "\\\n" * 200000))
+
+    def test_long_comments_and_strings_never_closed(self):
+        self.quick(lambda: savedvariables.load("AegisPathfinderDB = {} " + "--[[ x\n" * 20000))
+        self.quick(lambda: savedvariables.load("AegisPathfinderDB = " + "[[" * 50000))
+        with self.assertRaises(savedvariables.ParseError):
+            savedvariables.load("AegisPathfinderDB = { a = --[[ never closed\n 1 }")
+
+    def test_long_strings_and_comments_still_read(self):
+        self.assertEqual(savedvariables.load('AegisPathfinderDB = { a = [==[x]]y]==], --[[ c ]] b = "q\\\nr" }'),
+                         {"AegisPathfinderDB": {"a": "x]]y", "b": "q\nr"}})
+
+    def test_fences_that_never_close(self):
+        self.quick(lambda: ingest.decode("```a\nAegisPathfinderDB = {}\n" * 50000, "f", []))
+        self.assertEqual(ingest._fenced_blocks("```lua\nA\n```\n~~~~\nB\n~~~\nstill B\n~~~~\n```\nopen\n"),
+                         ["A", "B\n~~~\nstill B"])
+
+    def test_a_heading_line_full_of_spaces(self):
+        self.quick(lambda: ingest_issue.parse_form("### a" + " " * 60000 + "b\n"))
 
 
 if __name__ == "__main__":

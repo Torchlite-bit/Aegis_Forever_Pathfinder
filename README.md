@@ -86,7 +86,7 @@ you, but it's two keystrokes. **Submit data** opens a window with:
   - **[Our Discord](https://discord.gg/Hr66t25vE7)**: paste it there. A long
     paste turns into a text file by itself, and that's fine.
 - **Credit me as**: the name for the contributors list (empty: your
-  character's name).
+  character's name in the code; the file carries only a name you typed).
 - **Or the file**: everything is also in
   `WTF/Account/<account>/SavedVariables/Aegis_Forever_Pathfinder.lua` after a
   `/reload` (the window has a button). Drop it in Discord, or rename it to
@@ -169,7 +169,7 @@ Tools/smoke_test.py            loads the addon against a mock client and plays i
 Tools/ingest.py                reads submissions (codes, text, files), merges them, credits contributors
 Tools/ingest_issue.py          the GitHub Action's side of ingest.py
 Tools/savedvariables.py        reads a SavedVariables file as data, never running it
-Tools/merge_exports.py         merges players' exports into one file
+Tools/merge_exports.py         merges codes, exports and data files into one file, storing nothing
 .github/                       the Submit data issue form and the Action that ingests it
 data/                          what players sent, and everything merged
 docs/                          feature inventory, API migration, data schema, guide API
@@ -180,7 +180,7 @@ pip install lupa
 python Tools/smoke_test.py          # once per skin, and on a client without the modern art
 python Tools/test_ingest.py         # the intake: decoding, cleaning, merging, credits
 python Tools/ingest.py file.lua --credit Name   # add a file sent on Discord
-python Tools/merge_exports.py a.txt b.txt -o merged.json
+python Tools/merge_exports.py code.txt Aegis_Forever_Pathfinder.lua -o merged.json
 ```
 
 The API this is written against, and what still needs checking in a live

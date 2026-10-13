@@ -1581,12 +1581,14 @@ function Theme:Dropdown(parent, width, onSelect)
 	caret:SetTexture(self.glyph.caretDown)
 	caret:SetSize(10, 10)
 	caret:SetPoint("RIGHT", b, "RIGHT", -10, 0)
-	self:Tint(caret, self:IsBlizzard() and "accent" or "textDim")
 	if blizzardArrow and Modern.Atlas(caret, "common-dropdown-a-button", true) then
 		caret:ClearAllPoints()
 		caret:SetPoint("RIGHT", b, "RIGHT", 2, -2)
+		-- The atlas is gold already: untinted, and left out of re-tinting on a theme change.
 		caret:SetVertexColor(1, 1, 1, 1)
 		b.arrowAtlas = true
+	else
+		self:Tint(caret, self:IsBlizzard() and "accent" or "textDim")
 	end
 
 	local list = CreateFrame("Frame", nil, UIParent)
