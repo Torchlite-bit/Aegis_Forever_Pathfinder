@@ -650,8 +650,27 @@ class Sanitizer(unittest.TestCase):
         for kind in ([], {}, ["npc"], {"npc": 1}, 3, None):
             value = envelope()
             value["data"]["quests"]["176"]["pickups"]["npc:240@1429"]["kind"] = kind
-            place = ingest.sanitize(value)["data"]["quests"]["176"]["pickups"]["npc:240@1429"]
+            place = ingest.sanitize(value)["data"]["quests"]["176"]["pickups"]["unknown:240@1429"]
             self.assertEqual(place["kind"], "unknown")
+
+    def test_a_quest_shared_by_a_player_keeps_no_name(self):
+        # 0.2.0 wrote down the name of the party member who shared a quest: an "npc"
+        # without a creature id, the name in its key too.
+        value = envelope()
+        pickups = value["data"]["quests"]["176"]["pickups"]
+        for name, x in (("Partymate", 0.4), ("Otherguy", 0.5)):
+            pickups["npc:%s@1429" % name] = {"kind": "npc", "name": name, "mapID": 1429, "count": 1, "x": x,
+                                             "y": 0.5, "xMin": x, "xMax": x, "yMin": 0.5, "yMax": 0.5, "xyCount": 1}
+        clean = ingest.sanitize(value)
+        places = clean["data"]["quests"]["176"]["pickups"]
+        self.assertEqual(sorted(places), ["npc:240@1429", "shared:?@1429"])
+        shared = places["shared:?@1429"]
+        self.assertNotIn("name", shared)
+        self.assertEqual((shared["kind"], shared["count"], shared["xyCount"], shared["x"]), ("shared", 2, 2, 0.45))
+        self.assertNotIn("Partymate", json.dumps(clean))
+        self.assertNotIn("Otherguy", json.dumps(clean))
+        self.assertEqual(places["npc:240@1429"]["name"], "Marshal Dughan")
+        self.assertEqual(ingest.sanitize(json.loads(json.dumps(clean))), clean)
 
     def test_other_addons_data_is_refused(self):
         with self.assertRaises(ingest.IngestError):
@@ -977,7 +996,7 @@ class Rebuild(TempRepo):
 # The issue form
 ##########################################################################################
 
-REPOSITORY = "Torchlite-bit/Aegis_Forever_Pathfinder"
+REPOSITORY = "Torchlite-bit/Aegis_Pathfinder_Forever"
 
 
 def issue_body(credit="Goldshire Gary", data="", notes="_No response_"):
@@ -1024,7 +1043,7 @@ class IssueForm(TempRepo):
     def test_only_github_attachments_are_fetched(self):
         body = "\n".join([
             "[ok.txt](https://github.com/user-attachments/files/123/ok.txt)",
-            "https://github.com/Torchlite-bit/Aegis_Forever_Pathfinder/files/456/old.zip",
+            "https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/files/456/old.zip",
             "https://github.com/someone/else/files/789/x.zip",
             "https://github.com.evil.example/user-attachments/files/1/x.txt",
             "http://github.com/user-attachments/files/1/plain-http.txt",
@@ -1035,7 +1054,7 @@ class IssueForm(TempRepo):
         ])
         self.assertEqual(ingest_issue.attachment_urls(body, REPOSITORY), [
             "https://github.com/user-attachments/files/123/ok.txt",
-            "https://github.com/Torchlite-bit/Aegis_Forever_Pathfinder/files/456/old.zip",
+            "https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/files/456/old.zip",
         ])
         self.assertEqual(len(ingest_issue.attachment_urls(body, None)), 1)
 

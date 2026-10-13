@@ -200,10 +200,13 @@ local function Here()
 end
 
 -- The quest giver: "npc" names an NPC, and an object's guid when the quest comes from one.
+-- When it is a player (a party member sharing the quest), the pickup is "shared": that
+-- player's name is theirs, not the quest's, and stays out of the data.
 local function Talker()
 	local guid, name = Call(UnitGUID, "npc"), Call(UnitName, "npc")
 	if not (guid or name) then return nil end
 	local kind, id = Compat.ParseGUID(guid)
+	if kind == "Player" or Call(UnitIsPlayer, "npc") then return { kind = "shared" } end
 	return {
 		kind = kind == "GameObject" and "object" or "npc",
 		id = id,

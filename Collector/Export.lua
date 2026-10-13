@@ -33,7 +33,7 @@ Export.ADDON = "Aegis_Forever_Pathfinder"
 Export.CREDIT_MAX = 40
 
 -- Where to send it. The GitHub form files the data by itself (.github/workflows/ingest-data.yml).
-Export.GITHUB_URL = "https://github.com/Torchlite-bit/Aegis_Forever_Pathfinder/issues/new?template=submit-data.yml"
+Export.GITHUB_URL = "https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/issues/new?template=submit-data.yml"
 Export.DISCORD_URL = "https://discord.gg/Hr66t25vE7"
 -- A GitHub issue takes about 65,000 characters; past that, send the file.
 Export.ISSUE_LIMIT = 60000

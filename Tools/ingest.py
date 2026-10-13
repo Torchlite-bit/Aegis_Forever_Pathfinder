@@ -517,7 +517,7 @@ _CELL = re.compile(r"([0-9]{1,7}):([0-9]{1,3}):([0-9]{1,3})")
 _HEX_ID = re.compile(r"[0-9a-fA-F]{1,64}")
 _LOGIN = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}")
 
-PLACE_KINDS = {"npc", "object", "item", "auto", "unknown"}
+PLACE_KINDS = {"npc", "object", "item", "auto", "shared", "unknown"}
 SEEN_KEYS = {"offered", "accepted", "turnedIn", "abandoned"}
 POI_KEYS = {"objective", "turnin", "available"}
 QUEST_TEXTS = ("title", "description", "objectiveText", "progressText", "completionText", "questLine")
@@ -685,7 +685,12 @@ def _place(value):
     out = {"kind": kind if isinstance(kind, str) and kind in PLACE_KINDS else "unknown",
            "count": _integer(value.get("count"), 1, COUNT_MAX) or 1}
     _put(out, "id", _integer(value.get("id"), 0, ID_MAX))
-    _put(out, "name", _text(value.get("name"), 200))
+    # An "npc" without a creature id was a player: a party member sharing the quest
+    # (0.2.0 wrote their name down). Their name stays out, and so does a shared one's.
+    if out["kind"] == "npc" and "id" not in out:
+        out["kind"] = "shared"
+    if out["kind"] != "shared":
+        _put(out, "name", _text(value.get("name"), 200))
     _put(out, "mapID", _integer(value.get("mapID"), 0, ID_MAX))
     _put(out, "zone", _text(value.get("zone"), 200))
     _put(out, "subzone", _text(value.get("subzone"), 200))
@@ -698,6 +703,17 @@ def _place(value):
             edge = _coordinate(value.get(key))
             out[key] = centre if edge is None else pick(edge, centre)
     return out
+
+
+def _places(value):
+    """Pickups or turn-ins, keyed again from what each holds, as the collector keys
+    them ("<kind>:<id or name>@<mapID>"): a key can't carry a name the place lost.
+    Places that come to share a key (shared quests on one map) merge."""
+    out = {}
+    for place in (_table(value, _text_key(200), _place, 100) or {}).values():
+        key = "%s:%s@%s" % (place["kind"], place.get("id", place.get("name", "?")), place.get("mapID", "?"))
+        out[key] = merge_exports.merge_place(out[key], place) if key in out else place
+    return out or None
 
 
 def _objectives(value):
@@ -794,8 +810,8 @@ def _quest(value):
     _put(out, "tagID", _integer(value.get("tagID"), 0, ID_MAX))
     _put(out, "requiredMoney", _integer(value.get("requiredMoney"), 0, MONEY_MAX))
     _put(out, "seen", _table(value.get("seen"), _one_of(SEEN_KEYS), _count, 4))
-    _put(out, "pickups", _table(value.get("pickups"), _text_key(200), _place, 100))
-    _put(out, "turnins", _table(value.get("turnins"), _text_key(200), _place, 100))
+    _put(out, "pickups", _places(value.get("pickups")))
+    _put(out, "turnins", _places(value.get("turnins")))
     _put(out, "objectives", _objectives(value.get("objectives")))
     _put(out, "progress", _table(value.get("progress"), OBJECTIVE_KEY, _cells, 50))
     _put(out, "poi", _table(value.get("poi"), _one_of(POI_KEYS), _cells, 3))

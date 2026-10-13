@@ -114,13 +114,13 @@ A number seen more than once keeps all of it as a **Range**:
 ### Place (a pickup or a turn-in)
 
 Keyed `"<kind>:<id or name>@<uiMapID>"`, e.g. `"npc:240@1429"`,
-`"item:1972@1429"`, `"object:31@1426"`, `"auto:?@1429"`.
+`"item:1972@1429"`, `"object:31@1426"`, `"auto:?@1429"`, `"shared:?@1429"`.
 
 | Field | Type | Source | Meaning |
 |---|---|---|---|
-| `kind` | string | observed | `npc`, `object` (a game object: poster, chest), `item` (started from an item in your bags), `auto` (no frame: shared, auto-accepted, or auto-completed), `unknown` |
+| `kind` | string | observed | `npc`, `object` (a game object: poster, chest), `item` (started from an item in your bags), `shared` (a party member shared it: where you stood, and never who they were), `auto` (no frame: auto-accepted or auto-completed), `unknown` |
 | `id` | number | client | Creature or object id from `UnitGUID("npc")`, or the item id from `QUEST_DETAIL`'s `questStartItemID` |
-| `name` | string | client | `UnitName("npc")`, or the item's name |
+| `name` | string | client | `UnitName("npc")`, or the item's name; never kept for `shared` |
 | `mapID` | number | client | `C_Map.GetBestMapForUnit("player")`: a uiMapID |
 | `zone`, `subzone` | string | client | `GetRealZoneText()`, `GetSubZoneText()` |
 | `x`, `y` | number | observed | Running mean of the player's position (0–1, four places) |
