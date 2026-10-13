@@ -758,8 +758,9 @@ end
 
 --[[ A button from Blizzard's own template, wearing the API the concept's pills
 	have: SetActive (held lit), label, fill. ]]
-local function BlizzardButton(parent, label, width, height)
-	local b = Compat.CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+local function BlizzardButton(parent, label, width, height, template)
+	local b = template and CreateFrame("Button", nil, parent, template .. ",UIPanelButtonTemplate")
+		or Compat.CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
 	b:SetSize(width or 150, height or 22)
 	b:SetText(label or "")
 	b.label = b:GetFontString() or b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -773,9 +774,9 @@ local function BlizzardButton(parent, label, width, height)
 end
 
 -- Uppercase display-face pill.
-function Theme:Pill(parent, label, width, height)
-	if self:IsBlizzard() then return BlizzardButton(parent, label, width or 90, height or 22) end
-	local b = CreateFrame("Button", nil, parent)
+function Theme:Pill(parent, label, width, height, template)
+	if self:IsBlizzard() then return BlizzardButton(parent, label, width or 90, height or 22, template) end
+	local b = CreateFrame("Button", nil, parent, template)
 	b:SetSize(width or 90, height or 22)
 
 	local fill = self:NineSlice(b, self.texture.pillFill, "BACKGROUND", "panel3")
@@ -808,9 +809,9 @@ end
 --[[ Panel button: `.pill` sized for a panel row, shadowing SetText/GetText and
 	uppercasing like the concept does in CSS. In the Blizzard skin, Blizzard's
 	red button as it is. ]]
-function Theme:PanelButton(parent, label, width, height)
-	if self:IsBlizzard() then return BlizzardButton(parent, label, width or 150, height or 22) end
-	local b = self:Pill(parent, label, width or 150, height or 22)
+function Theme:PanelButton(parent, label, width, height, template)
+	if self:IsBlizzard() then return BlizzardButton(parent, label, width or 150, height or 22, template) end
+	local b = self:Pill(parent, label, width or 150, height or 22, template)
 
 	function b:SetText(t) self.label:SetText((t or ""):upper()) end
 	function b:GetText() return self.label:GetText() end
@@ -2095,8 +2096,8 @@ end
 	Escape handlers. From then on, every Escape fails with "ADDON FORBIDDEN:
 	SpellStopCasting()". This dialog touches nothing of Blizzard's.
 
-	Theme:Confirm{ text =, accept =, cancel =, onAccept = function, onCancel = function,
-		reload = true when Accept reloads the interface (see Theme:OfferReload) }
+	Theme:Confirm{ text =, accept =, cancel =, onAccept = function, onCancel = function }
+	(A reload asks through Theme:AskReload instead: only a secure button can reload.)
 ]]
 local confirm
 
@@ -2121,14 +2122,8 @@ function Theme:Confirm(spec)
 		local m = self.metrics
 		confirm.yes:SetPoint("BOTTOMLEFT", confirm, "BOTTOMLEFT", 14 + m.left, 12 + m.bottom)
 		confirm.no:SetPoint("BOTTOMRIGHT", confirm, "BOTTOMRIGHT", -14 - m.right, 12 + m.bottom)
-		confirm.yes:SetScript("OnClick", function(self)
+		confirm.yes:SetScript("OnClick", function()
 			local spec = confirm.spec
-			if spec and spec.reload then
-				-- Reached only when the secure button over it wasn't there (Theme:OfferReload):
-				-- in combat the dialog goes; outside it, it stays for another try.
-				if Theme:ReloadFallback(self) then confirm:Hide() end
-				return
-			end
 			confirm:Hide()
 			if spec and spec.onAccept then spec.onAccept() end
 		end)
@@ -2138,7 +2133,6 @@ function Theme:Confirm(spec)
 			if spec and spec.onCancel then spec.onCancel() end
 		end)
 		tinsert(UISpecialFrames, "AegisPathfinderConfirm")
-		Theme:OfferReload(confirm.yes, function() return confirm.spec and confirm.spec.reload end)
 		confirm:Hide()
 	end
 	confirm.spec = spec
@@ -2147,7 +2141,6 @@ function Theme:Confirm(spec)
 	confirm.no:SetText(spec.cancel or NO or "No")
 	confirm:Show()
 	self:BringToFront(confirm)
-	self:SyncReload(confirm.yes)
 	return confirm
 end
 
@@ -2155,209 +2148,91 @@ end
 
 	The game lets only its own code reload the interface: ReloadUI() from an
 	addon is "ADDON BLOCKED: Reload()", even from a click. A secure action
-	button running the /reload macro goes through Blizzard's code instead. So
-	each of our Reload buttons gets one such button, invisible, lying over it
-	for as long as it is shown, outside combat: the click lands on that.
+	button running the /reload macro goes through Blizzard's code instead, so
+	every Reload asks through one small dialog whose Reload button is such a
+	button. Theme:AskReload(text) opens it.
 
-	It lies there from the moment the button shows, and follows it if its
-	window moves. 0.2.0 put it there only as the mouse arrived: a frame moved
-	under the mouse can trade the mouse back and forth with the one below it,
-	and the click then reached our own button, which only said to type /reload.
+	The secure button is the Reload button itself. 0.2.0 laid an invisible one
+	over our own buttons instead, and this client gave our button the mouse even
+	with the secure one shown, on top, in the same strata and two levels higher.
 
-	It belongs to UIParent, not to our windows: a window holding a secure
-	button becomes protected, and could then not be hidden or moved in a fight.
-	A secure button can be set up, moved, shown and hidden only out of combat:
-	they step aside as combat starts, and in combat our own button takes the
-	click and says to type /reload. ]]
-local covers = {} -- our Reload button -> { cover = its secure button, active = function or nil }
+	A frame holding a secure button is protected: it can be shown, hidden and
+	moved only out of combat. So the dialog is a window of its own, not one of
+	the Pathfinder windows (it isn't scaled or stacked with them). It steps
+	aside as combat starts and comes back when the fight is over; asked during
+	one, it says to type /reload and opens afterwards. ]]
+local reloadDialog, reloadText
 
--- Our button looks hovered while the mouse is on the secure button over it.
-local function Hover(host, on)
-	if host.LockHighlight then
-		if on then host:LockHighlight() else host:UnlockHighlight() end
-	end
-	local script = host:GetScript(on and "OnEnter" or "OnLeave")
-	if script then script(host) end
-end
+local function BuildReloadDialog()
+	local d = CreateFrame("Frame", "AegisPathfinderReloadDialog", UIParent)
+	d:SetFrameStrata("FULLSCREEN_DIALOG")
+	d:SetSize(340, 150)
+	d:SetPoint("CENTER", UIParent, "CENTER", 0, 160)
+	d:EnableMouse(true)
+	Theme:Panel(d, "panel")
+	local header = Theme:Header(d, nil, AP.L.TITLE)
+	d.text = d:CreateFontString(nil, "OVERLAY")
+	Theme:SetFont(d.text, "body", 13)
+	Theme:TextColor(d.text, "text")
+	d.text:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 16, -14)
+	d.text:SetPoint("TOPRIGHT", header, "BOTTOMRIGHT", -16, -14)
+	d.text:SetJustifyH("CENTER")
+	d.text:SetWordWrap(true)
 
--- Over its button, in the same strata and above it. False while the button has no place yet.
-local function Place(cover, host)
-	local x, y = host:GetCenter()
-	if not x then return false end
-	local scale = host:GetEffectiveScale() / UIParent:GetEffectiveScale()
-	local w, h = host:GetWidth() * scale, host:GetHeight() * scale
-	x, y = x * scale, y * scale
-	if cover.x ~= x or cover.y ~= y or cover.w ~= w or cover.h ~= h then
-		cover:ClearAllPoints()
-		cover:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
-		cover:SetSize(w, h)
-		cover.x, cover.y, cover.w, cover.h = x, y, w, h
-	end
-	local strata, level = host:GetFrameStrata(), host:GetFrameLevel() + 20
-	if cover:GetFrameStrata() ~= strata then cover:SetFrameStrata(strata) end
-	if cover:GetFrameLevel() ~= level then cover:SetFrameLevel(level) end
-	return true
-end
-
-local function Wanted(host)
-	local entry = covers[host]
-	return entry ~= nil and host:IsVisible() and (not entry.active or entry.active()) and true or false
-end
-
-local function Leave(cover)
-	if not cover:IsShown() then return end
-	cover:Hide()
-	if cover.hovered then
-		cover.hovered = nil
-		Hover(cover.host, false)
-	end
-end
-
-local Sync
-
-local function NewCover(host)
-	local cover = CreateFrame("Button", nil, UIParent, "SecureActionButtonTemplate")
-	cover:EnableMouse(true)
-	cover:RegisterForClicks("AnyUp")
-	cover:SetAttribute("useOnKeyDown", false)
-	cover:SetAttribute("type", "macro")
-	cover:SetAttribute("macrotext", "/reload")
-	cover:Hide()
-	cover.host = host
-	cover.tint = cover:CreateTexture(nil, "OVERLAY")
-	cover.tint:SetAllPoints(cover)
-	cover.tint:SetColorTexture(1, 0.1, 0.1, 0.4)
-	cover.tint:SetShown(Theme.reloadDebug == true)
-	cover:SetScript("OnEnter", function(self) self.hovered = true; Hover(self.host, true) end)
-	cover:SetScript("OnLeave", function(self) self.hovered = nil; Hover(self.host, false) end)
-	cover:HookScript("OnMouseDown", function(self)
-		if self.host.SetButtonState then self.host:SetButtonState("PUSHED") end
+	local m = Theme.metrics
+	d.reload = Theme:PanelButton(d, AP.L.RELOAD, 140, 24, "SecureActionButtonTemplate")
+	d.reload:SetPoint("BOTTOMLEFT", d, "BOTTOMLEFT", 14 + m.left, 12 + m.bottom)
+	d.reload:RegisterForClicks("AnyUp")
+	d.reload:SetAttribute("useOnKeyDown", false)
+	d.reload:SetAttribute("type", "macro")
+	d.reload:SetAttribute("macrotext", "/reload")
+	-- Runs after the secure action. A reload ends everything, so still being here
+	-- a moment later means the game didn't reload.
+	d.reload:HookScript("OnClick", function()
+		C_Timer.After(1, function()
+			if d:IsShown() then AP:Print(AP.L.RELOAD_DIDNT) end
+		end)
 	end)
-	cover:HookScript("OnMouseUp", function(self)
-		if self.host.SetButtonState then self.host:SetButtonState("NORMAL") end
+
+	d.later = Theme:PanelButton(d, AP.L.LATER, 140, 24)
+	d.later:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -14 - m.right, 12 + m.bottom)
+	d.later:SetScript("OnClick", function() d:Hide() end)
+
+	-- Closed by Later or Escape, it isn't wanted any more; stepping aside for a fight, it is.
+	d:SetScript("OnHide", function(self)
+		if not self.steppingAside then reloadText = nil end
 	end)
-	cover:SetScript("OnUpdate", function(self)
-		if Compat.InCombat() then return end
-		if Wanted(self.host) then Place(self, self.host) else Leave(self) end
-	end)
-	return cover
+	tinsert(UISpecialFrames, "AegisPathfinderReloadDialog")
+	d:Hide()
+	return d
 end
 
---- Puts the secure button over `host`, or takes it away, as the button is shown
---- and wanted. Out of combat only.
-function Sync(host)
-	local entry = covers[host]
-	if not entry or Compat.InCombat() then return end
-	if not Wanted(host) then
-		if entry.cover then Leave(entry.cover) end
+--- Asks to reload the interface, with `text` (or a plain "Reload now?"). In combat,
+--- says to type /reload and asks again when the fight is over.
+function Theme:AskReload(text)
+	reloadText = text or AP.L.RELOAD_NOW
+	if Compat.InCombat() then
+		AP:Print(AP.L.TYPE_RELOAD)
 		return
 	end
-	entry.cover = entry.cover or NewCover(host)
-	if Place(entry.cover, host) then
-		entry.waits = 0
-		entry.cover:Show()
-	elseif (entry.waits or 0) < 10 and C_Timer and C_Timer.After then
-		-- Shown this very moment: its window has no place on screen until the next frame.
-		entry.waits = (entry.waits or 0) + 1
-		C_Timer.After(0, function() Sync(host) end)
-	end
+	reloadDialog = reloadDialog or BuildReloadDialog()
+	reloadDialog.text:SetText(reloadText)
+	reloadDialog:Show()
 end
 
--- Out of the way before combat starts (they couldn't be hidden during it), and back after.
+--- The dialog, once built (for the smoke test).
+function Theme:ReloadDialog() return reloadDialog end
+
 AP:On("PLAYER_REGEN_DISABLED", function()
-	for _, entry in pairs(covers) do
-		if entry.cover then Leave(entry.cover) end
+	if reloadDialog and reloadDialog:IsShown() then
+		reloadDialog.steppingAside = true
+		reloadDialog:Hide()
+		reloadDialog.steppingAside = nil
 	end
 end)
 AP:On("PLAYER_REGEN_ENABLED", function()
-	for host in pairs(covers) do Sync(host) end
+	if reloadText then Theme:AskReload(reloadText) end
 end)
-
---- Makes `button` reload the interface when clicked, outside combat, while `active()` (if given) says so.
---- Its own OnClick runs only when the secure button isn't over it: have it call Theme:ReloadFallback().
-function Theme:OfferReload(button, active)
-	covers[button] = covers[button] or {}
-	covers[button].active = active
-	button:HookScript("OnShow", Sync)
-	button:HookScript("OnHide", Sync)
-	Sync(button)
-end
-
---- After `active()` changed for a button already on screen.
-function Theme:SyncReload(button) Sync(button) end
-
---- The secure button over `button`, if it has one (for the smoke test).
-function Theme:ReloadCover(button) return covers[button] and covers[button].cover end
-
--- Where a frame is, in UIParent's units: "left,bottom widthxheight".
-local function Where(f)
-	local left, bottom = f:GetLeft(), f:GetBottom()
-	if not left then return "nowhere" end
-	local s = f:GetEffectiveScale() / UIParent:GetEffectiveScale()
-	local function n(v) return math.floor((v or 0) * s + 0.5) end
-	return n(left) .. "," .. n(bottom) .. " " .. n(f:GetWidth()) .. "x" .. n(f:GetHeight())
-end
-
-local function Named(f)
-	if not f then return "nothing" end
-	if f == UIParent or f == WorldFrame then return f:GetName() end
-	for host, entry in pairs(covers) do
-		if entry.cover == f then return "the secure button" end
-		if host == f then return "our Reload" end
-	end
-	local ok, name = pcall(function() return f.GetDebugName and f:GetDebugName() or f:GetName() end)
-	return ok and name and name ~= "" and name or "a frame"
-end
-
-local function UnderMouse()
-	if GetMouseFoci then
-		local names = {}
-		for _, f in ipairs(GetMouseFoci() or {}) do
-			names[#names + 1] = Named(f)
-			if #names == 3 then break end
-		end
-		return #names > 0 and table.concat(names, ", ") or "nothing"
-	end
-	return GetMouseFocus and Named(GetMouseFocus()) or "?"
-end
-
---- One line on the secure button over `host`: whether it is there, where, in which
---- layer, and what has the mouse. For a click that missed it, and /apg reloaddebug.
-function Theme:ReloadReport(host)
-	local entry = host and covers[host]
-	local cover = entry and entry.cover
-	if not cover then
-		return "no secure button yet (wanted: " .. tostring(host ~= nil and Wanted(host)) .. ")"
-	end
-	local mouse = cover.IsMouseClickEnabled and cover:IsMouseClickEnabled() or cover:IsMouseEnabled()
-	return ("secure button shown %s, visible %s, takes clicks %s, under the mouse %s; %s %d over Reload's %s %d;"
-		.. " at %s, Reload at %s; the mouse is on %s"):format(
-		tostring(cover:IsShown()), tostring(cover:IsVisible()), tostring(mouse), tostring(cover:IsMouseOver()),
-		tostring(cover:GetFrameStrata()), cover:GetFrameLevel() or -1, tostring(host:GetFrameStrata()),
-		host:GetFrameLevel() or -1, Where(cover), Where(host), UnderMouse())
-end
-
---- Our own Reload button was clicked. In combat that's expected: true, say to type
---- /reload. Outside it the secure button wasn't there: say so, with what we can see.
-function Theme:ReloadFallback(host)
-	if Compat.InCombat() then
-		AP:Print(AP.L.TYPE_RELOAD)
-		return true
-	end
-	AP:Print(AP.L.TYPE_RELOAD_MISSED)
-	AP:Print(AP.L.RELOAD_CHECK .. self:ReloadReport(host))
-	return false
-end
-
---- /apg reloaddebug: tints the secure buttons red, and reports each one on screen.
-function Theme:ToggleReloadDebug()
-	self.reloadDebug = not self.reloadDebug
-	AP:Print(self.reloadDebug and AP.L.RELOAD_DEBUG_ON or AP.L.RELOAD_DEBUG_OFF)
-	for host, entry in pairs(covers) do
-		if entry.cover then entry.cover.tint:SetShown(self.reloadDebug) end
-		if self.reloadDebug and host:IsVisible() then AP:Print(AP.L.RELOAD_CHECK .. self:ReloadReport(host)) end
-	end
-end
 
 --- Save and apply a theme. A colour theme applies at once; moving to or from
 --- the Blizzard skin asks to reload, since its widgets are other frames.
@@ -2365,9 +2240,7 @@ function AP:SetTheme(key)
 	local def = Theme.themeByKey[key] or Theme.themeByKey[Theme.DEFAULT_THEME]
 	self.db.profile.theme = def.key
 	if (def.skin or "pathfinder") ~= Theme.skin then
-		-- The Reload button reloads through the secure button over it (Theme:OfferReload);
-		-- a click that reaches the button itself was in combat.
-		Theme:Confirm({ text = AP.L.RELOAD_FOR_SKIN, accept = AP.L.RELOAD, cancel = AP.L.LATER, reload = true })
+		Theme:AskReload(AP.L.RELOAD_FOR_SKIN)
 		return def
 	end
 	Theme:ApplyTheme(def.key)

@@ -2,7 +2,7 @@
 ## Title: Aegis: Pathfinder (Forever)
 ## Notes: Leveling guide window for WoW: Forever. No guides yet: it collects quest and leveling data to build them from.|nPart of the Aegis addon suite.
 ## Author: Aegis: Pathfinder Contributors
-## Version: 0.2.0
+## Version: 0.2.1
 ## X-Category: Quest
 ## X-Curse-Project-ID: 1742985
 ## SavedVariables: AegisPathfinderDB

@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The Pathfinder Forever Launch Kit, as published at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq. -->
+<title>Pathfinder Forever Launch Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column with a sticky section bar; each section is a step the owner works through. */
+:root {
+  --bg: #f4f7f1; --surface: #ffffff; --ink: #18211a; --muted: #566357; --line: #d9e1d5;
+  --accent: #2d7a18; --accent-ink: #ffffff; --accent-soft: #e3f0dc; --code: #edf2ea; --warn: #8a5300; --warn-soft: #fbf0dc;
+  --display: "Rajdhani", "Arial Narrow", "Segoe UI", sans-serif;
+  --body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e120f; --surface: #161b17; --ink: #e6ebe5; --muted: #9ba79c; --line: #29322b;
+  --accent: #52c722; --accent-ink: #0a1207; --accent-soft: #1b2a16; --code: #111612; --warn: #e2a23c; --warn-soft: #2a2114; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e120f; --surface: #161b17; --ink: #e6ebe5; --muted: #9ba79c; --line: #29322b;
+  --accent: #52c722; --accent-ink: #0a1207; --accent-soft: #1b2a16; --code: #111612; --warn: #e2a23c; --warn-soft: #2a2114; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--body); margin: 0 }
+.wrap { max-width: 860px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: .01em; text-wrap: balance; line-height: 1.15 }
+h1 { font-size: 2.4rem; margin: 0 0 6px }
+h2 { font-size: 1.7rem; margin: 0 0 4px }
+h3 { font-size: 1.2rem; margin: 22px 0 6px }
+p { margin: 0 0 12px; max-width: 68ch }
+a { color: var(--accent) }
+code, kbd { font-family: var(--mono); font-size: .86em; background: var(--code); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere }
+.lede { color: var(--muted); font-size: 1.05rem; max-width: 62ch }
+.eyebrow { font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; color: var(--accent) }
+
+nav.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); margin: 18px -20px 0; padding: 8px 20px; display: flex; gap: 6px; flex-wrap: wrap }
+nav.bar a { font-family: var(--display); font-weight: 600; font-size: .95rem; text-decoration: none; color: var(--ink); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface) }
+nav.bar a:hover, nav.bar a:focus-visible { border-color: var(--accent); outline: none }
+
+section { padding-top: 34px }
+.status { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 16px 0 6px }
+.chip { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0 }
+.chip b { display: block; font-family: var(--display); font-size: 1.05rem }
+.chip span { color: var(--muted); font-size: .9rem }
+.pill { display: inline-block; font-family: var(--display); font-weight: 700; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; padding: 1px 8px; border-radius: 999px; margin-bottom: 4px }
+.pill.done { background: var(--accent-soft); color: var(--accent) }
+.pill.wait { background: var(--warn-soft); color: var(--warn) }
+
+ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 10px }
+ol.steps > li { counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px 12px 52px; position: relative; min-width: 0 }
+ol.steps > li::before { content: counter(s); position: absolute; left: 14px; top: 11px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 .95rem/26px var(--display); text-align: center }
+ol.steps > li b { font-weight: 600 }
+ol.steps p { margin: 4px 0 0 }
+
+.paste { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin: 12px 0; min-width: 0 }
+.paste header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap }
+.paste header span { color: var(--muted); font-size: .85rem }
+.paste pre { margin: 0; padding: 12px 14px; font: .84rem/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto }
+button.copy { font: 600 .9rem var(--display); letter-spacing: .03em; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 6px; padding: 6px 14px; cursor: pointer }
+button.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+.count.over { color: var(--warn); font-weight: 600 }
+
+.note { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; max-width: 72ch }
+.note p:last-child { margin: 0 }
+
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 14px 0 }
+.compare div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px }
+.compare b { font: 700 2rem/1 var(--display); color: var(--accent); font-variant-numeric: tabular-nums; display: block }
+.compare span { color: var(--muted); font-size: .88rem }
+
+.cat { margin: 16px 0 }
+.cat h4 { font: 600 .9rem var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px }
+.chan { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 4px 14px; padding: 8px 0; border-top: 1px solid var(--line) }
+.chan:first-of-type { border-top: 0 }
+.chan .n { font-family: var(--mono); font-size: .88rem; overflow-wrap: anywhere }
+.chan .n em { font-style: normal; font-family: var(--display); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-left: 6px }
+.chan .d { color: var(--muted); font-size: .9rem; min-width: 0 }
+.chan .d small { display: block; color: var(--muted); opacity: .85; margin-top: 2px }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px }
+.tags i { font-style: normal; font-size: .76rem; border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; color: var(--ink) }
+@media (max-width: 560px) { .chan { grid-template-columns: 1fr } h1 { font-size: 2rem } }
+@media (prefers-reduced-motion: no-preference) { button.copy { transition: transform .1s } button.copy:active { transform: scale(.97) } }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Aegis: Pathfinder · WoW: Forever · v0.2.0</div>
+  <h1>Pathfinder Forever Launch Kit</h1>
+  <p class="lede">Everything for taking Pathfinder (Forever) from your test build to players: what's waiting on you, working locally, the CurseForge page, the tester post, and a plan to calm the Discord down.</p>
+
+  <nav class="bar" aria-label="Sections">
+    <a href="#now">Waiting on you</a><a href="#pc">Working locally</a><a href="#testers">Tester post</a><a href="#curse">CurseForge</a><a href="#discord">Discord plan</a>
+  </nav>
+
+  <section id="now">
+    <h2>Waiting on you</h2>
+    <p>Nothing reaches GitHub's main branch, players or CurseForge until you merge it.</p>
+    <div class="status">
+      <div class="chip"><span class="pill done">Live</span><b>v0.2.0 on GitHub and CurseForge</b><span>CurseForge file 9166895 (project 1742985), uploaded as a Release. Every merge with a new version uploads by itself.</span></div>
+      <div class="chip"><span class="pill wait">Pull request #9</span><b>0.2.1: Reload that reloads</b><span>Reload now asks through a small dialog whose Reload button is the game's secure /reload button itself. Test, then merge.</span></div>
+      <div class="chip"><span class="pill wait">Next</span><b>Working locally</b><span>The next session runs on your PC, in your own clone, with the handoff in <code>docs/project-status.md</code>.</span></div>
+    </div>
+    <ol class="steps">
+      <li><b>Test pull request #9 in game.</b><p>Switch from Default to a Pathfinder theme and press Reload; then the guide's ≡ menu → Reload; then Submit → Save it now. Each should reload at once.</p></li>
+      <li><b>Merge <a href="https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/pull/9" target="_blank" rel="noopener">pull request #9</a>.</b><p>That publishes v0.2.1 on GitHub and uploads it to CurseForge.</p></li>
+      <li><b>Paste the new description</b> on the CurseForge page (below), and mark the file Beta there if you'd rather.</li>
+      <li><b>Post the tester message</b> on Discord.</li>
+    </ol>
+  </section>
+
+  <section id="pc">
+    <h2>Working locally</h2>
+    <p>From now on Claude works on your PC: one source folder, the game's copy kept in step with it after every change, and every change going to GitHub as a pull request.</p>
+    <ol class="steps">
+      <li><b>The source</b> is your clone at <code>C:\Users\antho\OneDrive\Desktop\Aegis_Forever_Pathfinder</code>, on <code>main</code>.</li>
+      <li><b>Start Claude there</b>: the desktop app → Code, environment <b>Local</b>, that folder, with the handoff prompt. It reads <code>docs/project-status.md</code> (where things stand) and this kit (<code>docs/launch-kit.html</code>).</li>
+      <li><b>After each change</b> it runs the smoke tests, then mirrors the clone into <code>_classic_beta_\Interface\AddOns\Aegis_Forever_Pathfinder</code> with robocopy, leaving out what the release zip leaves out. You <code>/reload</code> and test.</li>
+      <li><b>It bumps the version, commits and opens a pull request.</b> You merge it: GitHub publishes the release, and a new version goes to CurseForge.</li>
+    </ol>
+    <div class="note"><p><b>No folder link with the mirror.</b> If you made the AddOns folder a link (<code>mklink /J</code>) from an earlier version of this kit, remove the link first: mirroring into a link would write over the source itself. The handoff prompt checks for this before the first mirror.</p></div>
+  </section>
+
+  <section id="testers">
+    <h2>Tester post for Discord</h2>
+    <p>Ready to post: the v0.2.0 download has every fix. It uses today's channel names; swap them if you restructure first.</p>
+    <div class="paste"><header><span class="count" id="testerCount"></span><button class="copy" data-copy="tester">Copy post</button></header><pre id="tester">## 🧭 Aegis: Pathfinder is coming to WoW: Forever, and it needs testers
+
+Pathfinder's leveling guides need Forever's quests, and that's where you come in. This first build has no guides yet: it **records quests while you play** so we can write them.
+
+**What it does now**
+• Records every quest you pick up and hand in: who gives it and where, the objectives, XP, money, items and reputation
+• Records the XP each level needs and how long it takes
+• Accepts and turns in quests by itself (hold Shift to skip one), sells greys and repairs
+• The Pathfinder themes, or Default in Blizzard's own look
+
+**How to help**
+1. Download **Aegis_Forever_Pathfinder-v0.2.0.zip** (not "Source code") from &lt;https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/releases/latest&gt;
+2. Unzip into `_classic_beta_\Interface\AddOns\` (keep the folder named `Aegis_Forever_Pathfinder`) and restart the game fully
+3. Type `/apg`, click **Start collecting data** and tick **Automatically run**
+4. Play as you normally would
+5. After a few levels: `/apg submit`, press **Ctrl+C**, and paste it in the GitHub form (the link is in that window). No GitHub account? Post it in #pathfinder-general.
+
+Everyone who sends data goes in the in-game contributors list.
+
+**Found a bug?** Post in #pathfinder-bug-reports with the Lua error text, what you were doing, and your version (it shows at login).
+
+The data never names your realm. The one name in it is the one you're credited under: your character's, unless you type another in the Submit window.</pre></div>
+  </section>
+
+  <section id="curse">
+    <h2>CurseForge</h2>
+    <p>The description has the old page's detail and badges back, brought up to 0.2.0, with full links (relative ones break on CurseForge). Uploads are set up the way the Instance Journal's are. Every merge to main publishes a GitHub release, and each new version is uploaded to CurseForge once. The setup is also saved in the repository as <code>docs/curseforge.md</code>.</p>
+    <ol class="steps">
+      <li><b>Edit your project</b> (it has v0.1.0 already): switch the description editor to Markdown, paste the description below over the old one, and the summary into its box.</li>
+      <li><b>Copy the project ID</b> from its page (About this project → Project ID).</li>
+      <li><b>Have an API token.</b> One token works for every project on your account, so the Instance Journal's works here, but GitHub won't show a saved secret again: if you don't have it written down, make a new one on the authors site under your account's API tokens. Don't paste it into a chat.</li>
+      <li><b>On GitHub</b>, <i>Settings → Secrets and variables → Actions</i>: secret <code>CF_API_KEY</code> = the token; variable <code>CURSEFORGE_PROJECT_ID</code> = the ID. Optional: variable <code>CURSEFORGE_RELEASE_TYPE</code> = <code>beta</code> while it's in testing. If the upload's log says it can't find the WoW: Forever game version, add variable <code>CURSEFORGE_GAME_VERSION_IDS</code> with the id it names, and run it again.</li>
+      <li><b>Tell me it's set</b>, and I run <i>Actions → Test and release → Run workflow</i> and check the upload. After that, bump <code>## Version</code> and the changelog, and each merge uploads the new version by itself. If the Instance Journal's repository has <code>CURSEFORGE_GAME_VERSION_IDS</code> set, copy the same value here: it's the same game.</li>
+    </ol>
+    <div class="paste"><header><span class="count" id="summaryCount"></span><button class="copy" data-copy="summary">Copy summary</button></header><pre id="summary">Leveling guide for WoW: Forever. Collects quest and XP data while you play, to write its guides from. Quest automation and a Blizzard look included.</pre></div>
+    <div class="paste"><header><span>Description (Markdown)</span><button class="copy" data-copy="description">Copy description</button></header><pre id="description"># Aegis: Pathfinder — Forever
+
+**The Pathfinder leveling guide, ported to WoW: Forever. No guides yet, so for now it collects the data to write them.**
+
+![WoW: Forever, Interface 16001](https://img.shields.io/badge/WoW%3A%20Forever-Interface%2016001-c79c2e?style=flat-square&amp;labelColor=555) [![Discord: join us](https://img.shields.io/badge/Discord-join%20us-5865F2?style=flat-square&amp;logo=discord&amp;logoColor=white)](https://discord.gg/Hr66t25vE7) [![GitHub: source and data form](https://img.shields.io/badge/GitHub-source%20%26%20data%20form-24292f?style=flat-square&amp;logo=github&amp;logoColor=white)](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever)
+
+Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the modern engine. This is a port of [Aegis: Pathfinder](https://github.com/Torchlite-bit/Aegis_Pathfinder) for Turtle WoW (1.12), not that addon: the two clients share almost no API. On Turtle WoW? Get *Aegis: Pathfinder* instead.
+
+⚠️ **In development.** No guides yet. What works now: the guide window, the guide browser, the settings, quest and vendor automation, and the **data collector**.
+
+---
+
+## What it is right now
+
+**The Pathfinder look, on Forever.** The guide window, the ≡ menu, the guide browser, the options window and the minimap button are the Turtle WoW addon's, panel for panel: same layout, same fonts, same colour themes: Pathfinder Day, Night, Green (the original), Purple, Grey, Tan and Red.
+
+**Default: Blizzard's own look.** One more theme, **Default**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. Pick it under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
+
+**No guides yet.** WoW: Forever is new, so the guide window says so and offers to **start collecting data** instead. The engine that follows guides is there and waiting.
+
+## The data collector
+
+Switch it on and play normally. Pathfinder writes down:
+
+- **The XP each level needs**, and how long each level took
+- **Every quest** you're offered, pick up and hand in:
+  - its text, level and objectives
+  - **who gave it and where**: NPC, object or item, the map, x/y, and your level
+  - **where its objectives moved on** (where you stood as the count went up)
+  - the client's own map pins for it
+  - **who took it back and where**
+  - **what it gave**: XP at your level, money, the items to choose from and the ones given (and which one your class picked), spells, currencies and **reputation**
+  - which quest led to it
+
+Repeat sightings are merged: counts add up, and the lowest and highest XP, money and coordinates are kept. Each record is stamped with the client build and the race, class and faction that saw it, never your character's name or realm. **Nothing is sent by itself**: it stays in your saved variables until you press **Submit data**, and the one name in what you send is the one you're credited under.
+
+**The data collection window** (the ● chip on the guide window, shift-click the minimap button, or `/apg collect`):
+
+- **Start / Stop collecting data**
+- **Automatically run**: starts collecting at every login on this character, and new characters take the last choice you made (the guide window has this box too)
+- What it has so far, and the last things it wrote down
+- **Submit data** and **Clear data**
+
+## Sending us your data
+
+Addons can't reach the internet, so the game can't send it for you, but it takes two keystrokes. **Submit data** (or `/apg submit`) opens a window with:
+
+- **A share code**: everything you collected, compressed into one line and already selected. Press **Ctrl+C**.
+- **Where to paste it**:
+  - **[The GitHub form](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/issues/new?template=submit-data.yml)**: paste the code and press Submit. A bot files it, credits you and answers on the issue.
+  - **[Our Discord](https://discord.gg/Hr66t25vE7)**: paste it there. A long paste turns into a text file, and that's fine.
+- **Credit me as**: the name you're listed under. Left empty, the code uses your character's name; the file carries a name only if you type one before saving it.
+- **Or the file**, for very large collections: `WTF/Account/YOUR_ACCOUNT/SavedVariables/Aegis_Forever_Pathfinder.lua` (the window's *Save it now* button writes it). Drop it in Discord, or rename it to `.txt` (or zip it) and drag it into the GitHub form.
+
+Send again whenever you like, without clearing: a newer copy of a collection replaces the older one instead of counting twice. **As text** shows exactly what goes out. Everyone who sends data is listed in [the contributors list](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/blob/main/CONTRIBUTORS.md), and in the game's Submit window and *About* page from the next update on.
+
+## Also working without guides
+
+- **Quest automation**: accepts and hands in quests, on by default as in the Turtle addon, and picks them from an NPC's list. Never a grey quest, never a reward choice. Hold Shift to skip one.
+- **At the vendor** (switch it on under *Settings → Automation*): sells greys with the game's own *Sell All Junk*, and repairs, with your own money or the guild's first. Where a vendor has no *Sell All Junk*, a *Sell greys* button does it.
+- **Reputation detail**: "Stormwind +25: Honored 4,350 / 12,000, 7,650 to Revered"
+- **Level-ups**: tell everyone nearby, your party or your guild with one click, and how long the level took when the data collector saw all of it
+- **Window settings**: lock, transparency, opacity, step text size, window scale, hiding in dungeons or combat
+
+Automation is set per character, under *Settings → Automation*.
+
+## Install
+
+Use the CurseForge app, or download the file and unzip it into `World of Warcraft/_classic_beta_/Interface/AddOns/`, keeping the folder named exactly `Aegis_Forever_Pathfinder`. **Restart the game fully** the first time: a `/reload` isn't enough for new files.
+
+## Commands
+
+| Command | |
+|---|---|
+| `/apg` (or `/pathfinder`) | Show or hide the guide window |
+| `/apg collect` | The data collection window |
+| `/apg start`, `/apg stop` | Start or stop collecting |
+| `/apg status` | What has been collected so far |
+| `/apg submit` | The Submit data window |
+| `/apg config` | Settings |
+| `/apg browser` | The guide browser |
+| `/apg resetpanels` | Put every window back where it opens |
+| `/apg minimapbutton` | Show or hide the minimap button |
+
+**Minimap button:** click for the guide, right-click for settings, shift-click for data collection, drag to move it. Both windows have key bindings under *Key Bindings → AddOns*, and the game's *Options → AddOns* has a page that opens the settings.
+
+## Help and feedback
+
+Bugs, ideas and chat on our **[Discord](https://discord.gg/Hr66t25vE7)**. Source code, the [changelog](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/blob/main/CHANGELOG.md) and the data form on **[GitHub](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever)**.
+
+## Credits
+
+A port of **Aegis: Pathfinder**, which descends from TourGuide (Tekkub), VanillaGuide (isalcedo) and VanillaGuide-Plus (NostalgiaGeek, Brues). Fonts: Rajdhani and Inter (SIL Open Font License). Not made or endorsed by Blizzard Entertainment.</pre></div>
+  </section>
+
+  <section id="discord">
+    <h2>A calmer Discord</h2>
+    <p>Each addon has its own category of five or six channels, so every new addon or Forever port adds another five. The plan: shared channels, tagged by addon and by client, and let people choose what they see.</p>
+    <div class="compare">
+      <div><b>~57</b><span>channels today, with Class Chat</span></div>
+      <div><b>13</b><span>channels after, plus a collapsed archive</span></div>
+      <div><b>7</b><span>what a new member sees</span></div>
+      <div><b>0</b><span>new channels for a Forever port</span></div>
+    </div>
+
+    <div class="cat"><h4>Server info · read-only</h4>
+      <div class="chan"><div class="n">#start-here<em>renamed #rules</em></div><div class="d">Welcome, rules, ToS, useful links, support, and an addon directory: one message per addon with what it is, which client, and its GitHub and CurseForge links.<small>Replaces #welcome, #rules, #useful-links, #support-the-projects, #aegis-tos and all six download channels.</small></div></div>
+      <div class="chan"><div class="n">#announcements<em>announcement</em></div><div class="d">News and every release, posted by GitHub webhooks. Ping addon roles, not @everyone.<small>Replaces all six changelog channels.</small></div></div>
+    </div>
+    <div class="cat"><h4>Community</h4>
+      <div class="chan"><div class="n">#general-chat</div><div class="d">One chat for every addon and client; longer topics go in a thread.<small>Replaces the six addon "general" channels.</small></div></div>
+      <div class="chan"><div class="n">#off-topic</div><div class="d">Unchanged.</div></div>
+      <div class="chan"><div class="n">class-chat<em>forum</em></div><div class="d">One post per topic, filtered by class.<small>Replaces the Class Chat category.</small><div class="tags"><i>Warrior</i><i>Paladin</i><i>Hunter</i><i>Rogue</i><i>Priest</i><i>Shaman</i><i>Mage</i><i>Warlock</i><i>Druid</i><i>Turtle WoW</i><i>WoW: Forever</i></div></div></div>
+    </div>
+    <div class="cat"><h4>Aegis addons · renamed Support</h4>
+      <div class="chan"><div class="n">help-and-bugs<em>forum</em></div><div class="d">Every bug, Lua error and question. Tags required; status tags only staff can set. Pinned "Read first": addon and client tags, version, the Lua error text, steps.<small>Rename your busiest bug forum so its posts stay; replaces the other bug forums and #troubleshooting.</small><div class="tags"><i>Pathfinder</i><i>Instance Journal</i><i>SBA</i><i>Exchange</i><i>Courier</i><i>RallyPower</i><i>Turtle WoW</i><i>WoW: Forever</i><i>Bug</i><i>Lua error</i><i>Question</i><i>Need info</i><i>Fixed</i></div></div></div>
+      <div class="chan"><div class="n">suggestions<em>forum</em></div><div class="d">One idea per post; 👍 to vote.<small>Rename discord-suggestions; replaces the six suggestion forums.</small><div class="tags"><i>each addon</i><i>Discord server</i><i>Turtle WoW</i><i>WoW: Forever</i><i>Planned</i><i>Done</i><i>Declined</i></div></div></div>
+      <div class="chan"><div class="n">share-and-submit<em>forum</em></div><div class="d">Data files, recorder data, SBA profiles, screenshots. A maintainer tags a post Imported and closes it, so open posts are the to-do list.<small>Replaces #recorder-data, #addons-profiles and #screenshots. Check first that no tool reads #recorder-data; if one does, keep it open for now.</small></div></div>
+      <div class="chan"><div class="n">#testing<em>Tester role</em></div><div class="d">One thread per test program, with the build link and what to test at the top. Bugs still go in help-and-bugs so none get lost in chat.<small>Renamed #volunteer.</small></div></div>
+    </div>
+    <div class="cat"><h4>Unchanged</h4>
+      <div class="chan"><div class="n">Moderators' Lounge</div><div class="d">#moderators-chat, #community-updates and the Moderators voice channel. #aegis-protection can move in here if only staff need it.</div></div>
+      <div class="chan"><div class="n">ARCHIVE<em>collapsed</em></div><div class="d">The 46 retired channels, read-only, history kept. Replies allowed in open threads for 30 days, then visible only to the Archive role.</div></div>
+    </div>
+
+    <h3>Roles, from Discord's Onboarding questions</h3>
+    <p><b>Which client?</b> Turtle WoW, WoW: Forever, or both. <b>Which addons?</b> One ping role per addon; a Forever port shares its addon's role. <b>Anything else?</b> Tester (shows #testing), Class discussion, or the old channels (Archive). Give <b>Aegis Dev</b> by hand to maintainers, so they can tag, close and pin in the forums.</p>
+    <p><b>A Forever port</b> is then a tag pair, a #testing thread and a directory entry. Pathfinder (Forever) needs nothing new.</p>
+
+    <h3>One evening, in order</h3>
+    <ol class="steps">
+      <li><b>Check invites</b> (<i>Server Settings → Invites</i>): deleting a channel kills its invites, so archive old channels; don't delete them.</li>
+      <li><b>Make the roles</b> and the ARCHIVE category (everyone: view, no new messages).</li>
+      <li><b>Rename to keep history:</b> #rules → #start-here, SUPPORT → AEGIS ADDONS, #volunteer → #testing (Tester only), your busiest bug forum → help-and-bugs, discord-suggestions → suggestions.</li>
+      <li><b>Set up the forums:</b> tags, "Read first" posts, 👍 default reaction on suggestions. Create share-and-submit and class-chat.</li>
+      <li><b>Fill #start-here</b> with the ordered messages and the addon directory; make it read-only.</li>
+      <li><b>Retire the old channels:</b> pin one line in each ("Archived. Chat: #general-chat · Bugs: help-and-bugs · …"), then drag it into ARCHIVE and sync permissions.</li>
+      <li><b>Turn on Onboarding:</b> the 7 default channels, the three questions, and the Server Guide welcome and to-dos.</li>
+      <li><b>Check as a new member</b> (<i>View Server As Role</i>), then announce the new layout and where to pick roles.</li>
+    </ol>
+    <div class="note"><p><b>Why I can't move the channels for you:</b> there's no Discord connector, and this session's network blocks discord.com. To let a future session do it, you'd add a Discord bot token as an environment secret and allow <code>discord.com</code> in the environment's network settings. A bot with Manage Channels and Manage Roles could then make every change above.</p></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  function textOf(id) { return document.getElementById(id).textContent; }
+  function count(id, outId, limit, label) {
+    var n = textOf(id).length, out = document.getElementById(outId);
+    out.textContent = n.toLocaleString() + " / " + limit.toLocaleString() + " " + label;
+    if (n > limit) out.classList.add("over");
+  }
+  count("tester", "testerCount", 2000, "characters (Discord's limit)");
+  count("summary", "summaryCount", 150, "characters (CurseForge summary)");
+  document.querySelectorAll("button.copy").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var id = b.getAttribute("data-copy"), text = textOf(id), label = b.textContent;
+      function done(msg) { b.textContent = msg; setTimeout(function () { b.textContent = label; }, 1600); }
+      function select() {
+        var range = document.createRange(); range.selectNodeContents(document.getElementById(id));
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        done("Selected: press Ctrl+C");
+      }
+      try {
+        navigator.clipboard.writeText(text).then(function () { done("Copied"); }, select);
+      } catch (e) { select(); }
+    });
+  });
+})();
+</script>

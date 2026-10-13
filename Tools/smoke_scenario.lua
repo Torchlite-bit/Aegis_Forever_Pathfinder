@@ -348,96 +348,80 @@ for _, button in ipairs(options.navButtons) do
 end
 AP:RefreshConfigPanel()
 
-local confirm = function() return _G.AegisPathfinderConfirm end
 equal(AP.Theme.themeByKey.blizzard.label, "Default", "Blizzard's look is called Default")
 equal(AP.Theme.themeByKey.capybara.label, "Pathfinder Tan", "and the colour themes are Pathfinder's")
+-- Only the game's own code can reload: every Reload asks through one dialog whose Reload
+-- button is a secure /reload button itself, not one laid over another button.
+local function dialog() return AP.Theme:ReloadDialog() end
 if skin == "pathfinder" then
 	AP:SetTheme("night")
 	equal(AP.Theme.current, "night", "a colour theme applies at once")
-	check(not (confirm() and confirm():IsShown()), "without a reload")
+	check(not (dialog() and dialog():IsShown()), "without a reload")
 	AP:SetTheme("blizzard")
-	check(confirm() and confirm():IsShown(), "the Blizzard skin asks for a reload")
-	-- The game lets only its own code reload: the click goes to a secure /reload button lying
-	-- over Reload from the moment it shows, not put there as the mouse arrives.
-	local yes = confirm().yes
-	local cover = AP.Theme:ReloadCover(yes)
-	check(cover and cover:IsShown(), "a secure button lies over Reload as soon as it shows")
-	equal(cover:GetAttribute("macrotext"), "/reload", "and runs /reload")
-	equal(cover:GetFrameStrata(), yes:GetFrameStrata(), "in Reload's strata")
-	check(cover:GetFrameLevel() > yes:GetFrameLevel(), "above it")
-	local moved = 0
-	local ClearAllPoints = cover.ClearAllPoints
-	cover.ClearAllPoints = function(self) moved = moved + 1; return ClearAllPoints(self) end
-	cover:_Run("OnEnter"); cover:_Run("OnUpdate"); cover:_Run("OnLeave"); yes:_Run("OnEnter")
-	equal(moved, 0, "the mouse coming and going never moves it")
-	yes.GetCenter = function() return 410, 380 end
-	cover:_Run("OnUpdate")
-	equal(moved, 1, "it follows Reload when its window moves")
-	yes.GetCenter, cover.ClearAllPoints = nil, nil
-	Mock.ClickSecure(cover)
-	check(Mock.reloaded, "and reloads when told to")
+	check(dialog() and dialog():IsShown(), "Default asks for a reload")
+	local reload = dialog().reload
+	check(rawget(reload, "_secure"), "its Reload button is the secure button itself")
+	equal(reload:GetAttribute("type"), "macro", "a macro button")
+	equal(reload:GetAttribute("macrotext"), "/reload", "running /reload")
+	equal(reload:GetParent(), dialog(), "inside the dialog, so nothing lies over it")
+	check(reload:IsVisible(), "and shown")
+	check(not AP.Theme:IsWindow(dialog()), "the dialog isn't scaled or stacked with the Pathfinder windows")
+	Mock.ClickSecure(reload)
+	check(Mock.reloaded, "and reloads when clicked")
 	Mock.reloaded = nil
-	-- In combat the secure button can't be moved or shown: Reload itself says to type /reload.
+	-- If the game didn't reload, the click says so a moment later.
+	local mark = #Mock.chat
+	Mock.Click(reload)
+	Mock.Advance(1.5)
+	check(Mock.chat[mark + 1] and Mock.chat[mark + 1]:find("didn't reload"), "a Reload that didn't reload says so")
+	-- A frame holding a secure button can't be shown or hidden in combat: it steps aside
+	-- before the fight and comes back after.
 	Mock.Fire("PLAYER_REGEN_DISABLED")
-	check(not cover:IsShown(), "it steps aside as combat starts")
+	check(not dialog():IsShown(), "it steps aside as combat starts")
 	Mock.inCombat = true
-	cover:_Run("OnUpdate")
-	check(not cover:IsShown(), "and stays aside in combat")
-	Mock.Click(yes)
-	check(Chat("Type /reload to reload: in combat"), "Reload in combat says to type /reload")
-	check(not confirm():IsShown(), "and the dialog goes")
+	AP.Theme:SetWindowScale(1.1)
+	AP.Theme:SetWindowScale(1)
+	AP:SetTheme("blizzard")
+	check(not dialog():IsShown(), "and isn't shown in combat")
+	check(Chat("Type /reload to reload"), "asked in combat, it says to type /reload")
 	Mock.inCombat = false
 	Mock.Fire("PLAYER_REGEN_ENABLED")
-	check(not cover:IsShown(), "after combat it stays away from a dialog that closed")
-	AP:SetTheme("blizzard")
-	check(cover:IsShown(), "and is back over Reload when the dialog is")
-	-- A click that reaches our own Reload outside combat missed the secure button: it says
-	-- what it can see, and the dialog stays for another try.
-	Mock.Click(yes)
-	check(Chat("That didn't reload"), "a missed Reload says so")
-	check(Chat("Reload check: secure button shown true"), "with what the secure button was doing")
-	check(confirm():IsShown(), "and the dialog stays")
-	SlashCmdList.AEGISPATHFINDER("reloaddebug")
-	check(cover.tint:IsShown(), "/apg reloaddebug tints the secure buttons")
-	SlashCmdList.AEGISPATHFINDER("reloaddebug")
-	check(not cover.tint:IsShown(), "and again stops")
-	Mock.Click(confirm().no)
-	check(not cover:IsShown(), "Later takes it away")
-	-- The other two Reload buttons: the guide menu's and the Submit window's Save it now.
+	check(dialog():IsShown(), "and asks again after the fight")
+	Mock.Click(dialog().later)
+	check(not dialog():IsShown(), "Later closes it")
+	Mock.Fire("PLAYER_REGEN_DISABLED")
+	Mock.Fire("PLAYER_REGEN_ENABLED")
+	check(not dialog():IsShown(), "and it stays closed after the next fight")
+	-- The guide menu's Reload and the Submit window's Save it now ask the same way.
 	local menuReload
 	for _, row in ipairs({ guide.ui.menu:GetChildren() }) do
-		if row.item and row.item.reload then menuReload = row end
+		if row.item and row.item.label == "Reload" then menuReload = row end
 	end
 	check(menuReload, "the guide menu has Reload")
 	guide.ui.menu:Show()
-	local menuCover = AP.Theme:ReloadCover(menuReload)
-	check(menuCover and menuCover:IsShown() and menuCover.host == menuReload, "a secure button lies over the menu's Reload")
-	guide.ui.menu:Hide()
-	check(not menuCover:IsShown(), "and leaves with the menu")
-	guide.ui.menu:Show()
-	local mark = #Mock.chat
 	Mock.Click(menuReload)
-	local said = {}
-	for i = mark + 1, #Mock.chat do said[#said + 1] = Mock.chat[i] end
-	said = table.concat(said, "\n")
-	check(said:find("That didn't reload") and said:find("secure button shown true"),
-		"a click that reaches the menu's own Reload says so, with what it saw")
-	check(not guide.ui.menu:IsShown(), "and the menu closes")
-	guide.ui.menu:Hide()
+	check(dialog():IsShown() and not guide.ui.menu:IsShown(), "the menu's Reload asks through the dialog")
+	equal(dialog().text:GetText(), AP.L.RELOAD_NOW, "Reload the interface now?")
+	Mock.Click(dialog().later)
 	AP:ShowSubmit()
 	local save = Mock.FindText(AP.L.SUBMIT_SAVE, _G.AegisPathfinderSubmit)[1]
 		or Mock.FindText(AP.L.SUBMIT_SAVE:upper(), _G.AegisPathfinderSubmit)[1]
 	check(save, "the Submit window has Save it now")
-	local saveCover = AP.Theme:ReloadCover(save)
-	check(saveCover and saveCover:IsShown() and saveCover.host == save, "a secure button lies over Save it now")
+	Mock.Click(save)
+	check(dialog():IsShown(), "Save it now asks through the dialog")
+	equal(dialog().text:GetText(), AP.L.SUBMIT_SAVE_RELOAD, "saying why")
+	Mock.Click(dialog().later)
+	check(not Mock.IsProtected(_G.AegisPathfinderSubmit) and not Mock.IsProtected(guide.ui.menu),
+		"no Pathfinder window holds a secure button")
 	_G.AegisPathfinderSubmit:Hide()
-	check(not saveCover:IsShown(), "and leaves with the Submit window")
 	AP:SetTheme("pathfinder")
+	Mock.Click(dialog().later)
 else
 	AP:SetTheme("pathfinder")
-	check(confirm() and confirm():IsShown(), "leaving the Blizzard skin asks for a reload")
-	Mock.Click(confirm().no)
-	check(not confirm():IsShown() and not Mock.reloaded, "Later leaves it be")
+	check(dialog() and dialog():IsShown(), "leaving Default asks for a reload")
+	check(rawget(dialog().reload, "_secure"), "with the secure Reload in this skin too")
+	Mock.Click(dialog().later)
+	check(not dialog():IsShown() and not Mock.reloaded, "Later leaves it be")
 end
 equal(#Mock.popups, 0, "the game's own popups are never used")
 
@@ -549,9 +533,11 @@ Mock.Fire("QUEST_DETAIL", 0)
 equal(data.quests[176].seen.offered, before, "nothing is written while stopped")
 
 local exportText = Mock.export
+local confirm = _G.AegisPathfinderConfirm
 AP:ConfirmClearData()
-check(confirm():IsShown(), "Clear data asks first")
-Mock.Click(confirm().yes)
+confirm = confirm or _G.AegisPathfinderConfirm
+check(confirm:IsShown(), "Clear data asks first")
+Mock.Click(confirm.yes)
 equal(next(AP.Collector:GetData().quests), nil, "Clear data forgets the quests")
 Mock.export = exportText
 
