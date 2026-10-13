@@ -61,13 +61,31 @@ local function Protected(self, action)
 		return true
 	end
 end
+-- As in the client, a frame's shown children get OnShow and OnHide with it.
+local function Cascade(self, script)
+	for _, child in ipairs(rawget(self, "_children") or {}) do
+		if child._shown then
+			child:_Run(script)
+			Cascade(child, script)
+		end
+	end
+end
 function Region:Show()
 	if Protected(self, "Show") then return end
-	local was = self._shown; self._shown = true; if not was then self:_Run("OnShow") end
+	local was = self._shown; self._shown = true
+	if not was then
+		self:_Run("OnShow")
+		if self:IsVisible() then Cascade(self, "OnShow") end
+	end
 end
 function Region:Hide()
 	if Protected(self, "Hide") then return end
-	local was = self._shown; self._shown = false; if was then self:_Run("OnHide") end
+	local visible = self:IsVisible()
+	local was = self._shown; self._shown = false
+	if was then
+		self:_Run("OnHide")
+		if visible then Cascade(self, "OnHide") end
+	end
 end
 function Region:SetAttribute(key, value)
 	if Protected(self, "SetAttribute") then return end
@@ -121,6 +139,11 @@ function Region:GetScale() return self._scale end
 function Region:SetAlpha(alpha) self._alpha = alpha end
 function Region:GetAlpha() return self._alpha end
 function Region:SetFrameLevel(level) self._level = level end
+function Region:SetFrameStrata(strata) self._strata = strata end
+function Region:GetFrameStrata()
+	local parent = rawget(self, "_parent")
+	return rawget(self, "_strata") or (parent and parent ~= self and parent:GetFrameStrata()) or "MEDIUM"
+end
 function Region:GetFrameLevel() return self._level end
 function Region:SetText(text) self._text = text end
 function Region:GetText() return self._text end

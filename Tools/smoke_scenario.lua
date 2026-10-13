@@ -349,29 +349,49 @@ end
 AP:RefreshConfigPanel()
 
 local confirm = function() return _G.AegisPathfinderConfirm end
+equal(AP.Theme.themeByKey.blizzard.label, "Default", "Blizzard's look is called Default")
+equal(AP.Theme.themeByKey.capybara.label, "Pathfinder Tan", "and the colour themes are Pathfinder's")
 if skin == "pathfinder" then
 	AP:SetTheme("night")
 	equal(AP.Theme.current, "night", "a colour theme applies at once")
 	check(not (confirm() and confirm():IsShown()), "without a reload")
 	AP:SetTheme("blizzard")
 	check(confirm() and confirm():IsShown(), "the Blizzard skin asks for a reload")
-	-- The game lets only its own code reload: the click goes to a secure /reload button over Reload.
-	confirm().yes:_Run("OnEnter")
-	local reloader = _G.AegisPathfinderReload
-	check(reloader and reloader:IsShown(), "a secure button covers Reload while the mouse is on it")
-	equal(reloader:GetAttribute("macrotext"), "/reload", "and runs /reload")
-	Mock.ClickSecure(reloader)
+	-- The game lets only its own code reload: the click goes to a secure /reload button lying
+	-- over Reload from the moment it shows, not put there as the mouse arrives.
+	local yes = confirm().yes
+	local cover = AP.Theme:ReloadCover(yes)
+	check(cover and cover:IsShown(), "a secure button lies over Reload as soon as it shows")
+	equal(cover:GetAttribute("macrotext"), "/reload", "and runs /reload")
+	equal(cover:GetFrameStrata(), yes:GetFrameStrata(), "in Reload's strata")
+	check(cover:GetFrameLevel() > yes:GetFrameLevel(), "above it")
+	local moved = 0
+	local ClearAllPoints = cover.ClearAllPoints
+	cover.ClearAllPoints = function(self) moved = moved + 1; return ClearAllPoints(self) end
+	cover:_Run("OnEnter"); cover:_Run("OnUpdate"); cover:_Run("OnLeave"); yes:_Run("OnEnter")
+	equal(moved, 0, "the mouse coming and going never moves it")
+	yes.GetCenter = function() return 410, 380 end
+	cover:_Run("OnUpdate")
+	equal(moved, 1, "it follows Reload when its window moves")
+	yes.GetCenter, cover.ClearAllPoints = nil, nil
+	Mock.ClickSecure(cover)
 	check(Mock.reloaded, "and reloads when told to")
 	Mock.reloaded = nil
 	-- In combat the secure button can't be moved or shown: Reload itself says to type /reload.
 	Mock.Fire("PLAYER_REGEN_DISABLED")
-	check(not reloader:IsShown(), "it steps aside as combat starts")
+	check(not cover:IsShown(), "it steps aside as combat starts")
 	Mock.inCombat = true
-	confirm().yes:_Run("OnEnter")
-	check(not reloader:IsShown(), "and stays aside in combat")
-	Mock.Click(confirm().yes)
-	check(Chat("Type /reload"), "Reload in combat says to type /reload")
+	cover:_Run("OnUpdate")
+	check(not cover:IsShown(), "and stays aside in combat")
+	Mock.Click(yes)
+	check(Chat("Type /reload to reload: in combat"), "Reload in combat says to type /reload")
 	Mock.inCombat = false
+	Mock.Fire("PLAYER_REGEN_ENABLED")
+	check(not cover:IsShown(), "after combat it stays away from a dialog that closed")
+	AP:SetTheme("blizzard")
+	check(cover:IsShown(), "and is back over Reload when the dialog is")
+	Mock.Click(confirm().no)
+	check(not cover:IsShown(), "Later takes it away")
 	-- The other two Reload buttons: the guide menu's and the Submit window's Save it now.
 	local menuReload
 	for _, row in ipairs({ guide.ui.menu:GetChildren() }) do
@@ -379,20 +399,22 @@ if skin == "pathfinder" then
 	end
 	check(menuReload, "the guide menu has Reload")
 	guide.ui.menu:Show()
-	menuReload:_Run("OnEnter")
-	check(reloader:IsShown() and reloader.host == menuReload, "the secure button covers the menu's Reload")
-	menuReload:Hide()
-	check(not reloader:IsShown(), "and leaves when it hides")
-	menuReload:Show()
+	local menuCover = AP.Theme:ReloadCover(menuReload)
+	check(menuCover and menuCover:IsShown() and menuCover.host == menuReload, "a secure button lies over the menu's Reload")
+	guide.ui.menu:Hide()
+	check(not menuCover:IsShown(), "and leaves with the menu")
+	guide.ui.menu:Show()
 	Mock.Click(menuReload)
+	check(Chat("That didn't reload"), "a click that reaches the menu's own Reload out of combat says so")
 	guide.ui.menu:Hide()
 	AP:ShowSubmit()
 	local save = Mock.FindText(AP.L.SUBMIT_SAVE, _G.AegisPathfinderSubmit)[1]
 		or Mock.FindText(AP.L.SUBMIT_SAVE:upper(), _G.AegisPathfinderSubmit)[1]
 	check(save, "the Submit window has Save it now")
-	save:_Run("OnEnter")
-	check(reloader:IsShown() and reloader.host == save, "the secure button covers Save it now")
+	local saveCover = AP.Theme:ReloadCover(save)
+	check(saveCover and saveCover:IsShown() and saveCover.host == save, "a secure button lies over Save it now")
 	_G.AegisPathfinderSubmit:Hide()
+	check(not saveCover:IsShown(), "and leaves with the Submit window")
 	AP:SetTheme("pathfinder")
 else
 	AP:SetTheme("pathfinder")

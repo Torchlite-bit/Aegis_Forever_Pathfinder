@@ -47,9 +47,9 @@ collector** records quests and levels so guides can be written from real data.
 | 1.12 | Status |
 |---|---|
 | Design tokens (`Theme.color`), Rajdhani + Inter fonts, nine-sliced rounded panels, drop-shadow ring, cap strips, chips, pills, tabs, badges, bands, switches, check boxes, sliders, dropdowns, scrollbar, window stacking, window scale, position saving | **Ported** unchanged (`Core/Theme.lua`), with the same generated `media/` art |
-| Themes: Day, Night, Turtle WoW (green), OctoWoW, RavenCraft, Capybara Paradise, Aegis | **Ported.** "Turtle WoW" is renamed **Pathfinder** (same green, still the default). A saved `turtle` is read as `pathfinder`. |
+| Themes: Day, Night, Turtle WoW (green), OctoWoW, RavenCraft, Capybara Paradise, Aegis | **Ported**, named Pathfinder Day, Night, Green, Purple, Grey, Tan and Red. Green ("Turtle WoW" there) is still the one a new install starts with; a saved `turtle` is read as `pathfinder`. The saved keys are unchanged. |
 | Switch colours (theme / red-green) | **Ported** |
-| **Blizzard skin** | **New.** A theme that swaps the art for today's client art, like the game's Options window: the metal nine-slice frame on a solid dark fill, the red close button, `UIPanelButtonTemplate`, the slim check boxes, sliders, scroll bars and drop-downs, the Options list highlight, category bar and section rules, Friz Quadrata, gold labels, `GameTooltip`. Older dialog art where the client lacks it. Switching to or from it reloads the UI. |
+| **Blizzard skin** | **New.** The **Default** theme: a theme that swaps the art for today's client art, like the game's Options window: the metal nine-slice frame on a solid dark fill, the red close button, `UIPanelButtonTemplate`, the slim check boxes, sliders, scroll bars and drop-downs, the Options list highlight, category bar and section rules, Friz Quadrata, gold labels, `GameTooltip`. Older dialog art where the client lacks it. Switching to or from it reloads the UI. |
 | Turtle loading screens and custom-zone maps (`media/loadscreens`, `media/maps`) | **Not ported** (Turtle WoW content) |
 
 ## Settings
