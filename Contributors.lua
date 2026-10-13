@@ -4,4 +4,5 @@ local _, AP = ...
 -- collected data, in the order they first did. Don't edit it by hand; it is made
 -- again each time data comes in (docs/data-submission.md).
 AP.CONTRIBUTORS = {
+	"Genesys Firstborn",
 }

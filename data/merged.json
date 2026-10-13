@@ -1,3 +1,2465 @@
 {
- "sources": []
+ "builds": {
+  "1.60.1.70338": true
+ },
+ "created": 1791898946,
+ "levels": {
+  "1": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 1
+   },
+   "first": 1791919698,
+   "last": 1791919698,
+   "xpMax": {
+    "count": 1,
+    "last": 400,
+    "max": 400,
+    "min": 400
+   }
+  },
+  "2": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 1
+   },
+   "first": 1791919962,
+   "last": 1791919962,
+   "seconds": {
+    "count": 1,
+    "last": 445,
+    "max": 445,
+    "min": 445
+   },
+   "xpMax": {
+    "count": 1,
+    "last": 900,
+    "max": 900,
+    "min": 900
+   }
+  },
+  "26": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:PALADIN:Alliance": 9
+   },
+   "first": 1791899126,
+   "last": 1791903082,
+   "xpMax": {
+    "count": 9,
+    "last": 36400,
+    "max": 36400,
+    "min": 36400
+   }
+  },
+  "3": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 1
+   },
+   "first": 1791920407,
+   "last": 1791920407,
+   "seconds": {
+    "count": 1,
+    "last": 742,
+    "max": 742,
+    "min": 742
+   },
+   "xpMax": {
+    "count": 1,
+    "last": 1400,
+    "max": 1400,
+    "min": 1400
+   }
+  },
+  "4": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 4
+   },
+   "first": 1791921149,
+   "last": 1791922108,
+   "seconds": {
+    "count": 1,
+    "last": 890,
+    "max": 890,
+    "min": 890
+   },
+   "xpMax": {
+    "count": 4,
+    "last": 2100,
+    "max": 2100,
+    "min": 2100
+   }
+  },
+  "5": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 2
+   },
+   "first": 1791922165,
+   "last": 1791922231,
+   "xpMax": {
+    "count": 2,
+    "last": 2800,
+    "max": 2800,
+    "min": 2800
+   }
+  }
+ },
+ "observers": {
+  "Human:PALADIN:Alliance": 9,
+  "Human:WARLOCK:Alliance": 5
+ },
+ "quests": {
+  "15": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "21": true
+    },
+    "prev": {
+     "7": true
+    }
+   },
+   "completionText": "I don't like hearing of all these kobolds in our mine.  No good can come of this.  Here, take this as payment, and when you're ready, speak to me again.  I would like you to go back to the mines one more time...",
+   "description": "Genesys, my scouts tell me that the kobold infestation is larger than we had thought.  A group of kobold workers has camped near the Echo Ridge Mine to the north.\n\nGo to the mine and remove them.  We know there are at least 10.  Kill them, see if there are more, then report back to me.",
+   "first": 1791920440,
+   "frequency": 0,
+   "last": 1791921667,
+   "level": 3,
+   "objectiveText": "Kill 10 Kobold Workers, then report back to Marshal McBride.",
+   "objectives": [
+    {
+     "required": 10,
+     "text": "Kobold Workers slain",
+     "type": "monster"
+    }
+   ],
+   "pickups": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 3,
+      "max": 3,
+      "min": 3
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4884,
+     "xMax": 0.4884,
+     "xMin": 0.4884,
+     "xyCount": 1,
+     "y": 0.4166,
+     "yMax": 0.4166,
+     "yMin": 0.4166,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:49:35": 47
+    },
+    "turnin": {
+     "1429:49:42": 5
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:47:33": 1,
+     "1429:50:35": 1,
+     "1429:51:35": 1,
+     "1429:51:36": 1,
+     "1429:51:38": 2,
+     "1429:52:36": 2,
+     "1429:52:37": 2
+    }
+   },
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 40,
+     "max": 40,
+     "min": 40
+    },
+    "moneyOffered": 40,
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "4": {
+      "count": 1,
+      "last": 250,
+      "max": 250,
+      "min": 250
+     }
+    },
+    "xpObserved": {
+     "4": {
+      "count": 1,
+      "last": 250,
+      "max": 250,
+      "min": 250
+     }
+    },
+    "xpOffered": {
+     "3": 250,
+     "4": 250
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Investigate Echo Ridge",
+   "turnins": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4885,
+     "xMax": 0.4885,
+     "xMin": 0.4885,
+     "xyCount": 1,
+     "y": 0.4163,
+     "yMax": 0.4163,
+     "yMin": 0.4163,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "1598": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "completionText": "Excellent... I was never able to gain access to this text, it was held in a protected wing of the library that would have looked suspicious for me to be loitering around.\n\nWell, you did a good job in getting this, and I'm convinced that you can probably handle your own imp, so there's no reason for me not to show you how to summon one.",
+   "description": "You there! Genesys, right?\n\nI hope you're sure about becoming a warlock, because if you can't hold your own, you're likely to get pulled under.\n\nI'm to teach you, but I need to make sure you're strong enough first.\n\nThere was a novice studying at the Abbey who ran off to join the Defias Brotherhood. Why do I care? Well, he stole some important books.\n\nOne of those happens to be a book I've wanted for myself, the Powers of the Void. Steal it for me, they have it hidden at their tent in the Vineyards.",
+   "first": 1791919832,
+   "frequency": 0,
+   "last": 1791921232,
+   "level": 4,
+   "objectiveText": "Retrieve the Powers of the Void for Drusilla La Salle.",
+   "objectives": [
+    {
+     "required": 1,
+     "type": "item"
+    }
+   ],
+   "pickups": {
+    "npc:459@1429": {
+     "count": 1,
+     "id": 459,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Drusilla La Salle",
+     "playerLevel": {
+      "count": 1,
+      "last": 1,
+      "max": 1,
+      "min": 1
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4985,
+     "xMax": 0.4985,
+     "xMin": 0.4985,
+     "xyCount": 1,
+     "y": 0.4269,
+     "yMax": 0.4269,
+     "yMin": 0.4269,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:57:44": 43
+    },
+    "turnin": {
+     "1429:50:43": 13
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:57:44": 1
+    }
+   },
+   "progressText": "It was too conspicuous for me to steal the book myself. What luck one of their own patsies did the dirty work for me.",
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "spells": {
+     "688": "Summon Imp"
+    },
+    "xp": {
+     "4": {
+      "count": 1,
+      "last": 360,
+      "max": 360,
+      "min": 360
+     }
+    },
+    "xpObserved": {
+     "4": {
+      "count": 1,
+      "last": 360,
+      "max": 360,
+      "min": 360
+     }
+    },
+    "xpOffered": {
+     "1": 360,
+     "4": 360
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "The Stolen Tome",
+   "turnins": {
+    "npc:459@1429": {
+     "count": 1,
+     "id": 459,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Drusilla La Salle",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4996,
+     "xMax": 0.4996,
+     "xMin": 0.4996,
+     "xyCount": 1,
+     "y": 0.4272,
+     "yMax": 0.4272,
+     "yMin": 0.4272,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "18": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "3903": true,
+     "6": true
+    }
+   },
+   "completionText": "Back with some bandanas, I see.  The Stormwind Army appreciates your help.",
+   "description": "Recently, a new group of thieves has been hanging around Northshire.  They call themselves the Defias Brotherhood, and have been seen across the river to the east.\n\nI don't know what they're up to, but I'm sure it's not good!  Bring me the bandanas they wear, and I'll reward you with a weapon.",
+   "first": 1791920466,
+   "frequency": 0,
+   "last": 1791921282,
+   "level": 4,
+   "objectiveText": "Bring 12 Red Burlap Bandanas to Deputy Willem outside the Northshire Abbey.",
+   "objectives": [
+    {
+     "required": 12,
+     "type": "item"
+    }
+   ],
+   "pickups": {
+    "npc:823@1429": {
+     "count": 1,
+     "id": 823,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Deputy Willem",
+     "playerLevel": {
+      "count": 1,
+      "last": 3,
+      "max": 3,
+      "min": 3
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.482,
+     "xMax": 0.482,
+     "xMin": 0.482,
+     "xyCount": 1,
+     "y": 0.4281,
+     "yMax": 0.4281,
+     "yMin": 0.4281,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:54:48": 23
+    },
+    "turnin": {
+     "1429:48:43": 3
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:53:45": 1,
+     "1429:53:46": 1,
+     "1429:53:47": 1,
+     "1429:53:48": 1,
+     "1429:54:42": 2,
+     "1429:54:45": 2,
+     "1429:54:46": 2,
+     "1429:56:43": 1,
+     "1429:56:44": 1
+    }
+   },
+   "progressText": "Have you gathered those bandanas for me yet?",
+   "rewards": {
+    "choices": {
+     "1159": {
+      "count": 1,
+      "name": "Militia Quarterstaff"
+     },
+     "1161": {
+      "count": 1,
+      "name": "Militia Shortsword"
+     },
+     "2224": {
+      "count": 1,
+      "name": "Militia Dagger"
+     },
+     "5579": {
+      "count": 1,
+      "name": "Militia Warhammer"
+     },
+     "5580": {
+      "count": 1,
+      "name": "Militia Hammer"
+     }
+    },
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "4": {
+      "count": 1,
+      "last": 360,
+      "max": 360,
+      "min": 360
+     }
+    },
+    "xpObserved": {
+     "4": {
+      "count": 1,
+      "last": 360,
+      "max": 360,
+      "min": 360
+     }
+    },
+    "xpOffered": {
+     "3": 360,
+     "4": 360
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Brotherhood of Thieves",
+   "turnins": {
+    "npc:823@1429": {
+     "count": 1,
+     "id": 823,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Deputy Willem",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4816,
+     "xMax": 0.4816,
+     "xMin": 0.4816,
+     "xyCount": 1,
+     "y": 0.4289,
+     "yMax": 0.4289,
+     "yMin": 0.4289,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "21": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 2
+   },
+   "chain": {
+    "prev": {
+     "15": true
+    }
+   },
+   "description": "Your previous investigations are proof that the Echo Ridge Mine needs purging.  Return to the mine and help clear it of kobolds.\n\nWaste no time, Genesys.  The longer the kobolds are left unmolested in the mine, the deeper a foothold they gain in Northshire.",
+   "first": 1791921667,
+   "frequency": 0,
+   "last": 1791921671,
+   "level": 5,
+   "objectiveText": "Kill 12 Kobold Laborers, then return to Marshal McBride at Northshire Abbey.",
+   "objectives": [
+    {
+     "required": 12,
+     "text": "Kobold Laborer slain",
+     "type": "monster"
+    }
+   ],
+   "pickups": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4885,
+     "xMax": 0.4885,
+     "xMin": 0.4885,
+     "xyCount": 1,
+     "y": 0.4163,
+     "yMax": 0.4163,
+     "yMin": 0.4163,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1415:46:68": 1,
+     "1429:49:28": 13
+    }
+   },
+   "rewards": {
+    "choices": {
+     "11192": {
+      "count": 1,
+      "name": "Outfitter Gloves"
+     },
+     "2186": {
+      "count": 1,
+      "name": "Outfitter Belt"
+     },
+     "2691": {
+      "count": 1,
+      "name": "Outfitter Boots"
+     }
+    },
+    "xpOffered": {
+     "4": 450
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1
+   },
+   "title": "Skirmish at Echo Ridge"
+  },
+  "288": {
+   "frequency": 0,
+   "level": 27,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Flagon of Dwarven Honeymead",
+     "type": "item"
+    }
+   ],
+   "poi": {
+    "objective": {
+     "1415:48:48": 4,
+     "1437:11:61": 16
+    }
+   },
+   "title": "The Third Fleet"
+  },
+  "2922": {
+   "frequency": 0,
+   "level": 26,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Techbot's Memory Core",
+     "type": "item"
+    }
+   ],
+   "poi": {
+    "objective": {
+     "1415:43:53": 4
+    }
+   },
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Save Techbot's Brain!"
+  },
+  "2924": {
+   "frequency": 0,
+   "level": 30,
+   "objectives": [
+    {
+     "required": 12,
+     "text": "Essential Artificial",
+     "type": "item"
+    }
+   ],
+   "poi": {
+    "objective": {
+     "1415:44:54": 4
+    }
+   },
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Essential Artificials"
+  },
+  "2926": {
+   "frequency": 0,
+   "level": 27,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Full Leaden Collection Phial",
+     "type": "item"
+    }
+   ],
+   "poi": {
+    "objective": {
+     "1415:44:54": 4
+    }
+   },
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Gnogaine"
+  },
+  "2928": {
+   "frequency": 0,
+   "level": 30,
+   "objectives": [
+    {
+     "required": 24,
+     "text": "Robo-mechanical Guts",
+     "type": "item"
+    }
+   ],
+   "poi": {
+    "objective": {
+     "1415:44:54": 4
+    }
+   },
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Gyrodrillmatic Excavationators"
+  },
+  "2929": {
+   "frequency": 0,
+   "level": 35,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Mekgineer Thermaplugg slain",
+     "type": "monster"
+    }
+   ],
+   "poi": {
+    "objective": {
+     "1415:44:54": 4
+    }
+   },
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "The Grand Betrayal"
+  },
+  "2930": {
+   "frequency": 0,
+   "level": 30,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Prismatic Punch Card",
+     "type": "item"
+    }
+   ],
+   "poi": {
+    "objective": {
+     "1415:44:54": 4
+    }
+   },
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Data Rescue"
+  },
+  "3105": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "prev": {
+     "7": true
+    }
+   },
+   "completionText": "As you grow in power, you will be tempted--you must always remember to control yourself. I will not lie--corruption can come to any practitioner of the arcane; especially one who deals with creatures from the Twisting Nether. Be patient, and be prudent... but do not let that repress your ambition.\n\nAs you grow more powerful, return to me and I will teach you more about our ways.",
+   "description": "I was asked to bring this to your attention as soon as you returned from the kobold camps, Genesys. It appears to be a letter sealed with the insignia of Drusilla, one of our local trainers. I wouldn't hesitate to read it before you go about any other business here in the Abbey.",
+   "first": 1791920437,
+   "frequency": 0,
+   "last": 1791920477,
+   "level": 1,
+   "objectiveText": "Read the Tainted Letter and speak to Drusilla La Salle next to Northshire Abbey.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Read the Tainted Letter and speak to Drusilla La Salle next to Northshire Abbey.",
+     "type": "log"
+    }
+   ],
+   "pickups": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 3,
+      "max": 3,
+      "min": 3
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4884,
+     "xMax": 0.4884,
+     "xMin": 0.4884,
+     "xyCount": 1,
+     "y": 0.4166,
+     "yMax": 0.4166,
+     "yMin": 0.4166,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:50:43": 5
+    }
+   },
+   "progressText": "Ah, so you've arrived, and not a moment too soon, Genesys. Some of the guards were over here a moment ago and were giving me curious looks... pathetic mundanes.",
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 50,
+      "max": 50,
+      "min": 50
+     }
+    },
+    "xp": {
+     "3": {
+      "count": 1,
+      "last": 40,
+      "max": 40,
+      "min": 40
+     }
+    },
+    "xpObserved": {
+     "3": {
+      "count": 1,
+      "last": 40,
+      "max": 40,
+      "min": 40
+     }
+    },
+    "xpOffered": {
+     "3": 40
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Tainted Letter",
+   "turnins": {
+    "npc:459@1429": {
+     "count": 1,
+     "id": 459,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Drusilla La Salle",
+     "playerLevel": {
+      "count": 1,
+      "last": 3,
+      "max": 3,
+      "min": 3
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.498,
+     "xMax": 0.498,
+     "xMin": 0.498,
+     "xyCount": 1,
+     "y": 0.427,
+     "yMax": 0.427,
+     "yMin": 0.427,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "33": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "prev": {
+     "5261": true
+    }
+   },
+   "completionText": "You've been busy!  I can't wait to cook up that wolf meat...\n\nI have some things here you might want - take your pick!",
+   "description": "I hate those nasty timber wolves!  But I sure like eating wolf steaks...  Bring me tough wolf meat and I will exchange it for something you'll find useful.\n\nTough wolf meat is gathered from hunting the timber wolves and young wolves wandering the Northshire countryside.",
+   "first": 1791919801,
+   "frequency": 0,
+   "last": 1791920407,
+   "level": 2,
+   "objectiveText": "Bring 8 pieces of Tough Wolf Meat to Eagan Peltskinner outside Northshire Abbey.",
+   "objectives": [
+    {
+     "required": 8,
+     "type": "item"
+    }
+   ],
+   "pickups": {
+    "npc:196@1429": {
+     "count": 1,
+     "id": 196,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Eagan Peltskinner",
+     "playerLevel": {
+      "count": 1,
+      "last": 1,
+      "max": 1,
+      "min": 1
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4887,
+     "xMax": 0.4887,
+     "xMin": 0.4887,
+     "xyCount": 1,
+     "y": 0.4016,
+     "yMax": 0.4016,
+     "yMin": 0.4016,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:48:40": 2,
+     "1429:49:41": 12
+    },
+    "turnin": {
+     "1429:49:40": 13
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:50:37": 1,
+     "1429:50:38": 1,
+     "1429:51:41": 1,
+     "1429:51:42": 1,
+     "1429:51:44": 3,
+     "1429:52:39": 1
+    }
+   },
+   "progressText": "Hey Genesys.  I'm getting hungry...did you get that tough wolf meat?",
+   "rewards": {
+    "choices": {
+     "6070": {
+      "count": 1,
+      "name": "Wolfskin Bracers"
+     },
+     "80": {
+      "count": 1,
+      "name": "Soft Fur-lined Shoes"
+     }
+    },
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "2": {
+      "count": 1,
+      "last": 170,
+      "max": 170,
+      "min": 170
+     }
+    },
+    "xpObserved": {
+     "2": {
+      "count": 1,
+      "last": 170,
+      "max": 170,
+      "min": 170
+     }
+    },
+    "xpOffered": {
+     "1": 170,
+     "2": 170
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Wolves Across the Border",
+   "turnins": {
+    "npc:196@1429": {
+     "count": 1,
+     "id": 196,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Eagan Peltskinner",
+     "playerLevel": {
+      "count": 1,
+      "last": 2,
+      "max": 2,
+      "min": 2
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4886,
+     "xMax": 0.4886,
+     "xMin": 0.4886,
+     "xyCount": 1,
+     "y": 0.4018,
+     "yMax": 0.4018,
+     "yMin": 0.4018,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "377": {
+   "frequency": 0,
+   "level": 26,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Hand of Dextren Ward",
+     "type": "item"
+    }
+   ],
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Crime and Punishment"
+  },
+  "3903": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "3904": true
+    },
+    "prev": {
+     "18": true
+    }
+   },
+   "completionText": "Oh, Deputy Willem told you to speak with me?  He's a brave man and always willing to help, but his duties keep him stuck at Northshire Abbey and I'm afraid the problem I have today is beyond him.\n\nPerhaps you can help me?",
+   "description": "You've shown yourself a dependable warlock, Genesys.  Dependable, and not afraid to get your hands dirty, eh?\n\nI have a friend, Milly Osworth, who's in some trouble.  She's over with her wagon on the other side of the abbey, near the stable.  I'm sure she could use a pair of hands like yours.",
+   "first": 1791921283,
+   "frequency": 0,
+   "last": 1791921336,
+   "level": 4,
+   "objectiveText": "Speak with Milly Osworth.",
+   "pickups": {
+    "npc:823@1429": {
+     "count": 1,
+     "id": 823,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Deputy Willem",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4816,
+     "xMax": 0.4816,
+     "xMin": 0.4816,
+     "xyCount": 1,
+     "y": 0.4289,
+     "yMax": 0.4289,
+     "yMin": 0.4289,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:51:39": 2
+    }
+   },
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 10,
+      "max": 10,
+      "min": 10
+     }
+    },
+    "xp": {
+     "4": {
+      "count": 1,
+      "last": 35,
+      "max": 35,
+      "min": 35
+     }
+    },
+    "xpObserved": {
+     "4": {
+      "count": 1,
+      "last": 35,
+      "max": 35,
+      "min": 35
+     }
+    },
+    "xpOffered": {
+     "4": 35
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Milly Osworth",
+   "turnins": {
+    "npc:9296@1429": {
+     "count": 1,
+     "id": 9296,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Milly Osworth",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.5066,
+     "xMax": 0.5066,
+     "xMin": 0.5066,
+     "xyCount": 1,
+     "y": 0.3929,
+     "yMax": 0.3929,
+     "yMin": 0.3929,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "3904": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 2
+   },
+   "chain": {
+    "prev": {
+     "3903": true
+    }
+   },
+   "description": "A gang of brigands, the Defias, moved into the Northshire Vineyards while I was harvesting!  I reported it to the Northshire guards and they assured me they'd take care of things, but... I'm afraid for my crop of grapes!  If the Defias don't steal them then I fear our guards will trample them when they chase away the thugs.\n\nPlease, you must help me!  I gathered most of my grapes into buckets, but I left them in the vineyards to the southeast.\n\nBring me those crates!  Save my harvest!",
+   "first": 1791921337,
+   "frequency": 0,
+   "last": 1791921338,
+   "level": 4,
+   "objectiveText": "Bring 8 crates of Milly's Harvest to Milly Osworth at Northshire Abbey.",
+   "objectives": [
+    {
+     "required": 8,
+     "text": "Milly's Harvest",
+     "type": "item"
+    }
+   ],
+   "pickups": {
+    "npc:9296@1429": {
+     "count": 1,
+     "id": 9296,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Milly Osworth",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.5066,
+     "xMax": 0.5066,
+     "xMin": 0.5066,
+     "xyCount": 1,
+     "y": 0.3929,
+     "yMax": 0.3929,
+     "yMin": 0.3929,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1415:46:70": 1,
+     "1429:54:49": 34
+    }
+   },
+   "rewards": {
+    "xpOffered": {
+     "4": 180
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1
+   },
+   "title": "Milly's Harvest"
+  },
+  "393": {
+   "frequency": 0,
+   "level": 29,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Bring the Sealed Description of Thredd's Visitor to Master Mathias Shaw in Stormwind.",
+     "type": "log"
+    }
+   ],
+   "poi": {
+    "turnin": {
+     "1415:44:69": 4
+    }
+   },
+   "title": "Shadow of the Past"
+  },
+  "463": {
+   "frequency": 0,
+   "level": 21,
+   "poi": {
+    "turnin": {
+     "1415:53:46": 4,
+     "1437:56:40": 16
+    }
+   },
+   "title": "The Greenwarden"
+  },
+  "5261": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "33": true
+    }
+   },
+   "completionText": "That's true.  I'm looking for someone to hunt me some wolves!  Are you that person?",
+   "description": "Eagan Peltskinner is looking for someone to hunt wolves for him.  That's good news, because we're seeing a lot more wolves in Northshire Valley lately.\n\nIf you're interested then speak with Eagan.  He's around the side of the abbey, to the left.",
+   "first": 1791919786,
+   "frequency": 0,
+   "last": 1791919801,
+   "level": 2,
+   "objectiveText": "Speak with Eagan Peltskinner.",
+   "pickups": {
+    "npc:823@1429": {
+     "count": 1,
+     "id": 823,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Deputy Willem",
+     "playerLevel": {
+      "count": 1,
+      "last": 1,
+      "max": 1,
+      "min": 1
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4817,
+     "xMax": 0.4817,
+     "xMin": 0.4817,
+     "xyCount": 1,
+     "y": 0.4288,
+     "yMax": 0.4288,
+     "yMin": 0.4288,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:49:40": 1
+    }
+   },
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 50,
+      "max": 50,
+      "min": 50
+     }
+    },
+    "xp": {
+     "1": {
+      "count": 1,
+      "last": 85,
+      "max": 85,
+      "min": 85
+     }
+    },
+    "xpObserved": {
+     "1": {
+      "count": 1,
+      "last": 85,
+      "max": 85,
+      "min": 85
+     }
+    },
+    "xpOffered": {
+     "1": 85
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Eagan Peltskinner",
+   "turnins": {
+    "npc:196@1429": {
+     "count": 1,
+     "id": 196,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Eagan Peltskinner",
+     "playerLevel": {
+      "count": 1,
+      "last": 1,
+      "max": 1,
+      "min": 1
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4887,
+     "xMax": 0.4887,
+     "xMin": 0.4887,
+     "xyCount": 1,
+     "y": 0.4016,
+     "yMax": 0.4016,
+     "yMin": 0.4016,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "6": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 2
+   },
+   "chain": {
+    "prev": {
+     "18": true
+    }
+   },
+   "description": "Garrick Padfoot - a cutthroat who's plagued our farmers and merchants for weeks - was seen at a shack near the vineyards, which lies east of the Abbey and across the bridge.  Bring me the villain's head, and earn his bounty!\n\nBut be wary, Genesys.  Garrick has gathered a gang of thugs around him.  He will not be an easy man to reach.",
+   "first": 1791921284,
+   "frequency": 0,
+   "last": 1791921285,
+   "level": 5,
+   "objectiveText": "Kill Garrick Padfoot and bring his head to Deputy Willem at Northshire Abbey.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Garrick's Head",
+     "type": "item"
+    }
+   ],
+   "pickups": {
+    "npc:823@1429": {
+     "count": 1,
+     "id": 823,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Deputy Willem",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4816,
+     "xMax": 0.4816,
+     "xMin": 0.4816,
+     "xyCount": 1,
+     "y": 0.4289,
+     "yMax": 0.4289,
+     "yMin": 0.4289,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1415:47:70": 1,
+     "1429:58:48": 36
+    }
+   },
+   "rewards": {
+    "choices": {
+     "3070": {
+      "count": 1,
+      "name": "Ensign Cloak"
+     },
+     "60": {
+      "count": 1,
+      "name": "Layered Tunic"
+     },
+     "6076": {
+      "count": 1,
+      "name": "Tapered Pants"
+     }
+    },
+    "xpOffered": {
+     "4": 340
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1
+   },
+   "title": "Bounty on Garrick Padfoot"
+  },
+  "7": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "15": true,
+     "3105": true
+    },
+    "prev": {
+     "783": true
+    }
+   },
+   "completionText": "Well done, citizen.  Those kobolds are thieves and cowards, but in large numbers they pose a threat to us.  And the humans of Stormwind do not need another threat.\n\nFor defeating them, you have my gratitude.",
+   "description": "Your first task is one of cleansing, Genesys.  A clan of kobolds have infested the woods to the north.  Go there and fight the kobold vermin you find.  Reduce their numbers so that we may one day drive them from Northshire.",
+   "first": 1791919752,
+   "frequency": 0,
+   "last": 1791920437,
+   "level": 2,
+   "objectiveText": "Kill 10 Kobold Vermin, then return to Marshal McBride.",
+   "objectives": [
+    {
+     "required": 10,
+     "text": "Kobold Vermin slain",
+     "type": "monster"
+    }
+   ],
+   "pickups": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 1,
+      "max": 1,
+      "min": 1
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4887,
+     "xMax": 0.4887,
+     "xMin": 0.4887,
+     "xyCount": 1,
+     "y": 0.4165,
+     "yMax": 0.4165,
+     "yMin": 0.4165,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:50:36": 30
+    },
+    "turnin": {
+     "1429:49:42": 2
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:47:36": 5,
+     "1429:48:36": 1,
+     "1429:48:37": 1,
+     "1429:49:37": 2,
+     "1429:50:38": 1
+    }
+   },
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 25,
+     "max": 25,
+     "min": 25
+    },
+    "moneyOffered": 25,
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "3": {
+      "count": 1,
+      "last": 170,
+      "max": 170,
+      "min": 170
+     }
+    },
+    "xpObserved": {
+     "3": {
+      "count": 1,
+      "last": 170,
+      "max": 170,
+      "min": 170
+     }
+    },
+    "xpOffered": {
+     "1": 170,
+     "3": 170
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Kobold Camp Cleanup",
+   "turnins": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 3,
+      "max": 3,
+      "min": 3
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4884,
+     "xMax": 0.4884,
+     "xMin": 0.4884,
+     "xyCount": 1,
+     "y": 0.4166,
+     "yMax": 0.4166,
+     "yMin": 0.4166,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "783": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "7": true
+    }
+   },
+   "completionText": "Ah, good.  Another volunteer.  We're getting a lot of you these days.\n\nI hope it's enough.\n\nThe human lands are threatened from without, and so many of our forces have been marshaled abroad.  This, in turn, leaves room for corrupt and lawless groups to thrive within our borders.\n\nIt is a many-fronted battle we wage, Genesys.  Gird yourself for a long campaign.",
+   "description": "I hope you strapped your belt on tight, young warlock, because there is work to do here in Northshire.\n\nAnd I don't mean farming.\n\nThe Stormwind guards are hard pressed to keep the peace here, with so many of us in distant lands and so many threats pressing close.  And so we're enlisting the aid of anyone willing to defend their home.  And their alliance.\n\nIf you're here to answer the call, then speak with my superior, Marshal McBride.  He's inside the abbey behind me.",
+   "first": 1791919739,
+   "frequency": 0,
+   "last": 1791919751,
+   "level": 1,
+   "objectiveText": "Speak with Marshal McBride.",
+   "pickups": {
+    "npc:823@1429": {
+     "count": 1,
+     "id": 823,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Deputy Willem",
+     "playerLevel": {
+      "count": 1,
+      "last": 1,
+      "max": 1,
+      "min": 1
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4814,
+     "xMax": 0.4814,
+     "xMin": 0.4814,
+     "xyCount": 1,
+     "y": 0.4303,
+     "yMax": 0.4303,
+     "yMin": 0.4303,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:49:42": 1
+    }
+   },
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 50,
+      "max": 50,
+      "min": 50
+     }
+    },
+    "xp": {
+     "1": {
+      "count": 1,
+      "last": 40,
+      "max": 40,
+      "min": 40
+     }
+    },
+    "xpObserved": {
+     "1": {
+      "count": 1,
+      "last": 40,
+      "max": 40,
+      "min": 40
+     }
+    },
+    "xpOffered": {
+     "1": 40
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "A Threat Within",
+   "turnins": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 1,
+      "max": 1,
+      "min": 1
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4887,
+     "xMax": 0.4887,
+     "xMin": 0.4887,
+     "xyCount": 1,
+     "y": 0.4165,
+     "yMax": 0.4165,
+     "yMin": 0.4165,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "91741": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "92124": true
+    }
+   },
+   "completionText": "Hey! How did you end up with that? It's supposed to be on the shelf! Oh dear, the kobolds have been stealing my books again. They must want to eat them!\n\nThanks for bringing back the book, but what will I do about the rest of my missing collection?",
+   "description": "<One of the kobolds dropped this book. It looks like the kobold might have tried to eat it.\n\nBrother Paxton inside the abbey has a small library he maintains. The book must have come from there.>",
+   "first": 1791920176,
+   "frequency": 0,
+   "last": 1791920512,
+   "level": 2,
+   "objectiveText": "Return the book to Brother Paxton.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Return the book to Brother Paxton.",
+     "type": "log"
+    }
+   ],
+   "pickups": {
+    "auto:?@1429": {
+     "count": 1,
+     "kind": "auto",
+     "mapID": 1429,
+     "playerLevel": {
+      "count": 1,
+      "last": 2,
+      "max": 2,
+      "min": 2
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4934,
+     "xMax": 0.4934,
+     "xMin": 0.4934,
+     "xyCount": 1,
+     "y": 0.3699,
+     "yMax": 0.3699,
+     "yMin": 0.3699,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:50:40": 17
+    }
+   },
+   "progressText": "What's that you got there? It looks like one of my books.",
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 17,
+     "max": 17,
+     "min": 17
+    },
+    "moneyOffered": 17,
+    "xp": {
+     "3": {
+      "count": 1,
+      "last": 85,
+      "max": 85,
+      "min": 85
+     }
+    },
+    "xpObserved": {
+     "3": {
+      "count": 1,
+      "last": 85,
+      "max": 85,
+      "min": 85
+     }
+    },
+    "xpOffered": {
+     "2": 85,
+     "3": 85
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Nibbled-On Book",
+   "turnins": {
+    "npc:951@1429": {
+     "count": 1,
+     "id": 951,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Brother Paxton",
+     "playerLevel": {
+      "count": 1,
+      "last": 3,
+      "max": 3,
+      "min": 3
+     },
+     "subzone": "Library Wing",
+     "x": 0.4957,
+     "xMax": 0.4957,
+     "xMin": 0.4957,
+     "xyCount": 1,
+     "y": 0.4038,
+     "yMax": 0.4038,
+     "yMin": 0.4038,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "91743": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "91745": true
+    }
+   },
+   "completionText": "Thank you so much! Here! Take one of these how-to books. I don't need them.\n\nBut there are still so many books missing. The kobolds don't seem to be eating them. So, why do they want them?",
+   "description": "Those awful kobolds are eating my books! You have to get them back before they devour my whole library.",
+   "first": 1791920560,
+   "frequency": 0,
+   "last": 1791921681,
+   "level": 2,
+   "objectiveText": "Retrieve 8 Stolen Books from kobolds in Northshire Valley and return them to Brother Paxton.",
+   "objectives": [
+    {
+     "required": 8,
+     "type": "item"
+    }
+   ],
+   "pickups": {
+    "npc:951@1429": {
+     "count": 1,
+     "id": 951,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Brother Paxton",
+     "playerLevel": {
+      "count": 1,
+      "last": 3,
+      "max": 3,
+      "min": 3
+     },
+     "subzone": "Library Wing",
+     "x": 0.4956,
+     "xMax": 0.4956,
+     "xMin": 0.4956,
+     "xyCount": 1,
+     "y": 0.4039,
+     "yMax": 0.4039,
+     "yMin": 0.4039,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:49:33": 42
+    },
+    "turnin": {
+     "1429:50:40": 4
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:47:34": 1,
+     "1429:47:35": 2,
+     "1429:50:35": 1,
+     "1429:51:36": 1,
+     "1429:51:38": 2,
+     "1429:52:37": 1
+    }
+   },
+   "progressText": "Have you rescued my books yet, Genesys?!",
+   "rewards": {
+    "choices": {
+     "247840": {
+      "count": 1,
+      "name": "Mining for Dummies"
+     },
+     "247841": {
+      "count": 1,
+      "name": "Wild Harvest"
+     },
+     "247846": {
+      "count": 1,
+      "name": "Pelt Collecting for Beginners"
+     }
+    },
+    "money": {
+     "count": 1,
+     "last": 35,
+     "max": 35,
+     "min": 35
+    },
+    "moneyOffered": 35,
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "4": {
+      "count": 1,
+      "last": 170,
+      "max": 170,
+      "min": 170
+     }
+    },
+    "xpObserved": {
+     "4": {
+      "count": 1,
+      "last": 170,
+      "max": 170,
+      "min": 170
+     }
+    },
+    "xpOffered": {
+     "4": 170
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Rascally Rodents",
+   "turnins": {
+    "npc:951@1429": {
+     "count": 1,
+     "id": 951,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Brother Paxton",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Library Wing",
+     "x": 0.4953,
+     "xMax": 0.4953,
+     "xMin": 0.4953,
+     "xyCount": 1,
+     "y": 0.4038,
+     "yMax": 0.4038,
+     "yMin": 0.4038,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "91745": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "91752": true
+    },
+    "prev": {
+     "91743": true
+    }
+   },
+   "completionText": "Kobolds with books? Yah, I've seen kobolds running back and forth with books, yelling at each other. They must be stealing them from the library inside the abbey.",
+   "description": "Go talk to the new mining apprentice, Kelsey Fargo. She works right outside the mine and has probably seen what the kobolds are up to. Maybe she can teach you a thing or two about mining while you're at it.",
+   "first": 1791921681,
+   "frequency": 0,
+   "last": 1791922165,
+   "level": 3,
+   "objectiveText": "Talk to Kelsey Fargo outside the Echo Ridge Mine in Northshire Valley.",
+   "pickups": {
+    "npc:951@1429": {
+     "count": 1,
+     "id": 951,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Brother Paxton",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Library Wing",
+     "x": 0.4953,
+     "xMax": 0.4953,
+     "xMin": 0.4953,
+     "xyCount": 1,
+     "y": 0.4038,
+     "yMax": 0.4038,
+     "yMin": 0.4038,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1415:46:69": 1,
+     "1429:47:32": 7
+    }
+   },
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 25,
+     "max": 25,
+     "min": 25
+    },
+    "moneyOffered": 25,
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "4": {
+      "count": 1,
+      "last": 130,
+      "max": 130,
+      "min": 130
+     }
+    },
+    "xpObserved": {
+     "4": {
+      "count": 1,
+      "last": 130,
+      "max": 130,
+      "min": 130
+     }
+    },
+    "xpOffered": {
+     "4": 130
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Mining Consultant",
+   "turnins": {
+    "npc:247226@1429": {
+     "count": 1,
+     "id": 247226,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Kelsey Fargo",
+     "playerLevel": {
+      "count": 1,
+      "last": 4,
+      "max": 4,
+      "min": 4
+     },
+     "subzone": "Echo Ridge Mine",
+     "x": 0.4719,
+     "xMax": 0.4719,
+     "xMin": 0.4719,
+     "xyCount": 1,
+     "y": 0.3233,
+     "yMax": 0.3233,
+     "yMin": 0.3233,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "91752": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 2
+   },
+   "chain": {
+    "prev": {
+     "91745": true
+    }
+   },
+   "description": "Every once in a while, a kobold comes through yelling \"Picture for Narf!\" I don't know who Narf is. Maybe one of the head kobolds at the back of the mine? I bet he has a whole sack of books by now.\n\nGo get those books and bring them to our local law enforcement, Marshal McBride. You should find a friend to help. Those kobolds inside the mine are a lot meaner.",
+   "first": 1791922165,
+   "frequency": 0,
+   "last": 1791922167,
+   "level": 3,
+   "objectiveText": "Retrieve a Sack of \"Picture\" Books from Shinyfinder Narf. Bring the sack to Marshal McBride just inside Northshire's Abbey.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Sack of \"Picture\" Books",
+     "type": "item"
+    }
+   ],
+   "pickups": {
+    "npc:247226@1429": {
+     "count": 1,
+     "id": 247226,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Kelsey Fargo",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Echo Ridge Mine",
+     "x": 0.4719,
+     "xMax": 0.4719,
+     "xMin": 0.4719,
+     "xyCount": 1,
+     "y": 0.3233,
+     "yMax": 0.3233,
+     "yMin": 0.3233,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:49:28": 3
+    }
+   },
+   "rewards": {
+    "moneyOffered": 100,
+    "xpOffered": {
+     "5": 320
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1
+   },
+   "tag": "Elite",
+   "tagID": 1,
+   "title": "The Big Picture"
+  },
+  "92124": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "prev": {
+     "91741": true
+    }
+   },
+   "completionText": "Yah, I overheard. I warned Brother Paxton three times about the kobolds tunneling under the abbey.\n\nIt looks like the kobolds have taken a lot of books. There are whole bookshelves emptied out. You should probably see what Brother Paxton wants you to do about it.\n\nWhile you're here, can I talk to you about tradeskills? I'd be happy to answer any questions you have, or point you toward the local trainers.",
+   "description": "We need to take stock of how many books are missing!\n\nGo talk to my useless assistant, Daniel. He can do a quick inventory and let us know how serious the problem is.\n\nHe's obsessed with the various trade professions in Elwynn Forest. The boy keeps focusing on those instead of his important work helping me.\n\nDon't let him prattle on about tradeskills, and find out what's happened to my books!",
+   "first": 1791920512,
+   "frequency": 0,
+   "last": 1791920518,
+   "level": 2,
+   "objectiveText": "Speak to Daniel, Brother Paxton's assistant in the library.",
+   "pickups": {
+    "npc:951@1429": {
+     "count": 1,
+     "id": 951,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Brother Paxton",
+     "playerLevel": {
+      "count": 1,
+      "last": 3,
+      "max": 3,
+      "min": 3
+     },
+     "subzone": "Library Wing",
+     "x": 0.4957,
+     "xMax": 0.4957,
+     "xMin": 0.4957,
+     "xyCount": 1,
+     "y": 0.4038,
+     "yMax": 0.4038,
+     "yMin": 0.4038,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:49:41": 1
+    }
+   },
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 3,
+     "max": 3,
+     "min": 3
+    },
+    "moneyOffered": 3,
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 10,
+      "max": 10,
+      "min": 10
+     }
+    },
+    "xp": {
+     "3": {
+      "count": 1,
+      "last": 15,
+      "max": 15,
+      "min": 15
+     }
+    },
+    "xpObserved": {
+     "3": {
+      "count": 1,
+      "last": 15,
+      "max": 15,
+      "min": 15
+     }
+    },
+    "xpOffered": {
+     "3": 15
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Book Inventory",
+   "turnins": {
+    "npc:247229@1429": {
+     "count": 1,
+     "id": 247229,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Daniel",
+     "playerLevel": {
+      "count": 1,
+      "last": 3,
+      "max": 3,
+      "min": 3
+     },
+     "subzone": "Library Wing",
+     "x": 0.495,
+     "xMax": 0.495,
+     "xMin": 0.495,
+     "xyCount": 1,
+     "y": 0.4056,
+     "yMax": 0.4056,
+     "yMin": 0.4056,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "92456": {
+   "frequency": 0,
+   "level": 33,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Fel Infused Blossom",
+     "type": "item"
+    }
+   ],
+   "poi": {
+    "objective": {
+     "1415:45:31": 4
+    }
+   },
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "A Green Sample"
+  },
+  "92489": {
+   "frequency": 0,
+   "level": 33,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Arcanic Enigma slain",
+     "type": "monster"
+    }
+   ],
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Power Overwhelming"
+  },
+  "943": {
+   "builds": {
+    "1.60.1.70338": true
+   },
+   "by": {
+    "Human:PALADIN:Alliance": 2
+   },
+   "description": "Prospector Whelgar now holds the original fossil at his site in the Wetlands. When I discovered the Stone of Relu, I believed it to be the key to unlocking the mystery of the fossil.\n\nWhile I traveled on the road to meet Whelgar, I was attacked by raptors and the relic was lost. I don't know which one of the mottled beasts swallowed the relic but if you can retrieve it, I can unleash the power of these artifacts.\n\nBring me both the Stone of Relu, and the original fossil he holds.",
+   "first": 1791899294,
+   "frequency": 0,
+   "last": 1791899296,
+   "level": 24,
+   "objectiveText": "Archaeologist Flagongut in Menethil Harbor wants you to bring him the Stone of Relu and Flagongut's Fossil.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Stone of Relu",
+     "type": "item"
+    },
+    {
+     "required": 1,
+     "text": "Flagongut's Fossil",
+     "type": "item"
+    }
+   ],
+   "pickups": {
+    "npc:2911@1437": {
+     "count": 1,
+     "id": 2911,
+     "kind": "npc",
+     "mapID": 1437,
+     "name": "Archaeologist Flagongut",
+     "playerLevel": {
+      "count": 1,
+      "last": 26,
+      "max": 26,
+      "min": 26
+     },
+     "subzone": "Deepwater Tavern",
+     "x": 0.1078,
+     "xMax": 0.1078,
+     "xMin": 0.1078,
+     "xyCount": 1,
+     "y": 0.6035,
+     "yMax": 0.6035,
+     "yMin": 0.6035,
+     "zone": "Lion's Pride Inn"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1415:50:47": 4,
+     "1437:27:50": 13
+    }
+   },
+   "rewards": {
+    "choices": {
+     "270022": {
+      "count": 1,
+      "name": "Archaeologist's Gown"
+     },
+     "5626": {
+      "count": 1,
+      "name": "Skullchipper"
+     },
+     "5627": {
+      "count": 1,
+      "name": "Relic Blade"
+     }
+    },
+    "xpOffered": {
+     "26": 2400
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1
+   },
+   "title": "The Absent Minded Prospector"
+  },
+  "95250": {
+   "frequency": 0,
+   "level": 21,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Head of the Baron",
+     "type": "item"
+    }
+   ],
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Abominable Creatures"
+  },
+  "95647": {
+   "frequency": 0,
+   "level": 31,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Learn what happened to Ardin Grassman",
+     "type": "monster"
+    }
+   ],
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Lost in the Thicket Things"
+  },
+  "95772": {
+   "frequency": 0,
+   "level": 31,
+   "poi": {
+    "turnin": {
+     "1415:52:48": 4,
+     "1437:48:57": 16
+    }
+   },
+   "tag": "Dungeon",
+   "tagID": 81,
+   "title": "Songblade Search"
+  },
+  "970": {
+   "frequency": 0,
+   "level": 21,
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Glowing Soul Gem",
+     "type": "item"
+    }
+   ],
+   "title": "The Tower of Althalaxx"
+  }
+ },
+ "schemaVersion": 1,
+ "sources": [
+  {
+   "addonVersion": "0.2.0",
+   "build": "1.60.1.70338",
+   "contributor": "Genesys Firstborn",
+   "exportedAt": 1791922238,
+   "id": "6ace398999adfc5be5069917",
+   "levels": 6,
+   "quests": 34,
+   "via": "share code"
+  }
+ ]
 }
