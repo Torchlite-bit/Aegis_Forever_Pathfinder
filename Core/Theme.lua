@@ -387,11 +387,21 @@ local BLIZZARD_FONT = {
 }
 
 --- Applies a bundled face, falling back to the client font if it is rejected.
+--[[ Our font files load late the first time a game session draws with them
+	(after switching from Default, say): the client loads them while the
+	windows are being built, and text set before they're ready can stay blank
+	until it changes. So each font string drawn in our fonts is kept (weakly),
+	and its font and text are set again a few seconds after login, and whenever
+	a frame calls Theme:RefreshFontStrings. ]]
+local ourFontStrings = setmetatable({}, { __mode = "k" })
+
 function Theme:SetFont(fs, role, size, flags)
 	local path = self.font[role]
 	if self:IsBlizzard() then
 		local face = BLIZZARD_FONT[role] or BLIZZARD_FONT.body
 		path, size = face[1], math.max(8, size + face[2])
+	else
+		ourFontStrings[fs] = true
 	end
 	local ok, success = pcall(fs.SetFont, fs, path or "", size, flags or "")
 	if not (ok and success ~= false) then
@@ -400,6 +410,34 @@ function Theme:SetFont(fs, role, size, flags)
 	end
 	return true
 end
+
+--- Sets the font and text of our font strings again, so text set before its font
+--- had loaded is drawn. Every one, or those `only` (a list) names.
+function Theme:RefreshFontStrings(only)
+	local function Refresh(fs)
+		local path, size, flags = fs:GetFont()
+		if path then pcall(fs.SetFont, fs, path, size, flags or "") end
+		local text = fs:GetText()
+		if text and text ~= "" then
+			fs:SetText("")
+			fs:SetText(text)
+		end
+	end
+	if only then
+		for _, fs in ipairs(only) do Refresh(fs) end
+	else
+		for fs in pairs(ourFontStrings) do Refresh(fs) end
+	end
+end
+
+local fontsRefreshed
+AP:On("PLAYER_ENTERING_WORLD", function()
+	if fontsRefreshed or not (C_Timer and C_Timer.After) then return end
+	fontsRefreshed = true
+	for _, seconds in ipairs({ 1, 3, 8 }) do
+		C_Timer.After(seconds, function() Theme:RefreshFontStrings() end)
+	end
+end)
 
 --[[ Nine-slice panels ]]
 
@@ -1947,11 +1985,18 @@ local function Descendants(f, out)
 	return out
 end
 
+--[[ Each frame keeps its height above the window, but always ends up above the
+	frame holding it: a child built below its window's level (the Blizzard X has a
+	fixed level of its own) once landed level with its header, and the header
+	took its clicks. Descendants lists a parent before its children. ]]
 local function Restack(w, base)
 	local root = w:GetFrameLevel()
 	local tree = Descendants(w, {})
-	local offsets = {}
-	for i, k in ipairs(tree) do offsets[i] = math.max(k:GetFrameLevel() - root, 1) end
+	local offsets, above = {}, { [w] = 0 }
+	for i, k in ipairs(tree) do
+		offsets[i] = math.max(k:GetFrameLevel() - root, (above[k:GetParent()] or 0) + 1)
+		above[k] = offsets[i]
+	end
 	w:SetFrameLevel(base)
 	local top = base
 	for i, k in ipairs(tree) do

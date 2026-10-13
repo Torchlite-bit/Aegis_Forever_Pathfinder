@@ -249,6 +249,9 @@ function Region:SetBackdropBorderColor(...) self._backdropBorder = { ... } end
 ------------------------------------------------------------------------------------------
 
 local TEMPLATE_SETUP = {
+	-- The client's close button has frameLevel="510" of its own (SharedUIPanelTemplates.xml).
+	UIPanelCloseButtonNoScripts = function(frame) frame._level = 510 end,
+	UIPanelCloseButton = function(frame) frame._level = 510 end,
 	BackdropTemplate = function(frame)
 		frame.SetBackdrop = Region.SetBackdrop
 		frame.OnBackdropSizeChanged = function() end

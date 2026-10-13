@@ -422,6 +422,18 @@ if skin == "pathfinder" then
 		if row.item and row.item.label == "Reload" then menuReload = row end
 	end
 	check(menuReload, "the guide menu has Reload")
+	-- Text set before our fonts load can stay blank: it's drawn again after login and as the menu opens.
+	Mock.Fire("PLAYER_ENTERING_WORLD")
+	Mock.Advance(9)
+	guide.ui.menu:Show()
+	equal(menuReload.label:GetText(), "Reload", "the menu's labels keep their text when drawn again")
+	check(menuReload.label:GetFont(), "and their font")
+	guide.ui.menu:Hide()
+	-- /apg mouse says what has the mouse, for a button that doesn't take a click.
+	SlashCmdList.AEGISPATHFINDER("mouse")
+	check(Chat("Rest the mouse"), "/apg mouse explains itself")
+	Mock.Advance(3.5)
+	check(Chat("has the mouse there") or Chat("level"), "and then says what has the mouse")
 	guide.ui.menu:Show()
 	Mock.Click(menuReload)
 	check(dialog():IsShown() and not guide.ui.menu:IsShown(), "the menu's Reload asks through the dialog")
@@ -453,6 +465,34 @@ else
 	check(not dialog():IsShown() and not Mock.reloaded, "Later leaves it be")
 end
 equal(#Mock.popups, 0, "the game's own popups are never used")
+
+-- Stacking keeps every frame above the one holding it: the Blizzard X (a level of its own)
+-- once ended up level with its header, and the header took its clicks.
+local function Below(f, parentLevel)
+	for _, k in ipairs({ f:GetChildren() }) do
+		if k:GetFrameLevel() <= parentLevel then return k end
+		local bad = Below(k, k:GetFrameLevel())
+		if bad then return bad end
+	end
+end
+local wasShown = {}
+for _, w in ipairs(AP.Theme.windows) do wasShown[w] = w:IsShown() end
+for round = 1, 2 do
+	for _, w in ipairs(AP.Theme.windows) do
+		-- As a click raises a toplevel window in the client: the window alone, above its own children.
+		if round == 2 then w:SetFrameLevel(5000) end
+		w:Show()
+		AP.Theme:BringToFront(w)
+	end
+end
+for _, w in ipairs(AP.Theme.windows) do
+	local bad = Below(w, w:GetFrameLevel())
+	check(not bad, "every frame of " .. tostring(w:GetName()) .. " is above the frame holding it")
+	if w.closeChip then
+		check(w.closeChip:GetFrameLevel() > w.header:GetFrameLevel(), "its X is above its header")
+	end
+end
+for _, w in ipairs(AP.Theme.windows) do w:SetShown(wasShown[w]) end
 
 AP:SetGuideTransparent(true)
 AP:SetGuideLocked(true)

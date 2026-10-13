@@ -89,3 +89,5 @@ L.TYPE_RELOAD = "Type /reload to reload. The Reload button can't be shown in com
 L.RELOAD_NOW = "Reload the interface now?"
 L.RELOAD_DIDNT = "Reload was clicked, but the game didn't reload. Type /reload, and please tell us on Discord or GitHub."
 L.LATER = "Later"
+L.MOUSE_WAIT = "Rest the mouse on the spot that doesn't work. In 3 seconds, chat says what has the mouse."
+L.MOUSE_NOTHING = "Nothing of the interface has the mouse there."
