@@ -19,7 +19,7 @@ import zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ADDON = "Aegis_Forever_Pathfinder"
 TOC = os.path.join(ROOT, ADDON + ".toc")
-REPOSITORY = "https://github.com/Torchlite-bit/Aegis_Forever_Pathfinder"
+REPOSITORY = "https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever"
 # Kept in the repository, not in the addon: the tools, the docs, the collected data, and
 # built releases. (The same list as .gitattributes's export-ignore.)
 LEFT_OUT = {"Tools", "docs", "data", "dist"}

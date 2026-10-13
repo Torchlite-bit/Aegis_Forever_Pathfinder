@@ -79,7 +79,7 @@ you, but it's two keystrokes. **Submit data** opens a window with:
 - **A share code**: everything you collected, compressed into one line
   (`APF1:…`) and already selected. Press **Ctrl+C**.
 - **Where to paste it**, as links to copy:
-  - **[The GitHub form](https://github.com/Torchlite-bit/Aegis_Forever_Pathfinder/issues/new?template=submit-data.yml)**:
+  - **[The GitHub form](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/issues/new?template=submit-data.yml)**:
     paste the code and submit. A GitHub Action reads it, adds it to the
     collected data and credits you, with no one copying anything by hand.
     It answers on the issue when it's done.
@@ -122,11 +122,14 @@ What came over from the Turtle addon, and what didn't and why:
 
 ## Install
 
-1. Download the repository's ZIP (or a release).
+1. Download [the latest release](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/releases/latest)
+   (or the repository's ZIP).
 2. Put the folder in `World of Warcraft/_classic_beta_/Interface/AddOns/` (the
-   Forever client's AddOns folder) and **rename it to exactly
-   `Aegis_Forever_Pathfinder`**. GitHub's ZIP unpacks as
-   `Aegis_Forever_Pathfinder-main`, and the addon won't load under that name.
+   Forever client's AddOns folder). It must be named exactly
+   **`Aegis_Forever_Pathfinder`**: the addon's name, not the repository's. A
+   release's ZIP already has it right; the repository's unpacks as
+   `Aegis_Pathfinder_Forever-main`, and the addon won't load under that name
+   until you rename it.
 3. **Restart the client fully** the first time (a `/reload` isn't enough for
    new files).
 

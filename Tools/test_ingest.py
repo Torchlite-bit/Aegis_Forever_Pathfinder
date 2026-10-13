@@ -977,7 +977,7 @@ class Rebuild(TempRepo):
 # The issue form
 ##########################################################################################
 
-REPOSITORY = "Torchlite-bit/Aegis_Forever_Pathfinder"
+REPOSITORY = "Torchlite-bit/Aegis_Pathfinder_Forever"
 
 
 def issue_body(credit="Goldshire Gary", data="", notes="_No response_"):
@@ -1024,7 +1024,7 @@ class IssueForm(TempRepo):
     def test_only_github_attachments_are_fetched(self):
         body = "\n".join([
             "[ok.txt](https://github.com/user-attachments/files/123/ok.txt)",
-            "https://github.com/Torchlite-bit/Aegis_Forever_Pathfinder/files/456/old.zip",
+            "https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/files/456/old.zip",
             "https://github.com/someone/else/files/789/x.zip",
             "https://github.com.evil.example/user-attachments/files/1/x.txt",
             "http://github.com/user-attachments/files/1/plain-http.txt",
@@ -1035,7 +1035,7 @@ class IssueForm(TempRepo):
         ])
         self.assertEqual(ingest_issue.attachment_urls(body, REPOSITORY), [
             "https://github.com/user-attachments/files/123/ok.txt",
-            "https://github.com/Torchlite-bit/Aegis_Forever_Pathfinder/files/456/old.zip",
+            "https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/files/456/old.zip",
         ])
         self.assertEqual(len(ingest_issue.attachment_urls(body, None)), 1)
 

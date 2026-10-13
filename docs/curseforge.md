@@ -8,9 +8,10 @@ uploaded to CurseForge once (`.github/workflows/release.yml`,
 
 ## One-time setup
 
-1. **Create the project** on the CurseForge authors site: World of Warcraft,
-   Addon. Name it *Aegis: Pathfinder (Forever)*; category Quests & Leveling.
-   Paste the description below (Markdown), and use `media/logo.tga` (as a
+1. **The project.** It exists already: v0.1.0 was uploaded by hand. Paste
+   the description below over the old one (switch the editor to Markdown
+   first), and the summary line under it. A new project would be World of
+   Warcraft, Addon, category Quests & Leveling, with `media/logo.tga` (as a
    PNG) for the avatar.
 2. **Copy the project's ID** from its page (About this project → Project ID).
 3. **Make an API token** on the authors site (your account's API tokens), named
@@ -30,58 +31,95 @@ uploaded to CurseForge once (`.github/workflows/release.yml`,
 ## Project description
 
 ```markdown
-# Aegis: Pathfinder (Forever)
+# Aegis: Pathfinder — Forever
 
-**The Pathfinder leveling guide, ported to WoW: Forever. Its guides are being written now, from the data players collect.**
+**The Pathfinder leveling guide, ported to WoW: Forever. No guides yet, so for now it collects the data to write them.**
 
-> Built for **WoW: Forever** (client 1.60.1, Interface 16001). On Turtle WoW? Get *Aegis: Pathfinder* instead.
+![WoW: Forever, Interface 16001](https://img.shields.io/badge/WoW%3A%20Forever-Interface%2016001-c79c2e?style=flat-square&labelColor=555) [![Discord: join us](https://img.shields.io/badge/Discord-join%20us-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/Hr66t25vE7) [![GitHub: source and data form](https://img.shields.io/badge/GitHub-source%20%26%20data%20form-24292f?style=flat-square&logo=github&logoColor=white)](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever)
 
-## What it does today
+Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the modern engine. This is a port of [Aegis: Pathfinder](https://github.com/Torchlite-bit/Aegis_Pathfinder) for Turtle WoW (1.12), not that addon: the two clients share almost no API. On Turtle WoW? Get *Aegis: Pathfinder* instead.
 
-WoW: Forever is new, so there are no guides for it yet. Pathfinder brings everything else: the guide window, the guide browser, the settings, and a **data collector** that records what the guides will be written from.
+⚠️ **In development.** No guides yet. What works now: the guide window, the guide browser, the settings, quest and vendor automation, and the **data collector**.
 
-**Turn it on, play, send it in.** Click **Start collecting data** (tick **Automatically run** and it starts at every login), play as you normally would, then press **Submit data**.
+---
 
-### What the collector records
+## What it is right now
+
+**The Pathfinder look, on Forever.** The guide window, the ≡ menu, the guide browser, the options window and the minimap button are the Turtle WoW addon's, panel for panel: same layout, same fonts, same colour themes (Day, Night, Pathfinder green, OctoWoW, RavenCraft, Capybara Paradise, Aegis).
+
+**A Blizzard skin.** One more theme, **Blizzard**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. Pick it under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
+
+**No guides yet.** WoW: Forever is new, so the guide window says so and offers to **start collecting data** instead. The engine that follows guides is there and waiting.
+
+## The data collector
+
+Switch it on and play normally. Pathfinder writes down:
 
 - **The XP each level needs**, and how long each level took
-- **Every quest** you're offered, accept and hand in: who gives it and where, its objectives and where they progress, who takes it back, and what it gives (XP at your level, money, item rewards and choices, spells, reputation)
-- Quest chains, and the client's own map pins
+- **Every quest** you're offered, pick up and hand in:
+  - its text, level and objectives
+  - **who gave it and where**: NPC, object or item, the map, x/y, and your level
+  - **where its objectives moved on** (where you stood as the count went up)
+  - the client's own map pins for it
+  - **who took it back and where**
+  - **what it gave**: XP at your level, money, the items to choose from and the ones given (and which one your class picked), spells, currencies and **reputation**
+  - which quest led to it
 
-Nothing is sent by itself. The data never names your realm, and characters are written as race, class and faction. The one name in it is the one you're credited under.
+Repeat sightings are merged: counts add up, and the lowest and highest XP, money and coordinates are kept. Each record is stamped with the client build and the race, class and faction that saw it, never your character's name or realm. **Nothing is sent by itself**: it stays in your saved variables until you press **Submit data**, and the one name in what you send is the one you're credited under.
 
-### Sending your data
+**The data collection window** (the ● chip on the guide window, shift-click the minimap button, or `/apg collect`):
 
-**Submit data** (or `/apg submit`) packs everything into one line of text. Copy it and paste it in the **Submit collected data** form on GitHub, where a bot adds it and credits you, or in our Discord. Every contributor is listed in the game and on GitHub.
+- **Start / Stop collecting data**
+- **Automatically run**: starts collecting at every login on this character (the guide window has this box too)
+- What it has so far, and the last things it wrote down
+- **Submit data** and **Clear data**
 
-## Also in the box
+## Sending us your data
 
-- **Quest automation**: accepts and turns in quests and picks them from an NPC's list. Never a grey quest, never a reward choice. Hold Shift to skip one.
-- **At the vendor**: sells greys and repairs, with your own money or the guild's
+Addons can't reach the internet, so the game can't send it for you, but it takes two keystrokes. **Submit data** (or `/apg submit`) opens a window with:
+
+- **A share code**: everything you collected, compressed into one line and already selected. Press **Ctrl+C**.
+- **Where to paste it**:
+  - **[The GitHub form](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/issues/new?template=submit-data.yml)**: paste the code and press Submit. A bot adds it to the collected data, credits you and answers on the issue.
+  - **[Our Discord](https://discord.gg/Hr66t25vE7)**: paste it there. A long paste turns into a text file, and that's fine.
+- **Credit me as**: the name you're listed under (leave it empty for your character's name)
+- **Or the file**, for very large collections: `WTF/Account/<account>/SavedVariables/Aegis_Forever_Pathfinder.lua` (the window's *Save it now* button writes it). Drop it in Discord, or rename it to `.txt` (or zip it) and drag it into the GitHub form.
+
+Send again whenever you like, without clearing: a newer copy of a collection replaces the older one instead of counting twice. **As text** shows exactly what goes out. Everyone who sends data is listed in the Submit window, on the *About* page and in [the contributors list](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/blob/main/CONTRIBUTORS.md).
+
+## Also working without guides
+
+- **Quest automation**: accepts and hands in quests, on by default as in the Turtle addon, and picks them from an NPC's list. Never a grey quest, never a reward choice. Hold Shift to skip one.
+- **At the vendor**: sells greys (with the game's own *Sell All Junk*, or a *Sell greys* button where the vendor has none) and repairs, with your own money or the guild's.
 - **Reputation detail**: "Stormwind +25: Honored 4,350 / 12,000, 7,650 to Revered"
-- **Level-ups**: tell your party, guild or everyone nearby with one click, with how long the level took
-- **Two looks**: the Pathfinder themes (Day, Night, Pathfinder, OctoWoW, RavenCraft, Capybara Paradise, Aegis), or a **Blizzard skin** drawn with the game's own modern art
-- Lock, transparency, opacity, text size, window scale, hiding in dungeons or combat
+- **Level-ups**: tell everyone nearby, your party or your guild with one click, with how long the level took
+- **Window settings**: lock, transparency, opacity, step text size, window scale, hiding in dungeons or combat
 
-## Commands
-
-| | |
-|---|---|
-| `/apg` | Show or hide the guide window |
-| `/apg collect` | Data collection |
-| `/apg submit` | Send your data |
-| `/apg config` | Settings |
-| `/apg resetpanels` | Put every window back |
-
-The minimap button: click for the guide, shift-click for data collection, right-click for settings.
+Automation is set per character, under *Settings → Automation*.
 
 ## Install
 
-Use the CurseForge app, or unzip into `World of Warcraft/_classic_beta_/Interface/AddOns/` and keep the folder named `Aegis_Forever_Pathfinder`. Restart the game fully the first time.
+Use the CurseForge app, or download the file and unzip it into `World of Warcraft/_classic_beta_/Interface/AddOns/`, keeping the folder named exactly `Aegis_Forever_Pathfinder`. **Restart the game fully** the first time: a `/reload` isn't enough for new files.
+
+## Commands
+
+| Command | |
+|---|---|
+| `/apg` (or `/pathfinder`) | Show or hide the guide window |
+| `/apg collect` | The data collection window |
+| `/apg start`, `/apg stop` | Start or stop collecting |
+| `/apg status` | What has been collected so far |
+| `/apg submit` | The Submit data window |
+| `/apg config` | Settings |
+| `/apg browser` | The guide browser |
+| `/apg resetpanels` | Put every window back where it opens |
+| `/apg minimapbutton` | Show or hide the minimap button |
+
+**Minimap button:** click for the guide, right-click for settings, shift-click for data collection, drag to move it. Both windows have key bindings under *Key Bindings → AddOns*, and the settings are also in the game's *Options → AddOns*.
 
 ## Help and feedback
 
-Bugs, ideas and chat on our **[Discord](https://discord.gg/Hr66t25vE7)**. Source code and the data form on **[GitHub](https://github.com/Torchlite-bit/Aegis_Forever_Pathfinder)**.
+Bugs, ideas and chat on our **[Discord](https://discord.gg/Hr66t25vE7)**. Source code, the [changelog](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/blob/main/CHANGELOG.md) and the data form on **[GitHub](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever)**.
 
 ## Credits
 

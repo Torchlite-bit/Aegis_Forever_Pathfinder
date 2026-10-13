@@ -53,6 +53,9 @@
 - **Fixed: data dropped from exports.** A table with gaps in its numbers (levels
   5 and 6, say) could be written as a short or empty list, losing what came
   after the gap. Such tables are now written whole.
+- The repository is now **Aegis_Pathfinder_Forever** on GitHub, and the
+  Submit window's GitHub form link points there (the old address still
+  redirects). The addon's folder keeps its name, `Aegis_Forever_Pathfinder`.
 
 ## 0.1.0 — the Forever port
 
