@@ -39,3 +39,8 @@ luac.out
 *.x86_64
 *.hex
 
+
+# Python (Tools/)
+__pycache__/
+*.pyc
+.DS_Store
