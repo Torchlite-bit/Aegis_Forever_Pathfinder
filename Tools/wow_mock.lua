@@ -263,6 +263,9 @@ function CreateFrame(frameType, name, parent, template)
 	end
 	local frame = NewRegion(frameType, name, parent or UIParent)
 	if template and tostring(template):find("Secure") then frame._secure = true end
+	if template and tostring(template):find("SecureActionButtonTemplate") then
+		frame._scripts.OnClick = Mock.SecureActionButton_OnClick
+	end
 	if template then
 		for t in tostring(template):gmatch("[^,%s]+") do
 			if TEMPLATE_SETUP[t] then TEMPLATE_SETUP[t](frame) end
@@ -664,12 +667,31 @@ function Mock.Fire(event, ...)
 end
 
 --- A click on a secure action button: Blizzard's code runs its action. Only /reload is modelled.
-function Mock.ClickSecure(frame)
-	assert(frame and rawget(frame, "_secure"), "not a secure button")
-	assert(frame:IsShown(), "the secure button isn't shown")
-	if frame:GetAttribute("type") == "macro" and frame:GetAttribute("macrotext") == "/reload" then
+--[[ SecureActionButtonTemplate's own OnClick, as the client's SecureTemplates.lua has it.
+	An addon's button acts on the key-down half of a click while the ActionButtonUseKeyDown
+	CVar is on (Mock.useKeyDown, on as in the client), unless its useOnKeyDown attribute
+	says otherwise; type=macro runs the macro text. A SetScript("OnClick") replaces this. ]]
+Mock.useKeyDown = true
+function Mock.SecureActionButton_OnClick(self, button, down)
+	local useOnKeyDown = self:GetAttribute("useOnKeyDown")
+	if useOnKeyDown == nil then useOnKeyDown = Mock.useKeyDown end
+	if not ((down and useOnKeyDown) or (not down and not useOnKeyDown)) then return end
+	if self:GetAttribute("type") == "macro" and self:GetAttribute("macrotext") == "/reload" then
 		Mock.reloaded = true
 	end
+end
+
+function Region:RegisterForClicks(...) self._clicks = { ... } end
+
+--- A player's click on a secure button: the halves it registered for, down then up.
+function Mock.ClickSecure(frame)
+	assert(frame and rawget(frame, "_secure"), "not a secure button")
+	assert(frame:IsVisible(), "the secure button isn't shown")
+	local clicks = " " .. table.concat(rawget(frame, "_clicks") or { "LeftButtonUp" }, " ") .. " "
+	Mock.hardware = true
+	if clicks:find(" AnyDown ") or clicks:find(" LeftButtonDown ") then frame:_Run("OnClick", "LeftButton", true) end
+	if clicks:find(" AnyUp ") or clicks:find(" LeftButtonUp ") then frame:_Run("OnClick", "LeftButton", false) end
+	Mock.hardware = false
 end
 
 function Mock.Click(frame, button)

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.2 — a clearer Reload question
+
+- **Fixed:** the first Reload question after logging in was blank. It now
+  says why it asks.
+- **Fixed:** the Reload question and "Clear collected data?" open in the same
+  place, and one could hide the other. Now the newest one closes the other.
+- **Fixed:** picking Default, then a Pathfinder theme again, left the Reload
+  question open, and it came back after every fight. Going back now drops it.
+
+---
+
 ## 0.2.1 — Reload that reloads
 
 - **Fixed: Reload did nothing.** Switching skins, the guide menu's Reload and
