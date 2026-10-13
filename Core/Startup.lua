@@ -22,6 +22,7 @@ local COMMANDS = {
 	guides = function() AP:ToggleGuideBrowser() end,
 	resetpanels = function() AP:ResetWindowLayout() end,
 	minimapbutton = function() AP:ToggleMinimapButton() end,
+	reloaddebug = function() AP.Theme:ToggleReloadDebug() end,
 	next = function()
 		local current = AP:GetCurrentStep()
 		if current then AP:SetStepDone(current, true) end

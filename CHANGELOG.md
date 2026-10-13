@@ -57,6 +57,9 @@
   /reload. The secure /reload button now lies over each Reload button for as
   long as it's shown, instead of being put there as the mouse arrived, which
   could hand the click back to the button underneath.
+- **Reload check.** A Reload click that misses the secure button outside combat
+  says so in chat with what it saw (keeping the skin dialog open), and
+  `/apg reloaddebug` tints the secure buttons red to show where they are.
 - **Themes renamed:** Default (Blizzard's own look), and Pathfinder Day,
   Night, Green, Purple, Grey, Tan and Red. Your saved choice carries over.
 - **Fixed: a shared quest recorded who shared it.** When a party member

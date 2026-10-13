@@ -19,7 +19,7 @@ uploaded to CurseForge once (`.github/workflows/release.yml`,
 4. **On GitHub**, in the repository's *Settings → Secrets and variables →
    Actions*:
    - Secrets: `CF_API_KEY` = the token.
-   - Variables: `CURSEFORGE_PROJECT_ID` = the ID. Optional:
+   - Variables: `CURSEFORGE_PROJECT_ID` = the ID (a secret of that name works too). Optional:
      `CURSEFORGE_RELEASE_TYPE` = `beta` while it is in testing (the default is
      `release`), and `CURSEFORGE_GAME_VERSION_IDS` if the upload can't find
      the WoW: Forever game version by itself (its log says so).

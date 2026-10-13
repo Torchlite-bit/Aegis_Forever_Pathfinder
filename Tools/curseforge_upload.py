@@ -7,7 +7,7 @@ Instance Journal's own uploader, pointed at this addon.
 Reads the zip and its notes from the folder (Tools/package.py writes both). Needs two
 settings of the GitHub repository; without them it says so and does nothing:
   CF_API_KEY             a CurseForge API token (a repository secret)
-  CURSEFORGE_PROJECT_ID  the project's id, from its CurseForge page (a repository variable)
+  CURSEFORGE_PROJECT_ID  the project's id, from its CurseForge page (a repository variable, or a secret)
 Optional repository variables:
   CURSEFORGE_GAME_VERSION_IDS  game version ids, comma-separated, instead of looking them up
   CURSEFORGE_RELEASE_TYPE      release (the default), beta or alpha
@@ -97,8 +97,12 @@ def main():
     token = os.environ.get("CF_API_KEY", "").strip()
     project = os.environ.get("CURSEFORGE_PROJECT_ID", "").strip()
     if not token or not project:
-        print("CurseForge upload skipped: set the CF_API_KEY secret and the CURSEFORGE_PROJECT_ID variable to turn it on.")
+        missing = [name for name, value in (("the CF_API_KEY secret", token),
+                                            ("CURSEFORGE_PROJECT_ID (a variable or a secret)", project)) if not value]
+        print("CurseForge upload skipped: no " + " and no ".join(missing) + ". Names must match exactly.")
         return 0
+    if not project.isdigit():
+        sys.exit("CURSEFORGE_PROJECT_ID should be the project's number, from its page's About this project box.")
     zips = glob.glob(os.path.join(folder, "*.zip"))
     if len(zips) != 1:
         sys.exit("Expected one zip in {}, found {}.".format(folder, len(zips)))
