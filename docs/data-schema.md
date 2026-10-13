@@ -8,16 +8,37 @@ AegisPathfinderDB.collect      -- schemaVersion 1
 ```
 
 It lives in `WTF/Account/<ACCOUNT>/SavedVariables/Aegis_Forever_Pathfinder.lua`
-and reaches that file at logout or `/reload`. **Export** (the data collection
-window, or `/apg export`) gives the same data as text:
+and reaches that file at logout or `/reload`.
+
+**Submit data** (the data collection window, or `/apg submit`) sends it
+wrapped in an **envelope**, format 2:
+
+```json
+{ "format": 2, "addon": "Aegis_Forever_Pathfinder", "addonVersion": "0.2.0",
+  "build": "1.60.1.70338", "interface": 16001, "exportedAt": 1760000000,
+  "contributor": "Brandy", "data": { ...the table below, without its log... } }
+```
+
+The Submit window shows it in one of two forms:
+
+- **The share code**: `APF1:` and then the envelope's JSON, zlib-compressed by
+  the client's `C_EncodingUtil` and written in Base64. It is one line, and
+  several times smaller than the text.
+- **The plain export** ("As text", and the fallback on a client without
+  `C_EncodingUtil`): one header line, then the envelope as JSON.
 
 ```
-AEGIS PATHFINDER FOREVER DATA;<format>;<addon version>;<client version.build>;<interface>;<UTC time>
-{ ...the table below as JSON, keys sorted... }
+AEGIS PATHFINDER FOREVER DATA;2;<addon version>;<client version.build>;<interface>;<UTC time>;<contributor>
+{ ...the envelope as JSON, keys sorted... }
 ```
+
+Format 1, from 0.1.0, had a shorter header (no contributor) followed by the
+data table itself, with no envelope. `Tools/ingest.py` still reads it.
 
 JSON turns every table key into a string, so quest ids and levels appear as
-`"176"`, `"5"`. `Tools/merge_exports.py` merges many exports into one file.
+`"176"`, `"5"`. `Tools/ingest.py` reads every form (codes, text, the saved
+variables file, zipped or not) and `Tools/merge_exports.py` merges them. See
+[data-submission.md](data-submission.md).
 
 **Source key** (in the tables below)
 
@@ -32,6 +53,7 @@ JSON turns every table key into a string, so quest ids and levels appear as
 | Field | Type | Source | Meaning |
 |---|---|---|---|
 | `schemaVersion` | number | — | `1`. Future versions migrate older data in `Collector:Init` |
+| `id` | string | — | A random id for this collection, kept until it is cleared. Data sent again under the same id replaces the copy sent before, so nothing is counted twice |
 | `created` | number | client | `GetServerTime()` when the table was first made, or last cleared |
 | `builds` | `{ [build] = true }` | client | Every client build that wrote to it, e.g. `"1.60.1.70338"` (`GetBuildInfo`) |
 | `observers` | `{ ["Race:CLASS:Faction"] = count }` | client | Who collected, and how many sessions. **Never a character's name** |
@@ -160,7 +182,10 @@ One quest, offered and handed in once at level 5:
 
 ## Privacy
 
-Nothing leaves the game by itself: the data stays in the saved variables
-until the player exports it and chooses to share it. Characters are recorded
-as race, class and faction. The export doesn't contain the character's
-name, the realm, or the window's activity log.
+Nothing leaves the game by itself: the addon has no way to send anything, and
+the data stays in the saved variables until the player submits it. Characters
+are recorded as race, class and faction. What is sent leaves out the realm
+and the window's activity log. **The one name in it is the contributor's**:
+the "Credit me as" name the player chose in the Submit window, or, left
+empty, the character's name, so that the contributors list can thank them.
+It is printed in the game (Submit window, About page) and in `CONTRIBUTORS.md`.

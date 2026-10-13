@@ -9,14 +9,14 @@ local Theme = AP.Theme
 	window. The pages are the 1.12 addon's that have something to set without a
 	guide, and one new one:
 
-	  Data Collection  starting and stopping, Automatically run, export, clear
+	  Data Collection  starting and stopping, Automatically run, submit, clear
 	  Appearance       theme (the Blizzard skin among them), switch colours,
 	                   window scale, the guide window, hiding it, the minimap
 	  Navigation       the step's map pin and arrow
 	  Automation       quests, selling greys, repairing
 	  Extras           chat lines, reputation detail, level-up announcements
 	  Maintenance      windows, rescanning
-	  About            version and credits
+	  About            version, credits and contributors
 
 	The 1.12 addon's Route, Dungeons, Filters, Step Display, Action Buttons,
 	Maps and Gear pages set what its guides and gear data do; they come back
@@ -217,12 +217,15 @@ function Pages.DataCollection(k)
 		.. "what it gave -- XP at your level, money, items, spells and reputation. And the XP each level "
 		.. "needs, with how long it took when the whole level was seen.")
 	k.space(6)
-	k.note("It stays in your saved variables until you export it: nothing is sent anywhere. Characters "
-		.. "are written as race, class and faction, never by name.")
+	k.note("It stays in your saved variables until you send it: the addon sends nothing by itself. "
+		.. "Characters are written as race, class and faction, never by name; the one name that goes "
+		.. "out is the one you choose to be credited under.")
 	k.space(SECTION_GAP)
 	k.section("Your data")
-	k.buttons({ { L.COLLECTOR_EXPORT, 120, function() AP:ShowExport() end },
-		{ L.COLLECTOR_CLEAR, 120, function() StaticPopup_Show("AEGISPATHFINDER_CLEAR_DATA") end } })
+	k.buttons({ { L.COLLECTOR_EXPORT, 120, function() AP:ShowSubmit() end },
+		{ L.COLLECTOR_CLEAR, 120, function() AP:ConfirmClearData() end } })
+	k.note("Submit data packs it into a share code to paste in our GitHub form, where it is added by "
+		.. "itself, or in our Discord. Your name goes in the contributors list (About).")
 	local stats = k.note("")
 	k.refresh(function()
 		stats:SetText(C:StatsText() .. " so far.")
@@ -350,6 +353,14 @@ function Pages.About(k)
 		.. "(NostalgiaGeek, Brues), the Aegis: Pathfinder contributors, and what the Aegis: Forever "
 		.. "Instance Journal learned about this client. Fonts: Rajdhani and Inter (SIL Open Font License).")
 	k.space(SECTION_GAP)
+	k.section(L.CONTRIBUTORS)
+	k.note("The players whose collected data the guides are written from, named as they asked to be credited:")
+	k.space(6)
+	local names = k.note(AP:ContributorsText())
+	Theme:TextColor(names, "text")
+	k.space(6)
+	k.note(L.CONTRIBUTORS_FOOT .. " Data collection, then Submit data.")
+	k.space(SECTION_GAP)
 end
 
 local PAGE_ORDER = { "DataCollection", "Appearance", "Navigation", "Automation", "Extras", "Maintenance", "About" }
@@ -366,11 +377,14 @@ local function Build()
 	frame:Hide()
 	Theme:Chrome(frame, "Config", Theme:PositionSaver("optionsframe"))
 	tinsert(UISpecialFrames, "AegisPathfinderOptions")
-	local inset = Theme:IsBlizzard() and 6 or 0
+	-- The frame's edges and chrome, from the skin.
+	local m = Theme.metrics
+	CHROME_TOP = m.top + m.header + SUBHEAD_H
+	local inset = 0
 
 	-- The header's ☰ brings the guide forward, as the concept's "Back" does.
 	local back = Theme:ChipButton(frame.header, "menu", nil, "Back to the guide")
-	back:SetPoint("LEFT", frame.header, "LEFT", Theme:IsBlizzard() and 2 or 8, 0)
+	back:SetPoint("LEFT", frame.header, "LEFT", Theme:IsBlizzard() and 0 or 8, 0)
 	back:SetScript("OnClick", function()
 		AP.objectiveframe:Show()
 		Theme:BringToFront(AP.objectiveframe)
@@ -378,14 +392,14 @@ local function Build()
 
 	local scroll = CreateFrame("ScrollFrame", nil, frame)
 	scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", NAV_W + PAD_X, -(CHROME_TOP + PAD_TOP + inset))
-	scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -(PAD_X + SCROLL_W), PAD_BOTTOM + inset)
+	scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -(PAD_X + SCROLL_W + m.right), PAD_BOTTOM + m.bottom)
 	local holder = CreateFrame("Frame", nil, scroll)
 	holder:SetSize(BODY_W, 1)
 	scroll:SetScrollChild(holder)
 
 	local bar = Theme:ScrollBar(frame, SCROLL_W)
-	bar:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6 - inset, -(CHROME_TOP + PAD_TOP + SCROLL_W + inset))
-	bar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -6 - inset, PAD_BOTTOM + SCROLL_W + inset)
+	bar:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5 - m.right, -(CHROME_TOP + PAD_TOP + SCROLL_W))
+	bar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -5 - m.right, PAD_BOTTOM + SCROLL_W + m.bottom)
 	bar:SetMinMaxValues(0, 0)
 	bar:SetValue(0)
 	bar:SetScript("OnValueChanged", function(_, value) scroll:SetVerticalScroll(value or 0) end)
@@ -406,13 +420,13 @@ local function Build()
 	for _, p in ipairs(kit.pages) do p:SetHeight(p.contentHeight) end
 	frame.pages, frame.refreshers, frame.dropdowns = kit.pages, kit.refreshers, kit.dropdowns
 	frame.scroll, frame.holder, frame.scrollbar = scroll, holder, bar
-	frame.visible = HEIGHT - CHROME_TOP - PAD_TOP - PAD_BOTTOM - 2 * inset
+	frame.visible = HEIGHT - CHROME_TOP - PAD_TOP - PAD_BOTTOM - m.bottom
 
 	-- The categories, down the left: a quieter column, the page shown marked with an accent bar.
 	local nav = CreateFrame("Frame", nil, frame)
-	nav:SetPoint("TOPLEFT", frame, "TOPLEFT", inset, -CHROME_TOP - inset)
-	nav:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", inset, inset)
-	nav:SetWidth(NAV_W - inset)
+	nav:SetPoint("TOPLEFT", frame, "TOPLEFT", m.left, -CHROME_TOP)
+	nav:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", m.left, m.bottom)
+	nav:SetWidth(NAV_W - m.left)
 	local navBg = nav:CreateTexture(nil, "BACKGROUND")
 	navBg:SetTexture(Theme.texture.solid)
 	navBg:SetAllPoints(nav)
@@ -424,34 +438,42 @@ local function Build()
 	navEdge:SetWidth(1)
 	Theme:Tint(navEdge, "text", 0.08)
 	frame.navButtons = {}
+	-- In the Blizzard skin, the pages sit under a category bar, as the game's own Options list has them.
+	local listTop = 8
+	if Theme:IsBlizzard() then
+		local bar = nav:CreateTexture(nil, "ARTWORK")
+		bar:SetPoint("TOPLEFT", nav, "TOPLEFT", 2, -6)
+		bar:SetPoint("TOPRIGHT", nav, "TOPRIGHT", -4, -6)
+		bar:SetHeight(30)
+		if not Theme.Modern.Atlas(bar, "Options_CategoryHeader_1") then bar:SetColorTexture(1, 0.82, 0, 0.12) end
+		local name = nav:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+		name:SetPoint("LEFT", bar, "LEFT", 16, 0)
+		name:SetText(AP.L.SHORT)
+		listTop = 42
+	end
 	for i, p in ipairs(frame.pages) do
 		local b = CreateFrame("Button", nil, nav)
 		b:SetHeight(NAV_ROW_H)
-		b:SetPoint("TOPLEFT", nav, "TOPLEFT", 0, -(8 + (i - 1) * NAV_ROW_H))
+		b:SetPoint("TOPLEFT", nav, "TOPLEFT", 0, -(listTop + (i - 1) * NAV_ROW_H))
 		b:SetPoint("RIGHT", nav, "RIGHT", -1, 0)
-		local fill = b:CreateTexture(nil, "BACKGROUND")
-		fill:SetTexture(Theme.texture.solid)
-		fill:SetAllPoints(b)
-		local mark = b:CreateTexture(nil, "ARTWORK")
-		mark:SetTexture(Theme.texture.solid)
-		mark:SetPoint("TOPLEFT", b, "TOPLEFT", 0, 0)
-		mark:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 0, 0)
-		mark:SetWidth(3)
-		Theme:Tint(mark, "accent")
+		-- The concept's faint fill and accent bar, or the Options window's row highlight.
+		local art = Theme:ListRow(b)
 		local label = b:CreateFontString(nil, "OVERLAY")
 		Theme:SetFont(label, "body", 13)
-		label:SetPoint("LEFT", b, "LEFT", 14, 0)
+		label:SetPoint("LEFT", b, "LEFT", Theme:IsBlizzard() and 24 or 14, 0)
 		label:SetText(p.pageName)
-		b.fill, b.mark, b.label, b.pageName = fill, mark, label, p.pageName
+		b.art, b.label, b.pageName = art, label, p.pageName
 		function b:SetActive(on)
 			self.active = on
-			Theme:Tint(self.fill, "text", on and 0.08 or 0)
-			self.mark:SetShown(on)
-			Theme:TextColor(self.label, on and "text" or "textDim")
+			self.art:SetActive(on)
+			if Theme:IsBlizzard() then
+				-- Gold names, white for the page shown, as the Options list.
+				Theme:TextColor(self.label, on and "text" or "accent")
+			else
+				Theme:TextColor(self.label, on and "text" or "textDim")
+			end
 		end
 		b:SetScript("OnClick", function(self) AP:ShowConfigPage(self.pageName) end)
-		b:SetScript("OnEnter", function(self) if not self.active then Theme:Tint(self.fill, "text", 0.04) end end)
-		b:SetScript("OnLeave", function(self) if not self.active then Theme:Tint(self.fill, "text", 0) end end)
 		b:SetActive(false)
 		frame.navButtons[i] = b
 	end

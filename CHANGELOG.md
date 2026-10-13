@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.2.0 — sending it in
+
+- **New: Submit data.** Replaces Export. It packs everything collected into a
+  **share code**: one line (`APF1:` + Base64 of zlib-compressed JSON, made by
+  the client's `C_EncodingUtil`) that pastes whole into a GitHub issue,
+  several times smaller than the text. The window also has the links to copy
+  (the GitHub form and the Discord), **Credit me as**, the file route for big
+  collections with a *Save it now (/reload)* button, **As text** to see
+  what goes out, and how much is new since your last send. `/apg submit`.
+- **New: automatic intake on GitHub.** The *Submit collected data* issue form
+  and an Action read the code, a pasted export or an attached saved variables
+  file (renamed `.txt` or zipped). They add it to `data/` on the
+  `data-submissions` branch, open a pull request, credit the player, and
+  answer on the issue. Uploaded Lua is parsed as data, never run. The same
+  collection sent again replaces its older copy. Maintainers add files from
+  Discord with `python Tools/ingest.py`.
+- **New: contributors.** Everyone who sends data is listed in the Submit
+  window, on the About page and in `CONTRIBUTORS.md`, all generated from what
+  was sent.
+- **The Blizzard skin, rebuilt.** It now uses today's art instead of the old
+  dialog box: the smooth metal frame over a solid dark background (it was
+  see-through), the red close button, the Options window's list highlight,
+  category bar and section rules, slim check boxes, sliders, scroll bars,
+  drop-downs and search boxes. It falls back to the older art on a client
+  without it.
+- **Automatically run on the guide window**, next to Start collecting, while
+  there is no guide.
+- **Fixed: errors on Escape** ("ADDON FORBIDDEN … SpellStopCasting()",
+  "SpellStopTargeting()", "UNKNOWN()" from `ToggleGameMenu`). 0.1.0
+  reassigned `StaticPopupDialogs` to register its confirmations, which
+  tainted it. Blizzard's calendar reads it when it loads and then registers
+  its Escape handler, so the game's whole Escape handler list became tainted.
+  The confirmations are the addon's own dialog now, and nothing of
+  Blizzard's popup system is touched.
+- Export format 2: the envelope above, with the collection's id and the
+  contributor. The tools still read format 1.
+
 ## 0.1.0 — the Forever port
 
 The Turtle WoW addon (Aegis: Pathfinder 0.24.0) rebuilt for WoW: Forever

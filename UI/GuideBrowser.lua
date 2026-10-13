@@ -13,7 +13,6 @@ local Theme = AP.Theme
 ]]
 
 local DEFAULT_W, DEFAULT_H = 820, 520
-local HEADER_H = 30
 local SIDE_W, PANE_W = 196, 268
 local ROW_H = 26
 local MAX_ROWS = 14
@@ -49,7 +48,7 @@ end
 --[[ The header's tabs: HOME, CURRENT, RECENT, an accent line under the one open. ]]
 local function HeaderTab(header, key, label)
 	local b = CreateFrame("Button", nil, header)
-	b:SetHeight(HEADER_H - 2)
+	b:SetHeight(Theme.metrics.header - 2)
 	local fs = Text(b, "display", 13, "textDim")
 	fs:SetPoint("CENTER", b, "CENTER", 0, 0)
 	fs:SetText(label:upper())
@@ -79,16 +78,8 @@ local function SideRow(parent, def, y)
 	b:SetHeight(30)
 	b:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
 	b:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, y)
-	local hl = b:CreateTexture(nil, "HIGHLIGHT")
-	hl:SetTexture(Theme.texture.solid)
-	hl:SetAllPoints(b)
-	Theme:Tint(hl, "text", 0.05)
-	local bar = b:CreateTexture(nil, "ARTWORK")
-	bar:SetTexture(Theme.texture.solid)
-	bar:SetWidth(3)
-	bar:SetPoint("TOPLEFT", b, "TOPLEFT", 0, 0)
-	bar:SetPoint("BOTTOMLEFT", b, "BOTTOMLEFT", 0, 0)
-	Theme:Tint(bar, "accent")
+	-- The faint fill and accent bar, or the Options window's own row highlight.
+	local art = Theme:ListRow(b)
 	local g = b:CreateTexture(nil, "ARTWORK")
 	g:SetTexture(Theme.glyph[def.glyph])
 	g:SetSize(14, 14)
@@ -99,9 +90,9 @@ local function SideRow(parent, def, y)
 	b.label:SetText(def.label)
 	b.count = Text(b, "body", 11, "textDim")
 	b.count:SetPoint("RIGHT", b, "RIGHT", -12, 0)
-	b.key, b.bar, b.glyph = def.key, bar, g
+	b.key, b.art, b.glyph = def.key, art, g
 	function b:SetActive(on)
-		self.bar:SetShown(on)
+		self.art:SetActive(on)
 		Theme:Tint(self.glyph, on and "accent" or "textDim")
 		Theme:TextColor(self.label, on and "text" or "textDim")
 	end
@@ -111,13 +102,7 @@ end
 -- A Home card: a titled panel.
 local function Card(parent, title)
 	local c = CreateFrame("Frame", nil, parent)
-	if Theme:IsBlizzard() then
-		Theme:Backdrop(c, "tooltip")
-		c:SetBackdropColor(0, 0, 0, 0.45)
-	else
-		Theme:NineSlice(c, Theme.texture.tabFill, "BACKGROUND", "panel3")
-		Theme:NineSlice(c, Theme.texture.tabBorder, "BORDER", "border")
-	end
+	Theme:Inset(c, "panel3")
 	c.title = Text(c, "display", 12, "accent")
 	c.title:SetPoint("TOPLEFT", c, "TOPLEFT", 12, -10)
 	c.title:SetText(title:upper())
@@ -196,13 +181,15 @@ local function Build()
 		if i == 1 then b:SetPoint("LEFT", header, "LEFT", 10, 0) else b:SetPoint("LEFT", ui.tabs[i - 1], "RIGHT", 4, 0) end
 		ui.tabs[i] = b
 	end
-	local inset = Theme:IsBlizzard() and 6 or 1
+	-- The frame's edges and its header, from the skin.
+	local m = Theme.metrics
+	local top = m.top + m.header
 
 	-- The sidebar: search, the categories, and Options at the foot.
 	local side = CreateFrame("Frame", nil, frame)
 	side:SetWidth(SIDE_W)
-	side:SetPoint("TOPLEFT", frame, "TOPLEFT", inset, -HEADER_H - inset)
-	side:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", inset, inset)
+	side:SetPoint("TOPLEFT", frame, "TOPLEFT", m.left, -top)
+	side:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", m.left, m.bottom)
 	if Theme:IsBlizzard() then Fill(side, "panel3") else Theme:CapStrip(side, "panel3", "bottom") end
 	local edge = side:CreateTexture(nil, "BORDER")
 	edge:SetTexture(Theme.texture.solid)
@@ -220,13 +207,7 @@ local function Build()
 	search:SetMaxLetters(40)
 	search:SetFontObject(ChatFontNormal)
 	Theme:SetFont(search, "body", 12)
-	if Theme:IsBlizzard() then
-		Theme:Backdrop(search, "tooltip")
-		search:SetBackdropColor(0, 0, 0, 0.8)
-	else
-		Theme:NineSlice(search, Theme.texture.tabFill, "BACKGROUND", "panel2")
-		Theme:NineSlice(search, Theme.texture.tabBorder, "BORDER", "subtle")
-	end
+	Theme:EditBoxArt(search)
 	local lens = search:CreateTexture(nil, "ARTWORK")
 	lens:SetTexture(Theme.glyph.search)
 	lens:SetSize(12, 12)
@@ -263,8 +244,8 @@ local function Build()
 	-- The right pane: the guide pointed at, or the logo.
 	local pane = CreateFrame("Frame", nil, frame)
 	pane:SetWidth(PANE_W)
-	pane:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -inset, -HEADER_H - inset)
-	pane:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -inset, inset)
+	pane:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -m.right, -top)
+	pane:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -m.right, m.bottom)
 	Fill(pane, "panel2", 0.6)
 	local logo = pane:CreateTexture(nil, "ARTWORK")
 	logo:SetTexture(Theme.texture.logo)
@@ -311,7 +292,7 @@ local function Build()
 	home:SetPoint("TOPLEFT", middle, "TOPLEFT", PAD, -56)
 	home:SetPoint("BOTTOMRIGHT", middle, "BOTTOMRIGHT", -PAD, PAD)
 	ui.home = home
-	local mid = DEFAULT_W - SIDE_W - PANE_W - 2 * PAD - 2 * inset
+	local mid = DEFAULT_W - SIDE_W - PANE_W - 2 * PAD - m.left - m.right
 	ui.recentCard = Card(home, "Your guides")
 	ui.recentCard:SetPoint("TOPLEFT", home, "TOPLEFT", 0, 0)
 	ui.recentCard:SetSize(mid, 110)

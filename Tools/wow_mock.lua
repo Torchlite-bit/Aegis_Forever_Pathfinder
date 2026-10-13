@@ -225,6 +225,7 @@ STANDARD_TEXT_FONT = "Fonts\\FRIZQT__.TTF"
 UISpecialFrames = {}
 SlashCmdList = {}
 StaticPopupDialogs = {}
+Mock.staticPopupDialogs = StaticPopupDialogs
 function StaticPopup_Show(name) table.insert(Mock.popups, name) return {} end
 function ReloadUI() Mock.reloaded = true end
 
@@ -279,7 +280,7 @@ for index, label in ipairs({ "Hated", "Hostile", "Unfriendly", "Neutral", "Frien
 end
 NUM_BAG_SLOTS = 4
 
-C_AddOns = { GetAddOnMetadata = function(_, key) if key == "Version" then return "0.1.0" end end }
+C_AddOns = { GetAddOnMetadata = function(_, key) if key == "Version" then return "0.2.0" end end }
 C_Timer = {
 	After = function(seconds, fn) table.insert(Mock.timers, { at = Mock.now + seconds, fn = fn }) end,
 }
@@ -298,6 +299,98 @@ function Mock.Advance(seconds)
 			end
 		end
 	end
+end
+
+--[[ The client's modern art, as the Forever client has it: the atlases the
+	Blizzard skin asks for, and NineSliceUtil drawing a layout as textures on a
+	frame. Mock.noModernArt (the "blizzard-plain" run) takes them away, so the
+	skin's fallbacks are exercised too. ]]
+Mock.atlases = {}
+for name in ([[UI-Frame-Metal-CornerTopLeft Tooltip-NineSlice-CornerTopLeft UI-Frame-InnerTopLeft
+	Options_HorizontalDivider checkbox-minimal checkmark-minimal !minimal-scrollbar-track-middle
+	minimal-scrollbar-small-thumb-middle minimal-scrollbar-arrow-top minimal-scrollbar-arrow-bottom
+	Minimal_SliderBar_Left Minimal_SliderBar_Right _Minimal_SliderBar_Middle Minimal_SliderBar_Button
+	common-dropdown-textholder common-dropdown-a-button common-dropdown-a-button-hover Options_List_Active
+	Options_List_Hover Options_CategoryHeader_1 common-search-border-left common-search-border-middle
+	common-search-border-right]]):gmatch("%S+") do Mock.atlases[name] = true end
+function Region:SetAtlas(name)
+	assert(Mock.atlases[name], "no such atlas: " .. tostring(name))
+	self._atlas = name
+	return true
+end
+function Region:SetColorTexture(r, g, b, a) self._color = { r, g, b, a } end
+function Region:SetBlendMode(mode) self._blend = mode end
+local LAYOUT_PIECES = { "TopLeftCorner", "TopRightCorner", "BottomLeftCorner", "BottomRightCorner", "TopEdge",
+	"BottomEdge", "LeftEdge", "RightEdge", "Center" }
+function Mock.InstallModernArt()
+	C_Texture = { GetAtlasInfo = function(name) if Mock.atlases[name] then return { width = 16, height = 16 } end end }
+	NineSliceUtil = {
+		GetLayout = function(name)
+			if name == "ButtonFrameTemplateNoPortrait" or name == "TooltipDefaultLayout" or name == "InsetFrameTemplate" then
+				return {}
+			end
+		end,
+		ApplyLayoutByName = function(frame, name)
+			assert(NineSliceUtil.GetLayout(name), "no such layout " .. tostring(name))
+			for _, piece in ipairs(LAYOUT_PIECES) do rawset(frame, piece, rawget(frame, piece) or frame:CreateTexture()) end
+			frame._layout = name
+		end,
+	}
+	PANEL_BACKGROUND_COLOR = { GetRGB = function() return 0.08, 0.08, 0.08 end }
+end
+
+--[[ C_EncodingUtil, for the share code: Base64 as the client writes it, and a zlib
+	stream made of stored (uncompressed) deflate blocks -- real zlib that any inflater
+	reads, without writing a compressor in Lua. Clients without it get the plain text. ]]
+local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+local function Base64(s)
+	local out = {}
+	for i = 1, #s, 3 do
+		local a, b, c = s:byte(i, i + 2)
+		local n = a * 65536 + (b or 0) * 256 + (c or 0)
+		local digits = { math.floor(n / 262144) % 64, math.floor(n / 4096) % 64, math.floor(n / 64) % 64, n % 64 }
+		for k = 1, 4 do digits[k] = B64:sub(digits[k] + 1, digits[k] + 1) end
+		if not b then digits[3] = "=" end
+		if not c then digits[4] = "=" end
+		out[#out + 1] = table.concat(digits)
+	end
+	return table.concat(out)
+end
+
+local function Zlib(s)
+	local out = { string.char(0x78, 0x01) }
+	local pos = 1
+	repeat
+		local chunk = s:sub(pos, pos + 65534)
+		pos = pos + #chunk
+		local len, nlen = #chunk, 65535 - #chunk
+		out[#out + 1] = string.char(pos > #s and 1 or 0, len % 256, math.floor(len / 256), nlen % 256,
+			math.floor(nlen / 256)) .. chunk
+	until pos > #s
+	local a, b = 1, 0
+	for i = 1, #s do
+		a = (a + s:byte(i)) % 65521
+		b = (b + a) % 65521
+	end
+	out[#out + 1] = string.char(math.floor(b / 256), b % 256, math.floor(a / 256), a % 256)
+	return table.concat(out)
+end
+
+function Mock.InstallEncoding()
+	Enum = Enum or {}
+	Enum.CompressionMethod = { Deflate = 0, Zlib = 1, Gzip = 2 }
+	C_EncodingUtil = {
+		CompressString = function(source, method)
+			assert(type(source) == "string", "CompressString needs a string")
+			assert(method == Enum.CompressionMethod.Zlib, "the share code is zlib")
+			return Zlib(source)
+		end,
+		EncodeBase64 = function(source)
+			assert(type(source) == "string", "EncodeBase64 needs a string")
+			return Base64(source)
+		end,
+	}
 end
 
 Settings = {

@@ -1,7 +1,7 @@
 --[[
 	The smoke test's scenario (Tools/smoke_test.py runs it once per skin): log in,
-	start collecting, play a quest from offer to turn-in, level up, export, and
-	click through every window and setting.
+	start collecting, play a quest from offer to turn-in, level up, pack it to
+	submit, and click through every window and setting.
 ]]
 
 local AP, skin = ...
@@ -48,7 +48,16 @@ check(not AP.Collector:IsRunning(), "the collector is off until started")
 check(AP.minimapbutton:IsShown(), "the minimap button shows")
 check(Mock.settingsCategory, "a page is registered in the game's own options")
 if skin == "blizzard" then
-	check(guide:GetBackdrop() and guide:GetBackdrop().edgeFile:find("DialogBox"), "the Blizzard skin draws dialog frames")
+	local modern = C_Texture ~= nil
+	if modern then
+		equal(rawget(guide, "_layout"), "ButtonFrameTemplateNoPortrait", "the Blizzard skin draws the metal window border")
+		equal(rawget(AP.guidebrowserframe, "_layout"), "ButtonFrameTemplateNoPortrait", "on every window")
+	else
+		check(guide:GetBackdrop() and guide:GetBackdrop().edgeFile:find("DialogBox"), "without the metal art, a dialog edge")
+	end
+	local fill = guide.skin.fill.texture
+	check(fill and rawget(fill, "_color") and fill._color[4] == 1, "and a solid, not see-through, background")
+	check(guide.header.title and guide.header.title:GetText() == "Aegis: Pathfinder", "the title sits in the top bar")
 end
 
 ------------------------------------------------------------------------------------------
@@ -215,13 +224,67 @@ check(not AP.Collector:IsAuto(), "and changes it from the guide window")
 Mock.Click(guide.ui.empty.auto)
 check(AP.Collector:IsAuto(), "both ways")
 
--- Export: the text the scenario hands back to Python to parse as JSON.
-AP:ShowExport()
-local export = _G.AegisPathfinderExport
-check(export:IsShown(), "the export window opens")
-Mock.export = export.text
+-- Submit: the share code and the plain export, handed back to Python to decode.
+local L = AP.L
+AP:ShowSubmit()
+local submit = _G.AegisPathfinderSubmit
+check(submit:IsShown(), "the Submit window opens")
+check(submit.box:HasFocus(), "with the code in the box, ready for Ctrl+C")
+if C_EncodingUtil then
+	check(submit.text:find("^APF1:"), "it shows the share code")
+	equal(submit.codeHead.label:GetText(), L.SUBMIT_CODE, "under its name")
+	check(submit.as:IsShown(), "As text is offered")
+	Mock.Click(submit.as)
+	check(submit.text:find("^AEGIS PATHFINDER FOREVER DATA;2;"), "As text shows the plain export")
+	equal(submit.as:GetText():lower(), L.SUBMIT_AS_CODE:lower(), "and offers the code back")
+	Mock.Click(submit.as)
+	check(submit.text:find("^APF1:"), "As code turns it back")
+else
+	check(submit.text:find("^AEGIS PATHFINDER FOREVER DATA;2;"), "a client without C_EncodingUtil gets the text")
+	check(not submit.as:IsShown(), "and no As code button")
+end
+check(not submit.status:GetText():find("since your last send"), "a first send has nothing to compare with")
+equal(submit.github:GetText(), AP.Export.GITHUB_URL, "the GitHub form link is there to copy")
+equal(submit.discord:GetText(), AP.Export.DISCORD_URL, "and the Discord's")
+
+-- The credit name: the character's by default, else what was typed, cleaned.
+equal(AP.Export.Envelope().contributor, "Tester", "no name chosen: the character's")
+check(AP.Export.Build():find(";Tester\n", 1, true), "in the header too")
+submit.credit:SetText("  Bran|cffff0000dy; the\nGreat  ")
+submit.credit:_Run("OnTextChanged", true)
+equal(AP.db.profile.creditName, "Brancffff0000dy the Great", "the name loses UI codes, separators and line breaks")
+submit.credit:SetText(string.rep("ä", 45))
+submit.credit:_Run("OnTextChanged", true)
+equal(AP.db.profile.creditName, string.rep("ä", 40), "and is cut at 40 letters, not inside one")
+submit.credit:SetText("")
+submit.credit:_Run("OnTextChanged", true)
+equal(AP.db.profile.creditName, nil, "an empty box goes back to the character's name")
+submit.credit:SetText("Brandy")
+submit.credit:_Run("OnTextChanged", true)
+Mock.Advance(1)
+equal(AP.Export.Envelope().contributor, "Brandy", "the chosen name goes out")
+check(C_EncodingUtil == nil or submit.text:find("^APF1:"), "the code is made again with it")
+
+-- New since your last send.
+submit:Hide()
+AP:ShowSubmit()
+check(submit.status:GetText():find(string.format(L.SUBMIT_NEW, 0), 1, true), "nothing new since the last send")
+submit:Hide()
+
+-- What Python decodes.
+local envelope = AP.Export.Envelope()
+Mock.export = AP.Export.Build(envelope)
+Mock.shareCode = AP.Export.ShareCode(envelope)
 check(Mock.export:find('"Wanted: Hogger"', 1, true), "the export holds the quest")
-check(not Mock.export:find('"Tester"', 1, true), "the export never names the character")
+
+-- The contributors: none yet, or as many as fit and "and N more".
+local listed = AP.CONTRIBUTORS
+AP.CONTRIBUTORS = {}
+equal(AP:ContributorsText(40), L.CONTRIBUTORS_NONE, "no contributors yet")
+AP.CONTRIBUTORS = { "Subtilizer", "Brandy", "|cffff0000Ash|r", "Mira", "Tobias", "Quill" }
+equal(AP:ContributorsText(20), "Subtilizer, Brandy, " .. string.format(L.CONTRIBUTORS_MORE, 4), "a long list ends in and N more")
+check(AP:ContributorsText():find("Ash, Mira", 1, true), "every name, without UI codes, on the About page")
+AP.CONTRIBUTORS = listed
 
 ------------------------------------------------------------------------------------------
 -- The guide browser, the options and the commands
@@ -247,17 +310,24 @@ for _, button in ipairs(options.navButtons) do
 end
 AP:RefreshConfigPanel()
 
+local confirm = function() return _G.AegisPathfinderConfirm end
 if skin == "pathfinder" then
 	AP:SetTheme("night")
 	equal(AP.Theme.current, "night", "a colour theme applies at once")
-	equal(#Mock.popups, 0, "without a reload")
+	check(not (confirm() and confirm():IsShown()), "without a reload")
 	AP:SetTheme("blizzard")
-	equal(Mock.popups[#Mock.popups], "AEGISPATHFINDER_RELOAD_SKIN", "the Blizzard skin asks for a reload")
+	check(confirm() and confirm():IsShown(), "the Blizzard skin asks for a reload")
+	Mock.Click(confirm().yes)
+	check(Mock.reloaded, "and reloads when told to")
+	Mock.reloaded = nil
 	AP:SetTheme("pathfinder")
 else
 	AP:SetTheme("pathfinder")
-	equal(Mock.popups[#Mock.popups], "AEGISPATHFINDER_RELOAD_SKIN", "leaving the Blizzard skin asks for a reload")
+	check(confirm() and confirm():IsShown(), "leaving the Blizzard skin asks for a reload")
+	Mock.Click(confirm().no)
+	check(not confirm():IsShown() and not Mock.reloaded, "Later leaves it be")
 end
+equal(#Mock.popups, 0, "the game's own popups are never used")
 
 AP:SetGuideTransparent(true)
 AP:SetGuideLocked(true)
@@ -275,8 +345,8 @@ check(not AP.minimapbutton:IsShown(), "/apg minimapbutton hides the button")
 AP:ToggleMinimapButton()
 AP:ResetWindowLayout()
 
-for _, command in ipairs({ "", "", "collect", "export", "config", "browser", "status", "help", "next", "prev",
-	"resetpanels", "unknown" }) do
+for _, command in ipairs({ "", "", "collect", "submit", "export", "config", "browser", "status", "help", "next",
+	"prev", "resetpanels", "unknown" }) do
 	SlashCmdList.AEGISPATHFINDER(command)
 end
 
@@ -354,8 +424,14 @@ Mock.Fire("QUEST_DETAIL", 0)
 equal(data.quests[176].seen.offered, before, "nothing is written while stopped")
 
 local exportText = Mock.export
-StaticPopupDialogs.AEGISPATHFINDER_CLEAR_DATA.OnAccept()
+AP:ConfirmClearData()
+check(confirm():IsShown(), "Clear data asks first")
+Mock.Click(confirm().yes)
 equal(next(AP.Collector:GetData().quests), nil, "Clear data forgets the quests")
 Mock.export = exportText
+
+-- Nothing of Blizzard's popup system was touched: writing into it taints Escape.
+equal(next(StaticPopupDialogs), nil, "StaticPopupDialogs is left alone")
+check(rawequal(StaticPopupDialogs, Mock.staticPopupDialogs), "and never reassigned")
 
 return string.format("%d checks passed", checks)
