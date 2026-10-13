@@ -4,10 +4,10 @@ Instance Journal's own uploader, pointed at this addon.
 
     python Tools/curseforge_upload.py dist
 
-Reads the zip and its notes from the folder (Tools/package.py writes both). Needs two
-settings of the GitHub repository; without them it says so and does nothing:
-  CF_API_KEY             a CurseForge API token (a repository secret)
-  CURSEFORGE_PROJECT_ID  the project's id, from its CurseForge page (a repository variable, or a secret)
+Reads the zip and its notes from the folder (Tools/package.py writes both). Needs a
+CurseForge API token, the CF_API_KEY secret of the GitHub repository; without it, it says so
+and does nothing. The project's id is the TOC's ## X-Curse-Project-ID (the line CurseForge's
+own packager reads); a CURSEFORGE_PROJECT_ID variable or secret overrides it.
 Optional repository variables:
   CURSEFORGE_GAME_VERSION_IDS  game version ids, comma-separated, instead of looking them up
   CURSEFORGE_RELEASE_TYPE      release (the default), beta or alpha
@@ -41,6 +41,13 @@ def request(path, token, data=None, content_type=None):
             return json.loads(response.read().decode("utf-8") or "null")
     except urllib.error.HTTPError as error:
         sys.exit("CurseForge answered {} to {}: {}".format(error.code, path, error.read().decode("utf-8", "replace")))
+
+
+def toc_project_id():
+    """The TOC's ## X-Curse-Project-ID, or ""."""
+    with open(TOC, encoding="utf-8") as handle:
+        match = re.search(r"^## X-Curse-Project-ID:\s*(\S+)", handle.read(), re.M)
+    return match.group(1) if match else ""
 
 
 def client_version():
@@ -95,11 +102,12 @@ def multipart(fields, file_field, path):
 def main():
     folder = sys.argv[1] if len(sys.argv) > 1 else "dist"
     token = os.environ.get("CF_API_KEY", "").strip()
-    project = os.environ.get("CURSEFORGE_PROJECT_ID", "").strip()
+    project = os.environ.get("CURSEFORGE_PROJECT_ID", "").strip() or toc_project_id()
     if not token or not project:
-        missing = [name for name, value in (("the CF_API_KEY secret", token),
-                                            ("CURSEFORGE_PROJECT_ID (a variable or a secret)", project)) if not value]
-        print("CurseForge upload skipped: no " + " and no ".join(missing) + ". Names must match exactly.")
+        missing = [name for name, value in (("the repository secret CF_API_KEY", token),
+                                            ("project id (the TOC's ## X-Curse-Project-ID)", project)) if not value]
+        print("CurseForge upload skipped. Missing: " + "; ".join(missing) + ". (Settings, Secrets and variables, "
+              "Actions; the name must match exactly.)")
         return 0
     if not project.isdigit():
         sys.exit("CURSEFORGE_PROJECT_ID should be the project's number, from its page's About this project box.")
