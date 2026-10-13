@@ -5,9 +5,9 @@
 # version's CHANGELOG entry as its notes. A push that keeps the same version refreshes that
 # release's zip and notes, so its download is always the latest push (merged player data
 # included). Bump the version (and add a CHANGELOG entry) for a new release. Each new version
-# is also uploaded to CurseForge, once, when the CF_API_KEY secret and the
-# CURSEFORGE_PROJECT_ID variable are set; "Run workflow" on the Actions tab uploads the
-# current version after they first are.
+# is also uploaded to CurseForge, once, when the CF_API_KEY secret is set; the project id is
+# the TOC's ## X-Curse-Project-ID (a CURSEFORGE_PROJECT_ID variable or secret overrides it).
+# "Run workflow" on the Actions tab uploads the current version if it isn't there yet.
 #
 # Nothing here runs for a branch other than main: a release only follows a merge.
 
@@ -64,7 +64,7 @@ jobs:
           fi
 
       # Each version goes to CurseForge once: the release keeps a curseforge.txt once uploaded.
-      # Needs the CF_API_KEY secret and the CURSEFORGE_PROJECT_ID variable (Tools/curseforge_upload.py).
+      # Needs the CF_API_KEY secret; the project id is in the TOC (Tools/curseforge_upload.py).
       - name: Upload to CurseForge
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
