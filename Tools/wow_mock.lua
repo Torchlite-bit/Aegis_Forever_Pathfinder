@@ -54,8 +54,28 @@ function Region:GetName() return self._name end
 function Region:GetParent() return self._parent end
 function Region:SetParent(parent) self._parent = parent end
 function Region:GetChildren() return unpack(rawget(self, "_children") or {}) end
-function Region:Show() local was = self._shown; self._shown = true; if not was then self:_Run("OnShow") end end
-function Region:Hide() local was = self._shown; self._shown = false; if was then self:_Run("OnHide") end end
+-- A secure frame can't be shown or hidden by an addon in combat: the client blocks it.
+local function Protected(self, action)
+	if rawget(self, "_secure") and Mock.inCombat then
+		table.insert(Mock.blocked, { action, rawget(self, "_name") })
+		return true
+	end
+end
+function Region:Show()
+	if Protected(self, "Show") then return end
+	local was = self._shown; self._shown = true; if not was then self:_Run("OnShow") end
+end
+function Region:Hide()
+	if Protected(self, "Hide") then return end
+	local was = self._shown; self._shown = false; if was then self:_Run("OnHide") end
+end
+function Region:SetAttribute(key, value)
+	if Protected(self, "SetAttribute") then return end
+	self._attributes = self._attributes or {}
+	self._attributes[key] = value
+end
+function Region:GetAttribute(key) return self._attributes and self._attributes[key] end
+function Region:IsMouseOver() return true end
 function Region:SetShown(shown) if shown then self:Show() else self:Hide() end end
 function Region:IsShown() return self._shown end
 function Region:IsVisible()
@@ -201,6 +221,7 @@ function CreateFrame(frameType, name, parent, template)
 		end
 	end
 	local frame = NewRegion(frameType, name, parent or UIParent)
+	if template and tostring(template):find("Secure") then frame._secure = true end
 	if template then
 		for t in tostring(template):gmatch("[^,%s]+") do
 			if TEMPLATE_SETUP[t] then TEMPLATE_SETUP[t](frame) end
@@ -227,7 +248,8 @@ SlashCmdList = {}
 StaticPopupDialogs = {}
 Mock.staticPopupDialogs = StaticPopupDialogs
 function StaticPopup_Show(name) table.insert(Mock.popups, name) return {} end
-function ReloadUI() Mock.reloaded = true end
+-- Only the game's own code may reload: an addon's call is "ADDON BLOCKED: Reload()".
+function ReloadUI() table.insert(Mock.blocked, { "ReloadUI" }) end
 
 Mixin = function(object, ...)
 	for index = 1, select("#", ...) do
@@ -264,7 +286,7 @@ function GetTime() return Mock.now end
 function GetServerTime() return 1760000000 + math.floor(Mock.now) end
 function GetBuildInfo() return "1.60.1", "70338", "Oct 10 2026", 16001 end
 function issecretvalue(value) return Mock.secret ~= nil and Mock.secret[value] == true end
-function InCombatLockdown() return false end
+function InCombatLockdown() return Mock.inCombat == true end
 function IsInInstance() return Mock.state.inInstance or false, "none" end
 function IsShiftKeyDown() return Mock.state.shift == true end
 function IsMouseButtonDown() return false end
@@ -598,6 +620,15 @@ function Mock.Fire(event, ...)
 	local list = {}
 	for frame in pairs(Mock.events[event] or {}) do list[#list + 1] = frame end
 	for _, frame in ipairs(list) do frame:_Run("OnEvent", event, ...) end
+end
+
+--- A click on a secure action button: Blizzard's code runs its action. Only /reload is modelled.
+function Mock.ClickSecure(frame)
+	assert(frame and rawget(frame, "_secure"), "not a secure button")
+	assert(frame:IsShown(), "the secure button isn't shown")
+	if frame:GetAttribute("type") == "macro" and frame:GetAttribute("macrotext") == "/reload" then
+		Mock.reloaded = true
+	end
 end
 
 function Mock.Click(frame, button)

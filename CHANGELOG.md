@@ -46,6 +46,10 @@
 - **Fixed: "ADDON BLOCKED: UNKNOWN()" on level-up.** This client lets addons
   post in chat only from a click, so the level-up announcement is now a card
   with a button for each place ticked (Emote, Party, Guild).
+- **Fixed: "ADDON BLOCKED: Reload()".** This client lets only its own code
+  reload the interface. The Reload buttons (the skin change, the guide menu,
+  Save it now) now reload through a secure /reload button that sits over
+  them while the mouse is on them. In combat they say to type /reload.
 - **Fixed: data dropped from exports.** A table with gaps in its numbers (levels
   5 and 6, say) could be written as a short or empty list, losing what came
   after the gap. Such tables are now written whole.

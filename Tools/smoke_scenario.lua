@@ -343,9 +343,44 @@ if skin == "pathfinder" then
 	check(not (confirm() and confirm():IsShown()), "without a reload")
 	AP:SetTheme("blizzard")
 	check(confirm() and confirm():IsShown(), "the Blizzard skin asks for a reload")
-	Mock.Click(confirm().yes)
+	-- The game lets only its own code reload: the click goes to a secure /reload button over Reload.
+	confirm().yes:_Run("OnEnter")
+	local reloader = _G.AegisPathfinderReload
+	check(reloader and reloader:IsShown(), "a secure button covers Reload while the mouse is on it")
+	equal(reloader:GetAttribute("macrotext"), "/reload", "and runs /reload")
+	Mock.ClickSecure(reloader)
 	check(Mock.reloaded, "and reloads when told to")
 	Mock.reloaded = nil
+	-- In combat the secure button can't be moved or shown: Reload itself says to type /reload.
+	Mock.Fire("PLAYER_REGEN_DISABLED")
+	check(not reloader:IsShown(), "it steps aside as combat starts")
+	Mock.inCombat = true
+	confirm().yes:_Run("OnEnter")
+	check(not reloader:IsShown(), "and stays aside in combat")
+	Mock.Click(confirm().yes)
+	check(Chat("Type /reload"), "Reload in combat says to type /reload")
+	Mock.inCombat = false
+	-- The other two Reload buttons: the guide menu's and the Submit window's Save it now.
+	local menuReload
+	for _, row in ipairs({ guide.ui.menu:GetChildren() }) do
+		if row.item and row.item.reload then menuReload = row end
+	end
+	check(menuReload, "the guide menu has Reload")
+	guide.ui.menu:Show()
+	menuReload:_Run("OnEnter")
+	check(reloader:IsShown() and reloader.host == menuReload, "the secure button covers the menu's Reload")
+	menuReload:Hide()
+	check(not reloader:IsShown(), "and leaves when it hides")
+	menuReload:Show()
+	Mock.Click(menuReload)
+	guide.ui.menu:Hide()
+	AP:ShowSubmit()
+	local save = Mock.FindText(AP.L.SUBMIT_SAVE, _G.AegisPathfinderSubmit)[1]
+		or Mock.FindText(AP.L.SUBMIT_SAVE:upper(), _G.AegisPathfinderSubmit)[1]
+	check(save, "the Submit window has Save it now")
+	save:_Run("OnEnter")
+	check(reloader:IsShown() and reloader.host == save, "the secure button covers Save it now")
+	_G.AegisPathfinderSubmit:Hide()
 	AP:SetTheme("pathfinder")
 else
 	AP:SetTheme("pathfinder")

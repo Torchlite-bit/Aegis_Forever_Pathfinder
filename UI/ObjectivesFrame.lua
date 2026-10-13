@@ -72,7 +72,8 @@ local GUIDE_MENU = {
 		run = function(on) AP:SetGuideTransparent(on) end },
 	"-",
 	{ label = "Reset window", glyph = "reset", run = function() AP:ResetWindowLayout() end },
-	{ label = "Reload", glyph = "reload", run = function() ReloadUI() end },
+	-- Reloads through the secure button over it (Theme:OfferReload); a click that reaches the row was in combat.
+	{ label = "Reload", glyph = "reload", reload = true, run = function() AP:Print(AP.L.TYPE_RELOAD) end },
 	"-",
 	{ label = "Settings", glyph = "gear", run = function() AP:ToggleConfigPanel() end },
 }
@@ -152,6 +153,7 @@ local function MenuRow(menu, item, y)
 	Theme:TextColor(fs, "text")
 	row.item, row.label = item, fs
 	if item.key then MenuBox(row) end
+	if item.reload then Theme:OfferReload(row) end
 	row:SetScript("OnClick", function(self)
 		local it = self.item
 		if it.key then

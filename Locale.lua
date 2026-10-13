@@ -84,4 +84,5 @@ L.AUTOQUEST_ON = "Quests are now accepted and turned in by themselves, as in the
 	.. "skip one; turn it off under /apg config, Automation."
 L.RELOAD_FOR_SKIN = "The Blizzard skin is drawn when the windows are built. Reload the interface now?"
 L.RELOAD = "Reload"
+L.TYPE_RELOAD = "Type /reload to reload: in combat, only the game's own buttons can do it."
 L.LATER = "Later"

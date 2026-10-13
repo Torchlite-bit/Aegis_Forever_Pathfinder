@@ -2095,7 +2095,8 @@ end
 	Escape handlers. From then on, every Escape fails with "ADDON FORBIDDEN:
 	SpellStopCasting()". This dialog touches nothing of Blizzard's.
 
-	Theme:Confirm{ text =, accept =, cancel =, onAccept = function, onCancel = function }
+	Theme:Confirm{ text =, accept =, cancel =, onAccept = function, onCancel = function,
+		reload = true when Accept reloads the interface (see Theme:OfferReload) }
 ]]
 local confirm
 
@@ -2131,6 +2132,7 @@ function Theme:Confirm(spec)
 			if spec and spec.onCancel then spec.onCancel() end
 		end)
 		tinsert(UISpecialFrames, "AegisPathfinderConfirm")
+		Theme:OfferReload(confirm.yes, function() return confirm.spec and confirm.spec.reload end)
 		confirm:Hide()
 	end
 	confirm.spec = spec
@@ -2142,14 +2144,90 @@ function Theme:Confirm(spec)
 	return confirm
 end
 
+--[[ Reloading the interface.
+
+	The game lets only its own code reload the interface: ReloadUI() from an
+	addon is "ADDON BLOCKED: Reload()", even from a click. A secure action
+	button running the /reload macro goes through Blizzard's code instead. So
+	one such button, invisible, sits over whichever of our Reload buttons the
+	mouse is on, and takes the click.
+
+	It belongs to UIParent, not to our windows: a window holding a secure
+	button becomes protected, and could then not be hidden or moved in a fight.
+	A secure button can be set up, moved, shown and hidden only out of combat;
+	in combat our own button takes the click and says to type /reload. ]]
+local reloader
+
+local function Hover(host, on)
+	if not host then return end
+	if host.LockHighlight then
+		if on then host:LockHighlight() else host:UnlockHighlight() end
+	end
+	local script = host:GetScript(on and "OnEnter" or "OnLeave")
+	if script then script(host) end
+end
+
+local function HideReloader()
+	if not reloader or Compat.InCombat() or not reloader:IsShown() then return end
+	local host = reloader.host
+	reloader.host = nil
+	reloader:Hide()
+	Hover(host, false)
+end
+
+local function Reloader()
+	if reloader then return reloader end
+	if Compat.InCombat() then return nil end
+	reloader = CreateFrame("Button", "AegisPathfinderReload", UIParent, "SecureActionButtonTemplate")
+	reloader:RegisterForClicks("AnyUp")
+	reloader:SetAttribute("useOnKeyDown", false)
+	reloader:SetAttribute("type", "macro")
+	reloader:SetAttribute("macrotext", "/reload")
+	reloader:Hide()
+	reloader:SetScript("OnEnter", function(self) Hover(self.host, true) end)
+	reloader:SetScript("OnLeave", HideReloader)
+	reloader:SetScript("OnUpdate", function(self)
+		local host = self.host
+		if not (host and host:IsVisible() and (not host.IsMouseOver or host:IsMouseOver())) then HideReloader() end
+	end)
+	-- Out of the way before combat starts: it couldn't be hidden during it.
+	AP:On("PLAYER_REGEN_DISABLED", HideReloader)
+	return reloader
+end
+
+--- Makes `button` reload the interface when clicked, outside combat, while `active()` (if given) says so.
+--- Its own OnClick still runs when the secure button isn't over it (in combat): have it say to type /reload.
+function Theme:OfferReload(button, active)
+	button:HookScript("OnEnter", function(self)
+		if active and not active() then return end
+		local r = Reloader()
+		if not r or Compat.InCombat() or not self:IsVisible() then return end
+		local x, y = self:GetCenter()
+		if not x then return end
+		local scale = self:GetEffectiveScale() / UIParent:GetEffectiveScale()
+		r:ClearAllPoints()
+		r:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x * scale, y * scale)
+		r:SetSize(self:GetWidth() * scale, self:GetHeight() * scale)
+		r:SetFrameStrata(self:GetFrameStrata())
+		r:SetFrameLevel(self:GetFrameLevel() + 20)
+		r.host = self
+		r:Show()
+	end)
+	button:HookScript("OnHide", function(self)
+		if reloader and reloader.host == self then HideReloader() end
+	end)
+end
+
 --- Save and apply a theme. A colour theme applies at once; moving to or from
 --- the Blizzard skin asks to reload, since its widgets are other frames.
 function AP:SetTheme(key)
 	local def = Theme.themeByKey[key] or Theme.themeByKey[Theme.DEFAULT_THEME]
 	self.db.profile.theme = def.key
 	if (def.skin or "pathfinder") ~= Theme.skin then
-		Theme:Confirm({ text = AP.L.RELOAD_FOR_SKIN, accept = AP.L.RELOAD, cancel = AP.L.LATER,
-			onAccept = function() ReloadUI() end })
+		-- The Reload button reloads through the secure button over it (Theme:OfferReload);
+		-- a click that reaches the button itself was in combat.
+		Theme:Confirm({ text = AP.L.RELOAD_FOR_SKIN, accept = AP.L.RELOAD, cancel = AP.L.LATER, reload = true,
+			onAccept = function() AP:Print(AP.L.TYPE_RELOAD) end })
 		return def
 	end
 	Theme:ApplyTheme(def.key)

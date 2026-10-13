@@ -276,7 +276,9 @@ local function BuildSubmit()
 	fileText:SetText(L.SUBMIT_FILE_TEXT)
 	local save = Theme:PanelButton(right, L.SUBMIT_SAVE, 170, 24)
 	save:SetPoint("TOPLEFT", fileText, "BOTTOMLEFT", 0, -8)
-	save:SetScript("OnClick", function() ReloadUI() end)
+	-- Reloads through the secure button over it (Theme:OfferReload); a click that reaches it was in combat.
+	save:SetScript("OnClick", function() AP:Print(L.TYPE_RELOAD) end)
+	Theme:OfferReload(save)
 
 	local thanksHead = Theme:SectionHeader(right, L.CONTRIBUTORS, RIGHT_W)
 	thanksHead:SetPoint("TOPLEFT", save, "BOTTOMLEFT", 0, -16)
