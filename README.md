@@ -175,7 +175,8 @@ Tools/savedvariables.py        reads a SavedVariables file as data, never runnin
 Tools/merge_exports.py         merges codes, exports and data files into one file, storing nothing
 .github/                       the Submit data issue form and the Action that ingests it
 data/                          what players sent, and everything merged
-docs/                          feature inventory, API migration, data schema, guide API
+docs/                          feature inventory, API migration, data schema, guide API, CurseForge
+Tools/package.py               builds the release zip; Tools/curseforge_upload.py uploads it
 ```
 
 ```sh
@@ -188,6 +189,13 @@ python Tools/merge_exports.py code.txt Aegis_Forever_Pathfinder.lua -o merged.js
 
 The API this is written against, and what still needs checking in a live
 client: [docs/api-migration.md](docs/api-migration.md).
+
+**Releases are automatic**, as for the Instance Journal. Every merge to `main`
+publishes a GitHub release named after the `.toc` version, with the addon zip
+and that version's changelog entry; a merge that keeps the version refreshes
+that release's zip. Each new version also goes to CurseForge, once: bump the
+version for CurseForge to get a new file. Setup and the project page's text:
+[docs/curseforge.md](docs/curseforge.md).
 
 ## Credits
 
