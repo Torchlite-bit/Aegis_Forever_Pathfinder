@@ -45,7 +45,7 @@ Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the 
 
 ## What it is right now
 
-**The Pathfinder look, on Forever.** The guide window, the ≡ menu, the guide browser, the options window and the minimap button are the Turtle WoW addon's, panel for panel: same layout, same fonts, same colour themes (Day, Night, Pathfinder green, OctoWoW, RavenCraft, Capybara Paradise, Aegis).
+**The Pathfinder look, on Forever.** The guide window, the ≡ menu, the guide browser, the options window and the minimap button are the Turtle WoW addon's, panel for panel: same layout, same fonts, same colour themes (Day, Night, Pathfinder (the original green), OctoWoW, RavenCraft, Capybara Paradise, Aegis).
 
 **A Blizzard skin.** One more theme, **Blizzard**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. Pick it under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
 
@@ -70,7 +70,7 @@ Repeat sightings are merged: counts add up, and the lowest and highest XP, money
 **The data collection window** (the ● chip on the guide window, shift-click the minimap button, or `/apg collect`):
 
 - **Start / Stop collecting data**
-- **Automatically run**: starts collecting at every login on this character (the guide window has this box too)
+- **Automatically run**: starts collecting at every login on this character, and new characters take the last choice you made (the guide window has this box too)
 - What it has so far, and the last things it wrote down
 - **Submit data** and **Clear data**
 
@@ -80,19 +80,19 @@ Addons can't reach the internet, so the game can't send it for you, but it takes
 
 - **A share code**: everything you collected, compressed into one line and already selected. Press **Ctrl+C**.
 - **Where to paste it**:
-  - **[The GitHub form](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/issues/new?template=submit-data.yml)**: paste the code and press Submit. A bot adds it to the collected data, credits you and answers on the issue.
+  - **[The GitHub form](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/issues/new?template=submit-data.yml)**: paste the code and press Submit. A bot files it, credits you and answers on the issue.
   - **[Our Discord](https://discord.gg/Hr66t25vE7)**: paste it there. A long paste turns into a text file, and that's fine.
-- **Credit me as**: the name you're listed under (leave it empty for your character's name)
-- **Or the file**, for very large collections: `WTF/Account/<account>/SavedVariables/Aegis_Forever_Pathfinder.lua` (the window's *Save it now* button writes it). Drop it in Discord, or rename it to `.txt` (or zip it) and drag it into the GitHub form.
+- **Credit me as**: the name you're listed under. Left empty, the code uses your character's name; the file carries a name only if you type one before saving it.
+- **Or the file**, for very large collections: `WTF/Account/YOUR_ACCOUNT/SavedVariables/Aegis_Forever_Pathfinder.lua` (the window's *Save it now* button writes it). Drop it in Discord, or rename it to `.txt` (or zip it) and drag it into the GitHub form.
 
-Send again whenever you like, without clearing: a newer copy of a collection replaces the older one instead of counting twice. **As text** shows exactly what goes out. Everyone who sends data is listed in the Submit window, on the *About* page and in [the contributors list](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/blob/main/CONTRIBUTORS.md).
+Send again whenever you like, without clearing: a newer copy of a collection replaces the older one instead of counting twice. **As text** shows exactly what goes out. Everyone who sends data is listed in [the contributors list](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/blob/main/CONTRIBUTORS.md), and in the game's Submit window and *About* page from the next update on.
 
 ## Also working without guides
 
 - **Quest automation**: accepts and hands in quests, on by default as in the Turtle addon, and picks them from an NPC's list. Never a grey quest, never a reward choice. Hold Shift to skip one.
-- **At the vendor**: sells greys (with the game's own *Sell All Junk*, or a *Sell greys* button where the vendor has none) and repairs, with your own money or the guild's.
+- **At the vendor** (switch it on under *Settings → Automation*): sells greys with the game's own *Sell All Junk*, and repairs, with your own money or the guild's first. Where a vendor has no *Sell All Junk*, a *Sell greys* button does it.
 - **Reputation detail**: "Stormwind +25: Honored 4,350 / 12,000, 7,650 to Revered"
-- **Level-ups**: tell everyone nearby, your party or your guild with one click, with how long the level took
+- **Level-ups**: tell everyone nearby, your party or your guild with one click, and how long the level took when the data collector saw all of it
 - **Window settings**: lock, transparency, opacity, step text size, window scale, hiding in dungeons or combat
 
 Automation is set per character, under *Settings → Automation*.
@@ -115,7 +115,7 @@ Use the CurseForge app, or download the file and unzip it into `World of Warcraf
 | `/apg resetpanels` | Put every window back where it opens |
 | `/apg minimapbutton` | Show or hide the minimap button |
 
-**Minimap button:** click for the guide, right-click for settings, shift-click for data collection, drag to move it. Both windows have key bindings under *Key Bindings → AddOns*, and the settings are also in the game's *Options → AddOns*.
+**Minimap button:** click for the guide, right-click for settings, shift-click for data collection, drag to move it. Both windows have key bindings under *Key Bindings → AddOns*, and the game's *Options → AddOns* has a page that opens the settings.
 
 ## Help and feedback
 

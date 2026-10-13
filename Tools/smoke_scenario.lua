@@ -175,6 +175,18 @@ Mock.Fire("QUEST_ACCEPTED", 300)
 check(data.quests[300].pickups["item:1972@1429"], "an item-started quest's pickup is the item")
 S.log = {}
 
+-- A quest a party member shares: the frame's "npc" is that player, whose name stays out.
+S.npc = { guid = "Player-1-00000002", name = "Partymate" }
+S.frame = { questID = 301, title = "Shared", text = "...", objective = "..." }
+Mock.Fire("QUEST_DETAIL", 0)
+S.log = { { questID = 301, title = "Shared", level = 5, objectives = {} } }
+Mock.Fire("QUEST_ACCEPTED", 301)
+local shared = data.quests[301].pickups["shared:?@1429"]
+check(shared and shared.kind == "shared" and shared.name == nil, "a shared quest's pickup is \"shared\", without the sharer's name")
+for key in pairs(data.quests[301].pickups) do check(not key:find("Partymate"), "the sharer's name is in no key either") end
+S.log, S.npc = {}, nil
+data.quests[301] = nil -- out again, so the counts below stay the walk-through's
+
 -- A second sighting of the same turn-in merges, never overwrites.
 S.frame = { questID = 176, title = "Wanted: Hogger" }
 S.npc = { guid = "Creature-0-1-0-1-240-0000000001", name = "Marshal Dughan" }

@@ -53,6 +53,10 @@
 - **Fixed: data dropped from exports.** A table with gaps in its numbers (levels
   5 and 6, say) could be written as a short or empty list, losing what came
   after the gap. Such tables are now written whole.
+- **Fixed: a shared quest recorded who shared it.** When a party member
+  shared a quest, the collector wrote down their character name as the quest
+  giver. Such a pickup is now `shared`, with no name, and the GitHub intake
+  strips the name from data sent by earlier builds.
 - The repository is now **Aegis_Pathfinder_Forever** on GitHub, and the
   Submit window's GitHub form link points there (the old address still
   redirects). The addon's folder keeps its name, `Aegis_Forever_Pathfinder`.

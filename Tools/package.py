@@ -77,10 +77,11 @@ def release(out, version, files):
         for path in files:
             package.write(os.path.join(ROOT, path), ADDON + "/" + path)
     notes = changelog_section(version) or "See the CHANGELOG."
-    notes += ("\n\n### Install\nUnzip, put the `{0}` folder in `World of Warcraft/_classic_beta_/Interface/AddOns/`, "
-              "then restart the game fully.\n\n[Full changelog]({1}/blob/main/CHANGELOG.md) · "
+    notes += ("\n\n### Install\nDownload `{0}-v{2}.zip` below (not *Source code*), unzip it, put the `{0}` folder in "
+              "`World of Warcraft/_classic_beta_/Interface/AddOns/`, then restart the game fully.\n\n"
+              "[Full changelog]({1}/blob/main/CHANGELOG.md) · "
               "[Send your data]({1}/blob/main/docs/data-submission.md) · [Discord](https://discord.gg/Hr66t25vE7)\n"
-              ).format(ADDON, REPOSITORY)
+              ).format(ADDON, REPOSITORY, version)
     with open(os.path.join(out, "notes.md"), "w", encoding="utf-8", newline="\n") as handle:
         handle.write(notes)
     # For the release workflow (.github/workflows/release.yml): the version, as a step output.

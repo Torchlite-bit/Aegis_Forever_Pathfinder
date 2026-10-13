@@ -20,7 +20,7 @@ now it collects the data to write them.**
 **The Pathfinder look, on Forever.** The guide window, the ≡ menu, the guide
 browser, the options window and the minimap button are the Turtle WoW
 addon's, panel for panel: same layout, same fonts, same colour themes (Day,
-Night, Pathfinder green, OctoWoW, RavenCraft, Capybara Paradise, Aegis).
+Night, Pathfinder (the original green), OctoWoW, RavenCraft, Capybara Paradise, Aegis).
 
 **A Blizzard skin.** One more theme, **Blizzard**, draws the same windows the
 way today's game draws its own, like its Options window: the smooth metal
@@ -122,14 +122,15 @@ What came over from the Turtle addon, and what didn't and why:
 
 ## Install
 
-1. Download [the latest release](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/releases/latest)
-   (or the repository's ZIP).
+1. Download **`Aegis_Forever_Pathfinder-v<version>.zip`** from
+   [the latest release](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/releases/latest),
+   not *Source code*.
 2. Put the folder in `World of Warcraft/_classic_beta_/Interface/AddOns/` (the
    Forever client's AddOns folder). It must be named exactly
-   **`Aegis_Forever_Pathfinder`**: the addon's name, not the repository's. A
-   release's ZIP already has it right; the repository's unpacks as
-   `Aegis_Pathfinder_Forever-main`, and the addon won't load under that name
-   until you rename it.
+   **`Aegis_Forever_Pathfinder`**: the addon's name, not the repository's. The
+   release file's folder already is. *Source code* and the repository's own
+   ZIP unpack as `Aegis_Pathfinder_Forever-<version>` or `-main`, and the addon
+   won't load until you rename the folder.
 3. **Restart the client fully** the first time (a `/reload` isn't enough for
    new files).
 
