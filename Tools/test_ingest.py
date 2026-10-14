@@ -1207,5 +1207,41 @@ class SlowText(unittest.TestCase):
         self.quick(lambda: ingest_issue.parse_form("### a" + " " * 60000 + "b\n"))
 
 
+class NamesInQuestText(TempRepo):
+    """The game writes the player's name into quest text; it never reaches the repository."""
+
+    def collect_with(self, **text):
+        collect = copy.deepcopy(COLLECT)
+        quest = collect["quests"]["176"]
+        quest.update(text)
+        return collect
+
+    def test_the_credit_name_comes_out(self):
+        clean = ingest.sanitize(envelope(self.collect_with(description="You there! Gary, right?"), contributor="Gary"))
+        self.assertEqual(clean["data"]["quests"]["176"]["description"], "You there! <name>, right?")
+
+    def test_the_first_word_of_a_typed_name_comes_out_too(self):
+        collect = self.collect_with(description="Genesys, read this.", completionText="Well done, Genesys Firstborn.")
+        quest = ingest.sanitize(envelope(collect, contributor="Genesys Firstborn"))["data"]["quests"]["176"]
+        self.assertEqual(quest["description"], "<name>, read this.")
+        self.assertEqual(quest["completionText"], "Well done, <name>.")
+
+    def test_whole_words_only(self):
+        self.assertEqual(ingest.unname("Garys and Gary's hat, Gary.", ["Gary"]), "Garys and <name>'s hat, <name>.")
+        self.assertEqual(ingest.unname("Zoëlle met Zoë", ["Zoë"]), "Zoëlle met <name>")
+
+    def test_common_words_are_not_taken_for_names(self):
+        self.assertEqual(ingest.names_to_hide("The Great Gary"), ["The Great Gary"])
+        self.assertEqual(ingest.names_to_hide("Al Smith"), ["Al Smith"])
+        self.assertEqual(ingest.names_to_hide(None), [])
+
+    def test_the_issue_forms_credit_name_comes_out_as_well(self):
+        env = ingest.sanitize(envelope(self.collect_with(description="Hello, Brandy."), contributor=None))
+        env["contributor"] = "Brandy"  # as ingest_issue.py sets the form's name before storing
+        stored = ingest.store(env, self.root, {"kind": "file", "via": "test"})
+        with open(stored.path, encoding="utf-8") as handle:
+            self.assertIn("Hello, <name>.", handle.read())
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

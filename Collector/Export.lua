@@ -166,6 +166,8 @@ local function Sendable(data)
 end
 
 function Export.Envelope()
+	-- The character's name never goes out in quest text (Collector.Unnamed).
+	Collector:ForgetName()
 	local version, build, interface = Compat.Build()
 	return {
 		format = Export.FORMAT,

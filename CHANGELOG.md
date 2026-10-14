@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.4 — your name stays with you
+
+- **Fixed: your character's name could go out with your data.** Some quests
+  greet you by name ("You there! Genesys, right?"), and the addon saved that
+  text as it was. Now it writes `<name>` in its place. Data you saved before is
+  cleaned when you log in, and again before you send it. So your name only goes
+  out as your credit name, if you choose it.
+
+---
+
 ## 0.2.3 — no more blank labels, a close button that closes
 
 - **Fixed:** after switching from Default to a Pathfinder theme, some text

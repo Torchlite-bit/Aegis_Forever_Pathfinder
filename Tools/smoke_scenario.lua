@@ -95,13 +95,26 @@ AP.Collector:ReadReputations()
 -- Offered by Marshal Dughan in Goldshire.
 S.npc = { guid = "Creature-0-1-0-1-240-0000000001", name = "Marshal Dughan" }
 S.mapID, S.x, S.y = 1429, 0.4215, 0.6590
-S.frame = { questID = 176, title = "Wanted: Hogger", text = "A huge gnoll...", objective = "Kill Hogger.",
+S.frame = { questID = 176, title = "Wanted: Hogger", text = "A huge gnoll, Tester.", objective = "Kill Hogger.",
 	xp = 1450, money = 500, choices = { { id = 2224, name = "Militia Dagger" }, { id = 2225, name = "Sharp Kitchen Knife" } } }
 Mock.Fire("QUEST_DETAIL", 0)
 local quest = data.quests[176]
 check(quest, "the offered quest is written down")
 equal(quest.title, "Wanted: Hogger", "its title")
 equal(quest.objectiveText, "Kill Hogger.", "its objective text")
+-- The game writes the player's name into quest text: it stays at home.
+equal(quest.description, "A huge gnoll, <name>.", "the player's name is left out of its text")
+local Unnamed = AP.Collector.Unnamed
+equal(Unnamed("You there! Tester, right?"), "You there! <name>, right?", "a name before a comma")
+equal(Unnamed("Tester"), "<name>", "a name alone")
+equal(Unnamed("Testers and retesters"), "Testers and retesters", "not inside a longer word")
+equal(Unnamed("Hi Zoë!", "Zoë"), "Hi <name>!", "a name with an accent")
+equal(Unnamed("Zoëlle", "Zoë"), "Zoëlle", "and not inside a longer one")
+equal(Unnamed("50% of (Tester)", "Tester"), "50% of (<name>)", "pattern characters around it are fine")
+-- Text saved before 0.2.4 is cleaned once the game knows who is playing.
+quest.completionText = "Well done, Tester."
+Mock.Fire("PLAYER_ENTERING_WORLD")
+equal(quest.completionText, "Well done, <name>.", "saved text loses the name at login")
 equal(quest.rewards.xpOffered[5], 1450, "the XP the frame offers, at the player's level")
 check(quest.rewards.choices[2224] and quest.rewards.choices[2225], "the rewards to choose from")
 
@@ -289,6 +302,10 @@ submit.credit:SetText("Brandy")
 submit.credit:_Run("OnTextChanged", true)
 Mock.Advance(1)
 equal(AP.Export.Envelope().contributor, "Brandy", "the chosen name goes out")
+-- With another credit name, the character's name still never goes out in quest text.
+data.quests[176].progressText = "Back already, Tester?"
+check(not AP.Export.Build():find("%f[%a]Tester%f[%A]"), "the character's name is nowhere in what goes out")
+equal(data.quests[176].progressText, "Back already, <name>?", "and it's gone from the saved text too")
 check(C_EncodingUtil == nil or submit.text:find("^APF1:"), "the code is made again with it")
 
 -- New since your last send.
