@@ -561,19 +561,31 @@ equal(Mock.rewardTaken, 0, "a quest without a choice is handed in")
 AP.db.char.autoquest = false
 
 AP.db.char.autosell, AP.db.char.autorepair = true, "own"
-MerchantFrame:Show()
+-- As Forever does it: MERCHANT_SHOW first, the merchant window a moment later (the player
+-- interaction manager shows it on its own event). 0.3.1 asked the window and sold nothing.
 Mock.Fire("MERCHANT_SHOW")
-equal(#Mock.sold, 1, "greys are sold, with the game's own Sell All Junk")
-equal(Mock.repaired, "own", "and gear repaired")
+equal(Mock.repaired, "own", "gear is repaired as the vendor opens")
+MerchantFrame:Show()
+Mock.Advance(0.1)
+equal(#Mock.sold, 1, "greys are sold, with the game's own Sell All Junk, though the window came after the event")
 check(AP.Automation.button and not AP.Automation.button:IsShown(), "no Sell greys button beside the game's own")
+-- Closed before the next frame: nothing is sold.
+Mock.sold = {}
+MerchantFrame:Hide()
+Mock.Fire("MERCHANT_SHOW")
+Mock.Fire("MERCHANT_CLOSED")
+Mock.Advance(0.1)
+equal(#Mock.sold, 0, "a vendor closed at once sells nothing")
 -- A client without Sell All Junk: one item at a time, and the button.
 local gameJunk = C_MerchantFrame
 C_MerchantFrame, Mock.sold = nil, {}
-MerchantFrame:Hide()
 MerchantFrame:Show()
 Mock.Fire("MERCHANT_SHOW")
+Mock.Advance(0.1)
 equal(#Mock.sold, 1, "greys are sold one by one without it")
 check(AP.Automation.button:IsShown(), "and the Sell greys button is there")
+Mock.Fire("MERCHANT_CLOSED")
+MerchantFrame:Hide()
 C_MerchantFrame = gameJunk
 
 ------------------------------------------------------------------------------------------

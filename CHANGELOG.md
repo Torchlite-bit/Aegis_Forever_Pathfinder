@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.2 — greys sold again
+
+- **Fixed: grey items weren't sold** at a vendor, even with *Sell greys* switched
+  on under *Settings → Automation*. WoW: Forever opens the vendor's window a
+  moment after it tells addons, and the addon gave up when the window wasn't
+  there yet. It now waits for it. Repairs already worked.
+
+---
 ## 0.3.1 — Forever blue
 
 - **The logo is blue** for WoW: Forever: the minimap button, the guide's first page
