@@ -14,6 +14,10 @@ local Call, Readable = Compat.Call, Compat.Readable
 	    "Sell All Junk" where it has it; and a "Sell greys" button on the vendor
 	    window when the game has no button of its own.
 	  * Repairing as the vendor opens: with your own money, or the guild's first.
+	  * Quests from items: a looted item that starts a quest (a kobold's chewed
+	    book) is opened at once, so its quest comes up and is accepted like an
+	    NPC's. Out of combat only, once per quest a session, with quest
+	    automation on.
 
 	Holding Shift as a window opens does none of it. Everything waits a moment
 	after the window's event, so the data collector reads the quest frame first.
@@ -125,6 +129,51 @@ function Auto:Greeting()
 	end
 end
 
+--[[ Quests from items ]]
+
+local opened = {}        -- [questID] = true: its item was opened this session
+local merchantOpen = false   -- a vendor's window, from MERCHANT_SHOW to MERCHANT_CLOSED
+
+-- With these open, using a bag item sells it, banks it, mails it or trades it.
+local function Busy()
+	if merchantOpen then return true end
+	for _, name in ipairs({ "MerchantFrame", "BankFrame", "MailFrame", "TradeFrame", "AuctionHouseFrame",
+		"GuildBankFrame" }) do
+		local f = _G[name]
+		if f and f.IsShown and f:IsShown() then return true end
+	end
+	return false
+end
+
+-- The quest a bag slot's item starts, if not taken yet.
+local function StartsQuest(bag, slot)
+	local ok, info = pcall(C_Container.GetContainerItemQuestInfo, bag, slot)
+	local questID = ok and type(info) == "table" and Readable(info.questID)
+	if type(questID) == "number" and not Readable(info.isActive) then return questID end
+end
+
+--- Open a looted item that starts a quest not yet taken; the quest window it brings
+--- up is then accepted (QuestDetail). Returns the quest id, when one is to be opened.
+function Auto:OpenQuestItems()
+	if not Wanted() or InCombatLockdown() or Busy() then return end
+	if not (C_Container and C_Container.GetContainerItemQuestInfo and C_Container.UseContainerItem) then return end
+	for bag = 0, (NUM_BAG_SLOTS or 4) do
+		for slot = 1, Call(C_Container.GetContainerNumSlots, bag) or 0 do
+			local questID = StartsQuest(bag, slot)
+			if questID and not opened[questID] and not Call(C_QuestLog.IsQuestFlaggedCompleted, questID)
+				and LogHasRoom() then
+				Later(function()
+					-- The same item still there, nothing that would sell it open, and no fight.
+					if InCombatLockdown() or Busy() or not Wanted() or StartsQuest(bag, slot) ~= questID then return end
+					opened[questID] = true
+					C_Container.UseContainerItem(bag, slot)
+				end)
+				return questID
+			end
+		end
+	end
+end
+
 --[[ Selling greys ]]
 
 function Auto.Greys()
@@ -148,7 +197,6 @@ end
 --[[ Whether a vendor is open, from MERCHANT_SHOW to MERCHANT_CLOSED. Forever opens its
 	merchant window through the player interaction manager (its own event), so at
 	MERCHANT_SHOW the window may not be shown yet: asking the window missed every sale. ]]
-local merchantOpen = false
 
 function Auto:SellGreys(quiet)
 	if not (merchantOpen or (MerchantFrame and MerchantFrame:IsVisible())) then return 0 end
@@ -227,6 +275,7 @@ end
 
 function Auto:MerchantClosed()
 	merchantOpen = false
+	Auto:OpenQuestItems()
 end
 
 AP:OnLogin(function()
@@ -238,4 +287,7 @@ AP:OnLogin(function()
 	AP:On("QUEST_GREETING", function() Auto:Greeting() end)
 	AP:On("MERCHANT_SHOW", function() Auto:MerchantShow() end)
 	AP:On("MERCHANT_CLOSED", function() Auto:MerchantClosed() end)
+	AP:On("BAG_UPDATE_DELAYED", function() Auto:OpenQuestItems() end)
+	-- A book looted in a fight waits for the fight's end.
+	AP:On("PLAYER_REGEN_ENABLED", function() Auto:OpenQuestItems() end)
 end)

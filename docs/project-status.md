@@ -105,6 +105,12 @@ clone, following `.claude/CLAUDE.md` (#10).
    links (91758, 96627) came from it too and may be wrong. `merged.json` is made by
    `Tools/ingest.py`: don't edit it by hand; read old `abandoned` counts and chains
    with this in mind.
+9. **Pathfinder's arrow (0.5.0): to check in game.** Face north with the place
+   north: the arrow points up. Turn left: it swings right. Its yards against the
+   game's own waypoint distance. Dragging, and its place after a /reload. Goldshire
+   and Stormwind (maps other than Elwynn's). `/dump GetPlayerFacing()` facing north
+   should be about 0 and facing west about 1.57. With default windows, open
+   Settings > Navigation: the arrow (top middle) stays clear of it while you size it.
 
 ## Learned the hard way (don't relearn these)
 
@@ -116,6 +122,29 @@ clone, following `.claude/CLAUDE.md` (#10).
   XP as the second's reward frame opens, and links no chain when two or more went
   to that NPC. The offer in progress (`pendingDetail`) is still one slot.
 
+- **The CurseForge app updates the installed copy:** the owner has the CurseForge
+  app, and a new release replaces the AddOns folder with the release zip (LF line
+  endings tell it apart from a mirror of this clone, which has CRLF). A test build
+  installed before a release lands is gone after it. Check the installed TOC's
+  `## Version` before asking the owner to test; reinstall if it changed.
+- **Steps done together (0.5.0):** `together = true` joins a step to the one
+  before it; blocks are worked out over the whole guide, then filtered by class.
+  `fromitem = true` ticks an ACCEPT once its quest item is in the bags. Kill areas
+  stop marking within 60 yards (`char.arrived`, saved), and mark again a later
+  step of the block over 100 yards from the arrival. A COMPLETE step's live
+  progress is a meter under it (`AP:QuestProgress`). Distances are measured in
+  `Core/Guides.lua` (`AP:OffsetTo`), which the arrow uses too.
+- **Pathfinder's arrow (0.5.0, `UI/NavArrow.lua`):** map x grows east and y south;
+  `C_Map.GetMapWorldSize` gives yards; `GetPlayerFacing` is radians from north,
+  turning left adds; `Texture:SetRotation` turns the art left for a positive angle
+  (the client's SuperTrackedFrame passes `-angle` to point clockwise), and the art
+  points up at rest. So the arrow's angle is `atan2(-dx, -dy) - facing`, with dx/dy
+  the step's offset in yards (east, south). A step on a map the player isn't on is
+  lifted onto the first parent map that has them (`GetMapRectOnMap`). The frame
+  stays shown while there is a step (a hidden frame gets no OnUpdate) and only its
+  parts hide when the client gives no position (dungeons), with the mouse let through.
+  It is MEDIUM strata, parented to UIParent, not a registered window, and shows with
+  the guide window. Never read `GetRotation` back (it can be secret).
 - **Guides (0.4.0):** a step for one class or race (`class`/`race`) is left out
   for everyone else everywhere: current step, list, counts, arrows, `/apg next`
   and `prev` (`AP:GuideSteps`, `StepForward`, `StepBack`). A current ACCEPT or
@@ -147,9 +176,16 @@ clone, following `.claude/CLAUDE.md` (#10).
   events and shows its own window, so `QuestFrame` never opens. 0.3.2 checked
   `QuestFrame:IsShown()` before accepting and never accepted; 0.3.3 tracks
   QUEST_DETAIL/QUEST_FINISHED. Follow events, not Blizzard frames.
-- **Chat with no click (0.3.2, `/apg chattest`):** EMOTE is blocked on Forever, though
-  Zygor's code posts it from the event (Forever's global `SendChatMessage` only wraps
-  `C_ChatInfo.SendChatMessage`). Party and Guild: not tested yet.
+- **Chat with no click (`/apg chattest`, 2026-10-14):** EMOTE is blocked on Forever
+  with none of the client's addon restrictions on (`C_RestrictedActions`: Combat,
+  Encounter, ChallengeMode, PvPMatch, Map, Chat all off), though Zygor's code posts
+  it from the event on retail. PARTY posted by itself. So 0.5.0 sends party, raid
+  and guild level-ups by itself (after any fight) and keeps the emote a button.
+  GUILD and RAID aren't confirmed yet: run `/apg chattest` in a guild and a raid.
+- **Opening a bag item from code works:** `C_Container.UseContainerItem` on a
+  quest-starting item (`GetContainerItemQuestInfo().questID`, not active) brings up
+  its quest, which quest automation accepts (tested in game 2026-10-14, the
+  Nibbled-On Book). Out of combat only, once per quest a session.
 - **Discord posts the bot made are the bot's:** nobody else can edit them, so a
   change to a releases post, #downloads or #welcome goes through the bot
   (`Aegis_Discord_Tools`). The carry-over copied old posts with their old channel
@@ -178,8 +214,8 @@ clone, following `.claude/CLAUDE.md` (#10).
   `World of Warcraft\_classic_beta_\BlizzardInterfaceCode\Interface\AddOns`
   (2026-10-06). Check Blizzard templates and APIs there.
 
-- **Chat:** `C_ChatInfo.SendChatMessage` works only from a click (a hardware
-  event), so level-up announcements are a card with a button per channel.
+- **Chat:** an EMOTE through `C_ChatInfo.SendChatMessage` works only from a click
+  (a hardware event); party chat goes out by itself (see "Chat with no click").
 - **Reload:** `ReloadUI()` / `C_UI.Reload` is blocked for addons even from a
   click ("ADDON BLOCKED: Reload()"), though its documentation doesn't say so.
   Only a secure action button running the `/reload` macro works. **An invisible

@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.5.0 — Pathfinder's arrow, and quests done together
+
+- **New: Pathfinder's arrow**, like the Turtle WoW addon's. An arrow on your
+  screen turns to point at the place of the step you're on. Under it: what to
+  do there ("Head to the quest giver"), how many yards away it is, and about
+  how long it takes to run there. Close by, it says "You're here".
+- **Drag it anywhere.** It keeps its place. *Reset windows* puts it back.
+  *Lock window* on the guide holds the arrow too, and lets clicks go through it.
+- **Settings → Navigation** has a switch for it, its size, and "Put the arrow
+  back". `/apg arrow` switches it on and off too. The game's own map pin keeps
+  its own switch, and both can be on.
+- It shows with the guide window, so it hides when the guide does (in combat
+  or dungeons, if you chose that). Inside dungeons the game gives no position,
+  so it has nothing to point at there.
+- **Quests done together.** Where a guide does several things in one place,
+  they show together. At Northshire's kobold camp: the kobolds, the book a
+  kobold drops, and the wolves, each ticking itself.
+- **Your progress, on the step.** A kill or collect step shows a bar for what
+  the quest wants: "Kobold Vermin slain 3 / 10", "Tough Wolf Meat 0 / 8".
+- **The guide stops pointing once you're there.** When you reach a kill area,
+  the map pin and the arrow go away, so they don't pull you to one spot while
+  you fight. If the next thing to do is further off, it points again.
+- **Books that start a quest open by themselves**, with quest automation on (it
+  is unless you switched it off). Loot one (like the kobold's chewed book) and
+  its quest comes up and is taken, once you're out of combat and away from a
+  vendor, the bank and the mail.
+  The guide ticks the book as soon as it's in your bags.
+- **Level-ups tell your party and guild by themselves**, if you ticked them
+  under *Settings → Extras*. The game doesn't let an addon do an emote without
+  a click, so the emote stays a button on the level-up card (and so does
+  anything else the game won't send by itself).
+- `/apg chattest` also says which of the game's restrictions were on.
+- **After updating, close the game and start it again.** A /reload is not
+  enough this time: there is a new file.
+
+---
+
 ## 0.4.1 — two quests handed in at once
 
 - **Fixed, in the collected data:** when you hand in two quests less than a

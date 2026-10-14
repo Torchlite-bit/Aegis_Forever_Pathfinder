@@ -11,7 +11,11 @@ local _, AP = ...
 	the data disagrees with them. If one is wrong, that class clicks the right
 	arrow to go on.
 
-	Steps marked with a class are only shown to that class (Core/Guides.lua).
+	Steps marked with a class are only shown to that class. Steps marked
+	together are done with the one before them, in the same area, and show as
+	one block (Core/Guides.lua): the kobold camp, the kobold workers and
+	Paxton's books, the bandanas and the tome, Milly's crates and Garrick, and
+	the mine.
 	The smoke test plays it through as a Warlock and as a Warrior, and checks
 	every step against the collected data.
 ]]
@@ -38,9 +42,9 @@ local ok, why = AP:RegisterGuide({
 		  note = "Eagan Peltskinner." },
 		{ action = "COMPLETE", qid = 7, title = "Kobold Camp Cleanup", map = 1429, x = 0.47, y = 0.36,
 		  note = "Kill 10 Kobold Vermin at the camp north of the abbey. Kill wolves as you go too. One of the kobolds drops a chewed book: loot it." },
-		{ action = "ACCEPT", qid = 91741, title = "Nibbled-On Book", map = 1429, x = 0.4934, y = 0.3699,
+		{ action = "ACCEPT", qid = 91741, title = "Nibbled-On Book", together = true, fromitem = true, map = 1429, x = 0.4934, y = 0.3699,
 		  note = "The chewed book a kobold drops starts this quest. No book yet? Keep killing kobolds. Quest didn't start? Right-click the book in your bags." },
-		{ action = "COMPLETE", qid = 33, title = "Wolves Across the Border", map = 1429, x = 0.51, y = 0.44,
+		{ action = "COMPLETE", qid = 33, title = "Wolves Across the Border", together = true, map = 1429, x = 0.51, y = 0.44,
 		  note = "Kill wolves for 8 Tough Wolf Meat. Kill any you pass. More roam just east of the abbey." },
 		{ action = "TURNIN", qid = 33, title = "Wolves Across the Border", map = 1429, x = 0.4886, y = 0.4018,
 		  note = "Eagan Peltskinner. Pick a reward." },
@@ -68,6 +72,8 @@ local ok, why = AP:RegisterGuide({
 		  note = "Daniel, Brother Paxton's helper, in the same library." },
 		{ action = "ACCEPT", qid = 91743, title = "Rascally Rodents", map = 1429, x = 0.4956, y = 0.4039,
 		  note = "Brother Paxton. The kobolds stole his books." },
+		{ action = "ACCEPT", qid = 18, title = "Brotherhood of Thieves", map = 1429, x = 0.482, y = 0.4281,
+		  note = "Deputy Willem, in front of the abbey, on your way out." },
 		{ action = "TURNIN", qid = 3104, title = "Glyphic Letter", class = { "MAGE" }, unverified = true, map = 1429, x = 0.4966, y = 0.3938,
 		  note = "Khelden Bremen, the mage trainer, in the abbey. If the guide does not move on, click the right arrow at the top." },
 		{ action = "TURNIN", qid = 3103, title = "Hallowed Letter", class = { "PRIEST" }, unverified = true, map = 1429, x = 0.498, y = 0.396,
@@ -80,15 +86,13 @@ local ok, why = AP:RegisterGuide({
 		  note = "Brother Sammuel, the paladin trainer, in the abbey. If the guide does not move on, click the right arrow at the top." },
 		{ action = "TURNIN", qid = 3105, title = "Tainted Letter", class = { "WARLOCK" }, map = 1429, x = 0.498, y = 0.427,
 		  note = "Drusilla La Salle, the warlock trainer, next to the abbey." },
-		{ action = "ACCEPT", qid = 18, title = "Brotherhood of Thieves", map = 1429, x = 0.482, y = 0.4281,
-		  note = "Deputy Willem, in front of the abbey." },
 		{ action = "COMPLETE", qid = 15, title = "Investigate Echo Ridge", map = 1429, x = 0.51, y = 0.38,
 		  note = "Kill 10 Kobold Workers in the woods north-east of the abbey. Stay outside the mine for now." },
-		{ action = "COMPLETE", qid = 91743, title = "Rascally Rodents", map = 1429, x = 0.51, y = 0.38,
+		{ action = "COMPLETE", qid = 91743, title = "Rascally Rodents", together = true, map = 1429, x = 0.51, y = 0.38,
 		  note = "The kobolds here carry Brother Paxton's books. Kill them until you have 8 Stolen Books." },
 		{ action = "COMPLETE", qid = 18, title = "Brotherhood of Thieves", map = 1429, x = 0.54, y = 0.45,
 		  note = "Head south-east and cross the river by the bridge. Kill Defias thugs until you have 12 Red Burlap Bandanas." },
-		{ action = "COMPLETE", qid = 1598, title = "The Stolen Tome", class = { "WARLOCK" }, map = 1429, x = 0.57, y = 0.44,
+		{ action = "COMPLETE", qid = 1598, title = "The Stolen Tome", together = true, class = { "WARLOCK" }, map = 1429, x = 0.57, y = 0.44,
 		  note = "The book is on the ground by the Defias tent, a bit further east. Pick it up." },
 		{ action = "TURNIN", qid = 1598, title = "The Stolen Tome", class = { "WARLOCK" }, map = 1429, x = 0.4996, y = 0.4272,
 		  note = "Drusilla La Salle. She teaches you to summon an imp." },
@@ -112,7 +116,7 @@ local ok, why = AP:RegisterGuide({
 		  note = "Milly Osworth." },
 		{ action = "COMPLETE", qid = 3904, title = "Milly's Harvest", map = 1429, x = 0.54, y = 0.47,
 		  note = "Go to the vineyards south-east, across the river. Pick up 8 crates of Milly's Harvest. Defias thugs stand near them." },
-		{ action = "COMPLETE", qid = 6, title = "Bounty on Garrick Padfoot", map = 1429, x = 0.57, y = 0.48,
+		{ action = "COMPLETE", qid = 6, title = "Bounty on Garrick Padfoot", together = true, map = 1429, x = 0.57, y = 0.48,
 		  note = "Garrick Padfoot is at the shack at the east end of the vineyards. Thugs guard him. Fight them one at a time." },
 		{ action = "TURNIN", qid = 3904, title = "Milly's Harvest", map = 1429, x = 0.5077, y = 0.3947,
 		  note = "Milly Osworth, behind the abbey, near the stable." },
@@ -128,7 +132,7 @@ local ok, why = AP:RegisterGuide({
 		  note = "Kelsey Fargo. An Elite quest at the back of the mine, but you can do it alone." },
 		{ action = "COMPLETE", qid = 21, title = "Skirmish at Echo Ridge", map = 1429, x = 0.48, y = 0.3,
 		  note = "Go into Echo Ridge Mine. Kill 12 Kobold Laborers. The kobolds deeper in are tougher." },
-		{ action = "COMPLETE", qid = 91752, title = "The Big Picture", map = 1429, x = 0.49, y = 0.28,
+		{ action = "COMPLETE", qid = 91752, title = "The Big Picture", together = true, map = 1429, x = 0.49, y = 0.28,
 		  note = "Shinyfinder Narf is at the back of the mine. Kill him for the sack of books. He is Elite, but a level 5 can beat him alone." },
 		{ action = "TURNIN", qid = 21, title = "Skirmish at Echo Ridge", map = 1429, x = 0.4886, y = 0.4166,
 		  note = "Marshal McBride, inside the abbey. Pick a reward." },

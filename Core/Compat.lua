@@ -113,6 +113,18 @@ function Compat.PlayerMapPosition()
 	return mapID, Round(x), Round(y)
 end
 
+--- The player's position (0..1, not rounded) on `mapID`, which need not be the map
+--- they stand on; nil when the client gives none there.
+function Compat.PlayerPositionOn(mapID)
+	if not (mapID and C_Map and C_Map.GetPlayerMapPosition) then return nil end
+	local ok, position = pcall(C_Map.GetPlayerMapPosition, mapID, "player")
+	if not (ok and position and position.GetXY) then return nil end
+	local x, y = position:GetXY()
+	x, y = Compat.Readable(x), Compat.Readable(y)
+	if type(x) ~= "number" or type(y) ~= "number" then return nil end
+	return x, y
+end
+
 function Compat.MapName(mapID)
 	if not (mapID and C_Map and C_Map.GetMapInfo) then return nil end
 	local ok, info = pcall(C_Map.GetMapInfo, mapID)

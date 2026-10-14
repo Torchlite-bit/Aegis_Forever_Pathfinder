@@ -17,7 +17,7 @@ local L = AP.L
 AegisPathfinder = AP
 AP.name = addonName
 AP.title = L.TITLE
-AP.version = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version")) or "0.4.1"
+AP.version = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version")) or "0.5.0"
 AP.media = "Interface\\AddOns\\" .. addonName .. "\\media\\"
 
 AP.PROFILE_DEFAULTS = {
@@ -31,6 +31,7 @@ AP.PROFILE_DEFAULTS = {
 	steptextsize = 1,
 	showprogress = true,
 	minimapangle = 215,
+	navarrowscale = 1,
 }
 
 AP.CHAR_DEFAULTS = {
@@ -92,16 +93,20 @@ function AP:On(event, fn)
 	return true
 end
 
---- Stop calling `fn` on `event`.
+--- Stop calling `fn` on `event`. A new list, not the old one changed: an event being
+--- dispatched (a handler taking itself off) goes on over the list it started with.
 function AP:Off(event, fn)
 	local list = listeners[event]
 	if not list then return end
-	for index = #list, 1, -1 do
-		if list[index] == fn then table.remove(list, index) end
+	local kept = {}
+	for _, f in ipairs(list) do
+		if f ~= fn then kept[#kept + 1] = f end
 	end
-	if #list == 0 then
+	if #kept == 0 then
 		listeners[event] = nil
 		pcall(eventFrame.UnregisterEvent, eventFrame, event)
+	else
+		listeners[event] = kept
 	end
 end
 

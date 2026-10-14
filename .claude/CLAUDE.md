@@ -59,7 +59,7 @@ update `docs/project-status.md` in the same pull request.
    ```
 
    Exit codes below 8 mean success. This copies the same files `package.py` puts in the zip
-   (91 checked 2026-10-13 with `/L`; 92 from 0.4.0, with `Guides/Northshire.lua`). `/MIR` never deletes from the installed copy anything that
+   (91 checked 2026-10-13 with `/L`; 92 from 0.4.0, with `Guides/Northshire.lua`; 93 from 0.5.0, with `UI/NavArrow.lua`). `/MIR` never deletes from the installed copy anything that
    matches an exclusion (a `Tools` or `docs` folder, a dot file): if such leftovers appear
    there, list them and ask before sending them to the Recycle Bin.
    **One installed copy, several sessions:** a `/MIR` from another branch deletes what that
@@ -67,6 +67,10 @@ update `docs/project-status.md` in the same pull request.
    testing). Before mirroring, read the installed TOC's `## Version` and compare its file list
    with yours: if it holds a newer version or files your branch doesn't have, another
    session's build is being tested, so ask the owner before installing over it.
+   **The CurseForge app** on the owner's PC also writes there: when a version is
+   released, it replaces the folder with the release zip (LF line endings; a copy from
+   this clone has CRLF). On 2026-10-14 it swapped a 0.5.0 test build for the 0.4.1
+   release. Before asking the owner to test, check the installed `## Version` again.
    Before the first mirror of a session, check the installed copy isn't a folder link
    (`(Get-Item -LiteralPath $dst -Force).LinkType` is empty): mirroring into a link would write
    over this clone.
@@ -119,8 +123,11 @@ secret overrides it). Optional variables: `CURSEFORGE_RELEASE_TYPE` (`release`, 
 
 ## Learned the hard way (from the cloud session; don't relearn these)
 
-- **Chat:** `C_ChatInfo.SendChatMessage` works only from a click (a hardware event), so
-  level-up announcements are a card with a button per channel.
+- **Chat:** an EMOTE through `C_ChatInfo.SendChatMessage` works only from a click (a
+  hardware event), even with no addon restriction on; party chat goes out by itself
+  (`/apg chattest`, 2026-10-14; raid and guild not yet seen). So level-ups tell party,
+  raid and guild at once, a blocked one falling back to a button, and the emote is a
+  button on a card.
 - **Reload:** `ReloadUI()` / `C_UI.Reload` is blocked for addons even from a click ("ADDON
   BLOCKED: Reload()"), though its documentation doesn't say so. Only a secure action button
   running the `/reload` macro works. An invisible secure button laid over our own button does

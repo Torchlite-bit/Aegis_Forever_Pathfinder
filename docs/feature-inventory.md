@@ -38,7 +38,7 @@ levels so the guides can be written from real data.
 | Shopping list, crafting route window | `MaterialsFrame.lua`, `CraftRouteFrame.lua`, `CraftPlanner.lua` | **Not ported.** Built on Turtle WoW recipe and price data (CraftRoute, CMaNGOS). |
 | Gear Advisor, Gear Finder tab, Item Score page | `GearAdvisor.lua`, `GearFinder*.lua`, `GearFrame.lua`, `ItemScore*.lua`, `GearData.lua` | **Not ported.** Built on CMaNGOS loot tables and Turtle stat weights. Forever's items differ, so this needs Forever data. |
 | Talent Advisor and its marks on the talent window | `TalentAdvisor.lua`, `TalentWindow.lua`, `TalentModern.lua`, `TalentBuilds.lua` | **Not ported.** Turtle WoW talent trees. Forever uses its own talent UI (`Blizzard_SharedTalentOverrides` for camelot). |
-| Navigation callout (the floating arrow) | `NavCallout.lua`, `Navigation.lua` | **Adapted.** Replaced by the client's own map pin and super-tracked arrow (`C_Map.SetUserWaypoint`, `C_SuperTrack`). Forever has them and 1.12 didn't, so TomTom/pfQuest/Astrolabe aren't needed. |
+| Navigation callout (the floating arrow) | `NavCallout.lua`, `Navigation.lua` | **Ported (0.5.0)** as `UI/NavArrow.lua`: the same arrow art, phrases, yards and ETA, shadowed, draggable, ticking ten times a second; the bearing from `C_Map.GetPlayerMapPosition`, `C_Map.GetMapWorldSize` and `GetPlayerFacing`, turned with `Texture:SetRotation`, so Astrolabe isn't needed. Beside it, the client's own map pin and super-tracked arrow (`C_Map.SetUserWaypoint`, `C_SuperTrack`), each with its own switch. No TomTom/pfQuest providers. |
 | Map reveal, step markers, ant trail, rares | `Maps.lua`, `MapOverlays.lua`, `Rares.lua` | **Not ported.** Turtle map overlays and pfQuest-turtle rare spawns. |
 | Party sync / share a guide | `PartySync.lua` | **Waits for guides** |
 | Credits window, error log | `Credits.lua`, `Core.lua` | **Adapted.** Credits are on the About page. The client's own error display replaces the error log. |
@@ -72,7 +72,7 @@ levels so the guides can be written from real data.
 | Automation: Sell greys button, sell greys automatically | **Ported** (`C_Container`) |
 | Automation: repair automatically | **Adapted.** Adds *Guild money first*, since Forever has guild bank repairs. |
 | Action Buttons page | **Waits for guides** |
-| Navigation: waypoint provider, arrows (Pathfinder/TomTom/pfQuest) | **Adapted** into one switch: the game's own pin and arrow |
+| Navigation: waypoint provider, arrows (Pathfinder/TomTom/pfQuest) | **Adapted** into two switches: the game's own pin and arrow, and Pathfinder's arrow (with its size and "Put the arrow back") |
 | Maps page | **Not ported** (see Maps above) |
 | Gear, Item Score pages | **Not ported** (see Gear above) |
 | Extras: Pathfinder chat messages, detailed reputation gains, level-up announcements (emote/party/guild) | **Ported** (`C_Reputation`, `C_ChatInfo.SendChatMessage`). Level time comes from the collector's level clock. |
@@ -91,7 +91,7 @@ levels so the guides can be written from real data.
 | `/apg resetpanels`, `/apg minimapbutton` | **Ported** |
 | `/apg goto`, `/apg reset`, `/apg setup`, `/apg ssf`, `/apg share`, `/apg target`, `/apg useitem` | **Wait for guides** |
 | `/apg materials`, `/apg craft`, `/apg exchange`, `/apg gear`, `/apg finder`, `/apg talents` | **Not ported** (see above) |
-| — | **New:** `/apg collect`, `/apg start`, `/apg stop`, `/apg submit` (or `/apg export`), `/apg status`, `/apg config`, `/apg browser`, `/apg help` |
+| — | **New:** `/apg collect`, `/apg start`, `/apg stop`, `/apg submit` (or `/apg export`), `/apg status`, `/apg config`, `/apg browser`, `/apg help`, `/apg arrow` (0.5.0) |
 
 Key bindings (**New**): *Show or hide the guide* and *Data collection window*,
 under AddOns in the game's key bindings.

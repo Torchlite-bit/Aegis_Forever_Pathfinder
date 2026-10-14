@@ -50,7 +50,7 @@ Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the 
 
 **Default: Blizzard's own look.** One more theme, **Default**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. A new install starts in it; the Pathfinder themes are under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
 
-**A first test guide: Northshire Valley (1-6).** For Alliance characters: the human starting area, from Deputy Willem to Goldshire, written from the data players sent in. Open it from the guide browser (**+** on the guide window). Each step ticks itself as you accept, finish and hand in quests, and puts the game's own pin and arrow on the next place. Class quests show only for your class. The other zones will be written the same way, so please keep **collecting data**.
+**A first test guide: Northshire Valley (1-6).** For Alliance characters: the human starting area, from Deputy Willem to Goldshire, written from the data players sent in. Open it from the guide browser (**+** on the guide window). Each step ticks itself as you accept, finish and hand in quests. **Pathfinder's arrow** points the way, with how far it is and about how long it takes, and the game's own pin and arrow go on the next place too. Class quests show only for your class. The other zones will be written the same way, so please keep **collecting data**.
 
 ## The data collector
 
@@ -115,6 +115,7 @@ Use the CurseForge app, or download the file and unzip it into `World of Warcraf
 | `/apg browser` | The guide browser |
 | `/apg resetpanels` | Put every window back where it opens |
 | `/apg minimapbutton` | Show or hide the minimap button |
+| `/apg arrow` | Show or hide Pathfinder's arrow |
 
 **Minimap button:** click for the guide, right-click for settings, shift-click for data collection, drag to move it. Both windows have key bindings under *Key Bindings → AddOns*, and the game's *Options → AddOns* has a page that opens the settings.
 

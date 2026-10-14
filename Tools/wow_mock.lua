@@ -184,6 +184,17 @@ function Region:GetTexture() return self._texture end
 function Region:SetVertexColor(r, g, b, a) self._color = { r, g, b, a } end
 function Region:GetVertexColor() local c = self._color or {} return c[1], c[2], c[3], c[4] end
 function Region:SetTextColor(r, g, b, a) self._textColor = { r, g, b, a } end
+-- Textures turn, in radians, counter-clockwise. (The client can hand GetRotation back
+-- secret, so the addon keeps its own angle; the scenario reads this.)
+function Region:SetRotation(radians)
+	assert(type(radians) == "number", "SetRotation needs radians")
+	self._rotation = radians
+end
+function Region:GetRotation() return self._rotation or 0 end
+function Region:SetShadowOffset(x, y) self._shadowOffset = { x, y } end
+function Region:EnableMouse(on) self._mouse = on and true or false end
+function Region:IsMouseEnabled() return self._mouse == true end
+function Region:SetShadowColor(r, g, b, a) self._shadowColor = { r, g, b, a } end
 function Region:CreateTexture(name) return NewRegion("Texture", name, self) end
 function Region:CreateFontString(name) return NewRegion("FontString", name, self) end
 
@@ -334,6 +345,14 @@ function GetServerTime() return 1760000000 + math.floor(Mock.now) end
 function GetBuildInfo() return "1.60.1", "70338", "Oct 10 2026", 16001 end
 function issecretvalue(value) return Mock.secret ~= nil and Mock.secret[value] == true end
 function InCombatLockdown() return Mock.inCombat == true end
+-- The client's addon restrictions: Mock.restrictions[type] = state (0 off, 1 starting, 2 on).
+Enum = Enum or {}
+Enum.AddOnRestrictionType = { Combat = 0, Encounter = 1, ChallengeMode = 2, PvPMatch = 3, Map = 4, Chat = 5 }
+Mock.restrictions = {}
+C_RestrictedActions = {
+	GetAddOnRestrictionState = function(kind) return Mock.restrictions[kind] or 0 end,
+	IsAddOnRestrictionActive = function(kind) return Mock.restrictions[kind] == 2 end,
+}
 function IsInInstance() return Mock.state.inInstance or false, "none" end
 function IsShiftKeyDown() return Mock.state.shift == true end
 function IsMouseButtonDown() return false end
@@ -353,6 +372,15 @@ C_AddOns = { GetAddOnMetadata = function(_, key) if key == "Version" then return
 C_Timer = {
 	After = function(seconds, fn) table.insert(Mock.timers, { at = Mock.now + seconds, fn = fn }) end,
 }
+--- One drawn frame, `seconds` after the last: timers due by then run, and then every
+--- shown frame's OnUpdate, as the client runs it on each frame drawn (never a hidden one's).
+function Mock.Update(seconds)
+	Mock.Advance(seconds)
+	for _, frame in ipairs(Mock.frames) do
+		if frame:IsVisible() then frame:_Run("OnUpdate", seconds or 0) end
+	end
+end
+
 --- Moves time on and runs what is due.
 function Mock.Advance(seconds)
 	Mock.now = Mock.now + (seconds or 0)
@@ -474,6 +502,12 @@ Settings = {
 Mock.state = {
 	level = 5, xp = 100, xpMax = 2800, money = 1000, race = "Human", class = "WARRIOR", faction = "Alliance",
 	mapID = 1429, x = 0.4, y = 0.6, zone = "Elwynn Forest", subzone = "Goldshire",
+	facing = 0,             -- GetPlayerFacing: radians from north, turning left adds; nil: none
+	runSpeed = 7,           -- GetUnitSpeed's second return, yards a second
+	mapSize = { [1429] = { 3000, 2000 } },   -- C_Map.GetMapWorldSize, yards
+	positions = nil,        -- { [mapID] = { x, y } }: where the player is known, map by map (nil: S.x/S.y on any)
+	parents = {},           -- [mapID] = parentMapID
+	rects = {},             -- ["child>parent"] = { left, right, top, bottom }: GetMapRectOnMap
 	npc = nil,              -- { guid =, name = }
 	frame = nil,            -- the open quest frame: { questID, title, text, objective, progress, reward, xp, money, choices, rewards }
 	log = {},               -- { { questID, title, level, objectives = { { text, type, numFulfilled, numRequired } } } }
@@ -504,17 +538,35 @@ function UnitExists(unit) if unit == "npc" then return S().npc ~= nil end return
 function GetRealZoneText() return S().zone end
 function GetSubZoneText() return S().subzone end
 function GetMoney() return S().money end
-function IsInGroup() return false end
+function IsInGroup() return S().inGroup == true end
 function IsInRaid() return false end
-function IsInGuild() return false end
+function IsInGuild() return S().inGuild == true end
+function GetPlayerFacing() return S().facing end
+function GetUnitSpeed() return 0, S().runSpeed, 7, 4.72 end
 
 local Vector = {}
 Vector.__index = Vector
 function Vector:GetXY() return self.x, self.y end
 C_Map = {
 	GetBestMapForUnit = function() return S().mapID end,
-	GetPlayerMapPosition = function() if S().x then return setmetatable({ x = S().x, y = S().y }, Vector) end end,
-	GetMapInfo = function(mapID) return { name = "Map " .. mapID } end,
+	GetPlayerMapPosition = function(mapID)
+		local known = S().positions
+		if known then
+			local p = known[mapID]
+			return p and setmetatable({ x = p[1], y = p[2] }, Vector) or nil
+		end
+		if S().x then return setmetatable({ x = S().x, y = S().y }, Vector) end
+	end,
+	GetMapInfo = function(mapID) return { name = "Map " .. mapID, parentMapID = S().parents[mapID] or 0 } end,
+	GetMapRectOnMap = function(mapID, topMapID)
+		local r = S().rects[mapID .. ">" .. topMapID]
+		if r then return r[1], r[2], r[3], r[4] end
+	end,
+	GetMapWorldSize = function(mapID)
+		local size = S().mapSize[mapID]
+		if size then return size[1], size[2] end
+		return 0, 0
+	end,
 	CanSetUserWaypointOnMap = function() return true end,
 	SetUserWaypoint = function(point) Mock.waypoint = point end,
 	-- As the client has it: the pin's map and a position vector.
@@ -616,22 +668,42 @@ C_Reputation = {
 	end,
 }
 C_Item = { GetItemNameByID = function(itemID) return "Item " .. itemID end }
+-- Bag 0: a grey in slot 1, and Mock.bagSlot2 (nil: empty) in slot 2, e.g. a looted item
+-- that starts a quest: { itemID =, name =, questID =, isActive = }.
 C_Container = {
 	GetContainerNumSlots = function(bag) return bag == 0 and 2 or 0 end,
 	GetContainerItemInfo = function(bag, slot)
 		if bag == 0 and slot == 1 then return { quality = 0, hasNoValue = false, isLocked = false, itemID = 1 } end
+		local item = bag == 0 and slot == 2 and Mock.bagSlot2
+		if item then
+			return { quality = 1, hasNoValue = true, isLocked = false, itemID = item.itemID, itemName = item.name,
+				hyperlink = "|cffffffff|Hitem:" .. item.itemID .. "|h[" .. item.name .. "]|h|r", stackCount = 1 }
+		end
 	end,
-	UseContainerItem = function(bag, slot) table.insert(Mock.sold, { bag, slot }) end,
+	GetContainerItemQuestInfo = function(bag, slot)
+		local item = bag == 0 and slot == 2 and Mock.bagSlot2
+		if item and item.questID then return { isQuestItem = true, questID = item.questID, isActive = item.isActive == true } end
+		return { isQuestItem = false, isActive = false }
+	end,
+	UseContainerItem = function(bag, slot)
+		if bag == 0 and slot == 2 and Mock.bagSlot2 then table.insert(Mock.used, Mock.bagSlot2) return end
+		table.insert(Mock.sold, { bag, slot })
+	end,
 }
-Mock.sold = {}
+Mock.sold, Mock.used = {}, {}
 C_GossipInfo = { GetActiveQuests = function() return {} end, GetAvailableQuests = function() return {} end }
 -- Chat goes out only from a click: anything else is what the client reports as
 -- "ADDON BLOCKED". Mock.Click is the click (the hardware event).
 Mock.blocked = {}
+-- As /apg chattest found it on Forever: an emote (or say, yell, a channel) needs the click,
+-- and the client says ADDON_ACTION_BLOCKED at once; party, raid and guild chat don't.
+local OWN_CHAT = { PARTY = true, RAID = true, GUILD = true, INSTANCE_CHAT = true }
 C_ChatInfo = {
 	SendChatMessage = function(message, channel)
-		if not Mock.hardware then
+		-- Mock.blockChannels: a channel the client is made to block too, to test the fallback.
+		if not Mock.hardware and (not OWN_CHAT[channel] or (Mock.blockChannels and Mock.blockChannels[channel])) then
 			table.insert(Mock.blocked, { message, channel })
+			Mock.Fire("ADDON_ACTION_BLOCKED", "Aegis_Forever_Pathfinder", "UNKNOWN()")
 			return
 		end
 		table.insert(Mock.sent, { message, channel })

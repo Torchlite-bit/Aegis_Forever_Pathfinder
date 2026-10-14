@@ -12,11 +12,14 @@ local Call, Readable = Compat.Call, Compat.Readable
 	    time is how long you spent at the level just left, when the collector
 	    saw all of it.
 
-	This client lets an addon post in chat only from a click, and not at all
-	while chat is locked down (boss fights, rated PvP). Posting by itself, as
-	the Turtle addon did, is blocked ("ADDON BLOCKED: UNKNOWN()"). So a
-	level-up brings a small card with a button for each place ticked, and a
-	click sends it.
+	This client won't let an addon post an emote without a click ("ADDON
+	BLOCKED: UNKNOWN()", even with none of its restrictions on), and nothing
+	while chat is locked down (boss fights, rated PvP). Party, raid and guild
+	chat goes out by itself (/apg chattest, 2026-10-14; raid and guild are taken to
+	work the same, and fall back to a button if not). So a level-up
+	tells your party and guild at once, as the Turtle addon did, once any fight
+	is over; and brings a small card with a button for the emote (and for
+	anything the client blocked), which a click sends.
 ]]
 
 local Extras = {}
@@ -117,6 +120,25 @@ local function ChatLocked()
 	return C_ChatInfo and C_ChatInfo.InChatMessagingLockdown and Call(C_ChatInfo.InChatMessagingLockdown) == true
 end
 
+--[[ What /apg chattest found on Forever (2026-10-14): an addon's emote is blocked
+	without a click even with no restriction on, while party chat goes out by
+	itself. Raid and guild chat are taken to be the same kind (seen only by your
+	own group or guild), not yet seen; when the client blocks one, it goes on the
+	card as a button instead. The emote stays a button. ]]
+local BY_ITSELF = { PARTY = true, RAID = true, GUILD = true }
+
+local blockedNow          -- false while a send with no click is being tried; true once blocked
+--- Send with no click. False when the client blocks it (it says so at once) or chat is locked.
+local function TrySend(message, channel)
+	if ChatLocked() then return false end
+	blockedNow = false
+	local ok = Send(message, channel)
+	local fine = ok and not blockedNow
+	blockedNow = nil
+	return fine
+end
+Extras.TrySend = TrySend
+
 --- Where a level up to `level` can be told now, as ticked: { { label, channel, message } }.
 function Extras:LevelChoices(level)
 	local char = Char()
@@ -187,9 +209,10 @@ local function BuildCard()
 	card:Hide()
 end
 
---- Offers to tell others about a level up to `level`. Returns how many buttons the card has.
-function Extras:OfferAnnouncement(level)
-	local choices, secs = self:LevelChoices(level)
+--- Offers to tell others about a level up to `level` (`choices`: those still to send;
+--- every ticked place when nil). Returns how many buttons the card has.
+function Extras:OfferAnnouncement(level, choices, secs)
+	if not choices then choices, secs = self:LevelChoices(level) end
 	if #choices == 0 then return 0 end
 	if not card then BuildCard() end
 	card.level = level
@@ -226,6 +249,28 @@ local TEST_EVENTS = {
 }
 local LABELS = { EMOTE = "Emote", PARTY = "Party", RAID = "Raid", GUILD = "Guild" }
 
+-- The client's addon restrictions (C_RestrictedActions, as on retail since Midnight),
+-- by Enum.AddOnRestrictionType's values where the client has none of its own.
+local RESTRICTIONS = { { "Combat", 0 }, { "Encounter", 1 }, { "ChallengeMode", 2 }, { "PvPMatch", 3 },
+	{ "Map", 4 }, { "Chat", 5 } }
+
+--- Which addon restrictions are on now, in plain words: "Combat, Chat (starting)", or "none".
+function Extras.RestrictionsNow()
+	local on = {}
+	local get = C_RestrictedActions and C_RestrictedActions.GetAddOnRestrictionState
+	local types = Enum and Enum.AddOnRestrictionType
+	for _, r in ipairs(RESTRICTIONS) do
+		local value = types and types[r[1]] or r[2]
+		local state = Call(get, value)
+		if state == 2 then on[#on + 1] = r[1]
+		elseif state == 1 then on[#on + 1] = r[1] .. " (starting)" end
+	end
+	if Call(InCombatLockdown) then on[#on + 1] = "in combat" end
+	if ChatLocked() then on[#on + 1] = "chat lockdown" end
+	if not get then on[#on + 1] = "(this client can't say)" end
+	return #on > 0 and table.concat(on, ", ") or "none"
+end
+
 function Extras:ChatTest()
 	local channels = { "EMOTE" }
 	if IsInGroup() then channels[#channels + 1] = IsInRaid() and "RAID" or "PARTY" end
@@ -233,8 +278,12 @@ function Extras:ChatTest()
 	local level = Readable(UnitLevel("player")) or 2
 	local _, line = Extras.LevelMessages(level - 1, level, 4 * 3600 + 28 * 60)
 	line = line .. " (a test)"
-	local result, sending = {}, nil
+	local result, sending, restricted, changes = {}, nil, nil, {}
 	local function OnBlocked() if sending then result[sending] = "blocked" end end
+	-- A restriction that switches on or off during the test, as the client announces it.
+	local function OnRestriction(_, kind, state)
+		changes[#changes + 1] = tostring(Readable(kind)) .. "=" .. tostring(Readable(state))
+	end
 	local function OnChat(event, text)
 		local channel = TEST_EVENTS[event]
 		text = Readable(text)
@@ -244,11 +293,13 @@ function Extras:ChatTest()
 	end
 	AP:On("ADDON_ACTION_BLOCKED", OnBlocked)
 	AP:On("ADDON_ACTION_FORBIDDEN", OnBlocked)
+	AP:On("ADDON_RESTRICTION_STATE_CHANGED", OnRestriction)
 	for event in pairs(TEST_EVENTS) do AP:On(event, OnChat) end
 	local names = {}
 	for _, channel in ipairs(channels) do names[#names + 1] = LABELS[channel] end
 	AP:Print("Chat test: in 2 seconds, one test line goes to " .. table.concat(names, ", ") .. ", with no click.")
 	C_Timer.After(2, function()
+		restricted = Extras.RestrictionsNow()
 		for _, channel in ipairs(channels) do
 			sending = channel
 			local ok, err = Send(line, channel)
@@ -259,18 +310,47 @@ function Extras:ChatTest()
 	C_Timer.After(6, function()
 		AP:Off("ADDON_ACTION_BLOCKED", OnBlocked)
 		AP:Off("ADDON_ACTION_FORBIDDEN", OnBlocked)
+		AP:Off("ADDON_RESTRICTION_STATE_CHANGED", OnRestriction)
 		for event in pairs(TEST_EVENTS) do AP:Off(event, OnChat) end
 		for _, channel in ipairs(channels) do
 			AP:Print("Chat test, " .. LABELS[channel] .. ": " .. (result[channel] or "not seen in chat"))
 		end
+		AP:Print("Chat test, restrictions on as it sent: " .. tostring(restricted))
+		AP:Print("Chat test, restrictions now: " .. Extras.RestrictionsNow()
+			.. (#changes > 0 and (" (changed meanwhile: " .. table.concat(changes, " ") .. ")") or ""))
 	end)
 end
 
+--- A level up to `level`: party, raid and guild are told at once (after the fight, if
+--- you're in one); what the client won't send by itself, the emote always, goes on the card.
+function Extras:AnnounceLevel(level)
+	local choices, secs = self:LevelChoices(level)
+	if #choices == 0 then return end
+	local function Go()
+		local left = {}
+		for _, choice in ipairs(choices) do
+			if not (BY_ITSELF[choice.channel] and TrySend(choice.message, choice.channel)) then
+				left[#left + 1] = choice
+			end
+		end
+		self:OfferAnnouncement(level, left, secs)
+	end
+	if not Call(InCombatLockdown) then return Go() end
+	local function AfterFight()
+		AP:Off("PLAYER_REGEN_ENABLED", AfterFight)
+		Go()
+	end
+	AP:On("PLAYER_REGEN_ENABLED", AfterFight)
+end
+
 AP:OnLogin(function()
+	AP:On("ADDON_ACTION_BLOCKED", function()
+		if blockedNow == false then blockedNow = true end
+	end)
 	AP:On("PLAYER_LEVEL_UP", function(_, level)
 		level = Readable(level)
 		-- After the collector has put the level's time aside.
-		C_Timer.After(0.5, function() Extras:OfferAnnouncement(level) end)
+		C_Timer.After(0.5, function() Extras:AnnounceLevel(level) end)
 	end)
 	AP:On("CHAT_MSG_COMBAT_FACTION_CHANGE", function(_, text)
 		local char = Char()
