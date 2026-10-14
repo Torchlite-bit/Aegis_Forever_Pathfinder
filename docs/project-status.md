@@ -91,13 +91,10 @@ clone, following `.claude/CLAUDE.md` (#10).
      trainers' places come from the Turtle guide, not Forever's data. A wrong id
      leaves that class clicking the → twice. Hunters (Tordrin Sternblade is
      Forever's Hunter trainer here) get no letter in the guide.
-   - The Big Picture (91752) is Elite. Can a level 5 without a pet do it alone?
-     If not, a solo player loses Report to Goldshire (54), The Adventurer (96627)
-     and Follow That Kobold! (91758): those three were seen starting right after it.
-   - Nibbled-On Book (91741) starts from a book a kobold drops: which kobolds,
-     and does looting it start the quest by itself?
-   - The kobold tracks for Shhh! We're Hunting Kobolds (91772): objects to click,
-     and do you need the kit to see them?
+   - Answered by the owner in game (2026-10-14): The Big Picture (91752, Elite)
+     can be done alone at level 5; the Nibbled-On Book (91741) drops from a
+     kobold; the kobold tracks (91772) are green tracks to click, starting just
+     outside the abbey on the road to Goldshire. The guide's notes say so.
    - Rest and Relaxation (2158) was only seen offered at level 6.
    - The guide shows to every Alliance character (guides filter by faction only).
 
