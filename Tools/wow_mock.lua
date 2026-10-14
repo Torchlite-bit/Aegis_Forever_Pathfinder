@@ -700,7 +700,8 @@ Mock.blocked = {}
 local OWN_CHAT = { PARTY = true, RAID = true, GUILD = true, INSTANCE_CHAT = true }
 C_ChatInfo = {
 	SendChatMessage = function(message, channel)
-		if not Mock.hardware and not OWN_CHAT[channel] then
+		-- Mock.blockChannels: a channel the client is made to block too, to test the fallback.
+		if not Mock.hardware and (not OWN_CHAT[channel] or (Mock.blockChannels and Mock.blockChannels[channel])) then
 			table.insert(Mock.blocked, { message, channel })
 			Mock.Fire("ADDON_ACTION_BLOCKED", "Aegis_Forever_Pathfinder", "UNKNOWN()")
 			return

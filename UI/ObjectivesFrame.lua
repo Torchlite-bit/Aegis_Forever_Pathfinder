@@ -370,30 +370,42 @@ local METER_PAD, METER_LINE, METER_GAP = 8, 22, 8
 -- Where a row's title starts: past the ring and the action glyph.
 local TEXT_LEFT = G.ROWPAD + G.DOTSIZE + 9 + G.ICONSIZE + 9
 
+-- A meter line's height at the step text size.
+local function MeterLineHeight() return math.floor(METER_LINE * TextScale() + 0.5) end
+
 local function MeterHeight(n)
-	return METER_PAD * 2 + n * METER_LINE + (n - 1) * METER_GAP
+	return METER_PAD * 2 + n * MeterLineHeight() + (n - 1) * METER_GAP
+end
+
+-- Size and place line `k` for the step text size: its words, and the bar under them.
+local function LayOutLine(meter, line, k)
+	local size = math.floor(12 * TextScale() + 0.5)
+	Theme:SetFont(line.count, "body2", size)
+	Theme:SetFont(line.label, "body", size)
+	local y = -(METER_PAD + (k - 1) * (MeterLineHeight() + METER_GAP))
+	line.count:ClearAllPoints()
+	line.count:SetPoint("TOPRIGHT", meter, "TOPRIGHT", -11, y)
+	line.label:ClearAllPoints()
+	line.label:SetPoint("TOPLEFT", meter, "TOPLEFT", 11, y)
+	line.label:SetPoint("RIGHT", line.count, "LEFT", -6, 0)
+	line.bar:ClearAllPoints()
+	line.bar:SetPoint("TOPLEFT", meter, "TOPLEFT", 11, y - (MeterLineHeight() - 6))
+	line.bar:SetPoint("RIGHT", meter, "RIGHT", -11, 0)
 end
 
 local function MeterLine(meter, k)
 	local line = meter.lines[k]
 	if line then return line end
 	line = {}
-	local y = -(METER_PAD + (k - 1) * (METER_LINE + METER_GAP))
 	line.count = meter:CreateFontString(nil, "OVERLAY")
-	Theme:SetFont(line.count, "body2", 12)
 	Theme:TextColor(line.count, "accent")
 	line.count:SetJustifyH("RIGHT")
-	line.count:SetPoint("TOPRIGHT", meter, "TOPRIGHT", -11, y)
 	line.label = meter:CreateFontString(nil, "OVERLAY")
-	Theme:SetFont(line.label, "body", 12)
 	Theme:TextColor(line.label, "textDim")
 	line.label:SetJustifyH("LEFT")
 	line.label:SetWordWrap(false)
-	line.label:SetPoint("TOPLEFT", meter, "TOPLEFT", 11, y)
-	line.label:SetPoint("RIGHT", line.count, "LEFT", -6, 0)
 	line.bar = Theme:ProgressBar(meter, 6)
-	line.bar:SetPoint("TOPLEFT", meter, "TOPLEFT", 11, y - 16)
-	line.bar:SetPoint("RIGHT", meter, "RIGHT", -11, 0)
+	LayOutLine(meter, line, k)
 	meter.lines[k] = line
 	return line
 end
@@ -410,7 +422,12 @@ local function PaintMeter(row, step, below)
 		meter = CreateFrame("Frame", nil, row)
 		Theme:Inset(meter)
 		meter.lines = {}
+		meter.sized = TextScale()
 		row.meter = meter
+	end
+	if meter.sized ~= TextScale() then
+		meter.sized = TextScale()
+		for k, line in ipairs(meter.lines) do LayOutLine(meter, line, k) end
 	end
 	meter:ClearAllPoints()
 	meter:SetPoint("TOPLEFT", below, "BOTTOMLEFT", G.ROWPAD - TEXT_LEFT, -6)
@@ -445,8 +462,8 @@ local function ProgressLine(step)
 end
 
 --- Paint step `index` on `row`. `focus`: the one-step view; `inBlock`: one of several
---- steps done together, on now.
-local function PaintRow(row, guide, index, current, focus, inBlock)
+--- steps done together, on now; `compact`: just its title (a block too tall for the window).
+local function PaintRow(row, guide, index, current, focus, inBlock, compact)
 	local step = guide.steps[index]
 	row.step, row.data = index, step
 	SizeRowFonts(row)
@@ -477,13 +494,13 @@ local function PaintRow(row, guide, index, current, focus, inBlock)
 			note = ProgressLine(step) or note
 		end
 		-- In a block, only the step you're on has its note in full; the rest have theirs on hover.
-		local noted = not (focus and inBlock and not isCurrent)
+		local noted = not (focus and inBlock and not isCurrent) and not compact
 		row.note:SetText(noted and note or "")
 		row.note:SetShown(noted)
 		row.note:SetWordWrap(focus)
 	end
 	local metered = false
-	if focus and not bandable and step.action == "COMPLETE" and (isCurrent or inBlock) then
+	if focus and not bandable and not compact and step.action == "COMPLETE" and (isCurrent or inBlock) then
 		metered = PaintMeter(row, step, row.note:IsShown() and row.note:GetText() ~= "" and row.note or row.title)
 	elseif row.meter then
 		row.meter:Hide()
@@ -622,17 +639,29 @@ local function PaintSteps(guide, current, mine)
 		end
 		local members = AP:GetCurrentBlock()
 		local list = members and #members > 1 and members or { current }
-		local y = 0
-		for i, index in ipairs(list) do
-			local row = rows[i] or NewRow(i)
-			row:ClearAllPoints()
-			row:SetPoint("TOPLEFT", ui.body, "TOPLEFT", 0, -y)
-			row:SetPoint("RIGHT", ui.body, "RIGHT", 0, 0)
-			PaintRow(row, guide, index, current, true, #list > 1)
-			local h = FocusHeight(row, rowH)
-			row:SetHeight(h)
-			y = y + h
+		local room = AP:GetPanelCap() - G.CHROME_TOP - G.FOOTER_H - G.EDGE_B
+		-- A block too tall for the window: the steps but the current one as just their
+		-- titles, and those that still don't fit left for the list.
+		local function LayOut(compact)
+			local y = 0
+			for i, index in ipairs(list) do
+				local row = rows[i] or NewRow(i)
+				PaintRow(row, guide, index, current, true, #list > 1, compact and index ~= current)
+				local h = FocusHeight(row, rowH)
+				if compact and index ~= current and y + h > room then
+					row:Hide()
+				else
+					row:ClearAllPoints()
+					row:SetPoint("TOPLEFT", ui.body, "TOPLEFT", 0, -y)
+					row:SetPoint("RIGHT", ui.body, "RIGHT", 0, 0)
+					row:SetHeight(h)
+					y = y + h
+				end
+			end
+			return y
 		end
+		local y = LayOut(false)
+		if #list > 1 and y > room then y = LayOut(true) end
 		for i = #list + 1, #rows do rows[i]:Hide() end
 		return y
 	end
@@ -881,6 +910,7 @@ local function Build()
 
 	-- Body.
 	local body = CreateFrame("Frame", nil, frame)
+	body:SetClipsChildren(true)     -- nothing drawn past the footer, whatever the steps need
 	body:SetPoint("TOPLEFT", frame, "TOPLEFT", G.EDGE_L, -G.CHROME_TOP)
 	body:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -G.EDGE_R, G.FOOTER_H + G.EDGE_B)
 	ui.body = body

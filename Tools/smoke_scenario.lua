@@ -321,7 +321,44 @@ equal(#Mock.blocked, 0, "and nothing the client blocks is tried")
 check(levelCard:IsShown() and levelCard.buttons[1]:GetText():upper() == "EMOTE" and not levelCard.buttons[2]:IsShown(),
 	"the card offers only the emote")
 levelCard:Hide()
-S.inGroup, AP.db.char.levelparty = nil, false
+Mock.Fire("PLAYER_REGEN_ENABLED")
+equal(#Mock.sent, 2, "a fight's end tells the party once")
+-- These level-ups are for the announcements only: what the collector notes of them is taken back after.
+local levelsBefore = {}
+for level in pairs(data.levels) do levelsBefore[level] = true end
+-- Two level-ups in one fight: both told when it ends (a handler taking itself off mid-event).
+Mock.inCombat = true
+Mock.Fire("PLAYER_LEVEL_UP", 8, 10, 0, 0, 0)
+Mock.Fire("PLAYER_LEVEL_UP", 9, 10, 0, 0, 0)
+Mock.Advance(1)
+Mock.inCombat = false
+Mock.Fire("PLAYER_REGEN_ENABLED")
+check(#Mock.sent == 4 and Mock.sent[3][1]:find("to 8", 1, true) and Mock.sent[4][1]:find("to 9", 1, true),
+	"two level-ups in one fight: both told when it ends")
+-- Guild blocked by the client (raid and guild aren't seen yet): it goes on the card instead.
+S.inGuild, AP.db.char.levelguild = true, true
+Mock.blockChannels = { GUILD = true }
+local blockedBefore = #Mock.blocked
+Mock.Fire("PLAYER_LEVEL_UP", 10, 10, 0, 0, 0)
+Mock.Advance(1)
+equal(#Mock.blocked, blockedBefore + 1, "guild chat tried by itself, and blocked")
+check(Mock.sent[5] and Mock.sent[5][2] == "PARTY", "the party is still told")
+check(levelCard:IsShown() and levelCard.buttons[2]:IsShown() and levelCard.buttons[2]:GetText():upper() == "GUILD",
+	"and the card offers the guild too, as a button")
+levelCard:Hide()
+Mock.blockChannels = nil
+for index = #Mock.blocked, blockedBefore + 1, -1 do table.remove(Mock.blocked, index) end
+-- Chat locked down (a boss fight): nothing tried; the card offers it all.
+Mock.chatLockdown = true
+Mock.Fire("PLAYER_LEVEL_UP", 11, 10, 0, 0, 0)
+Mock.Advance(1)
+equal(#Mock.sent, 5, "chat locked down: nothing sent by itself")
+check(levelCard:IsShown() and levelCard.buttons[3]:IsShown(), "the card offers the emote, the party and the guild")
+Mock.chatLockdown = nil
+levelCard:Hide()
+for _ = 1, 6 do table.remove(Mock.sent) end
+S.inGroup, S.inGuild, AP.db.char.levelparty, AP.db.char.levelguild = nil, nil, false, false
+for level in pairs(data.levels) do if not levelsBefore[level] then data.levels[level] = nil end end
 
 ------------------------------------------------------------------------------------------
 -- The windows show it
@@ -554,7 +591,7 @@ if skin == "pathfinder" then
 	check(Mock.blocked[blockedBefore + 1] and Mock.blocked[blockedBefore + 1][2] == "EMOTE"
 		and Mock.blocked[blockedBefore + 1][1]:find("(a test)", 1, true), "it tries the emote with no click")
 	Mock.Advance(4)
-	check(Chat("Chat test, Emote: "), "and reports how it went")
+	check(Chat("Chat test, Emote: blocked"), "and reports the emote blocked, as the client does")
 	check(Chat("restrictions on as it sent: Chat"), "and which of the client's restrictions were on as it sent")
 	Mock.restrictions[5] = nil
 	check(AP.Extras.RestrictionsNow() == "none", "none on, it says so")
@@ -691,6 +728,22 @@ Mock.Fire("QUEST_COMPLETE")
 Mock.Advance(0.5)
 equal(Mock.rewardTaken, 0, "a quest without a choice is handed in")
 AP.db.char.autoquest = false
+Mock.bagSlot2 = { itemID = 990004, name = "Torn Page", questID = 91998 }
+local usedBefore = #Mock.used
+Mock.Fire("BAG_UPDATE_DELAYED")
+Mock.Advance(0.5)
+equal(#Mock.used, usedBefore, "with quest automation off, a quest's item isn't opened")
+AP.db.char.autoquest = true
+Mock.Fire("MERCHANT_SHOW")
+Mock.Fire("BAG_UPDATE_DELAYED")
+Mock.Advance(0.5)
+equal(#Mock.used, usedBefore, "nor with a vendor open: using it there would sell it")
+Mock.Fire("MERCHANT_CLOSED")
+Mock.Advance(0.5)
+equal(Mock.used[#Mock.used] and Mock.used[#Mock.used].questID, 91998, "the vendor closed, it is opened")
+Mock.bagSlot2 = nil
+AP.db.char.autoquest = false
+Mock.sold, Mock.repaired = {}, nil
 
 AP.db.char.autosell, AP.db.char.autorepair = true, "own"
 -- As Forever does it: MERCHANT_SHOW first, the merchant window a moment later (the player
@@ -960,6 +1013,23 @@ do
 	equal(rows[1].meter.lines[1].count:GetText(), "0 / 10", "and how much of it")
 	equal(rows[3].meter.lines[1].count:GetText(), "0 / 8", "the wolves' too")
 	check(rows[1].note:IsShown() and not rows[3].note:IsShown(), "the step you're on has its note; the others on hover")
+	check(rows[1]:GetHeight() >= 31 + rows[1].note:GetStringHeight() + 6 + rows[1].meter:GetHeight(),
+		"the row is tall enough for its note and its box")
+	local shownH = 0
+	for _, row in ipairs(rows) do if row:IsShown() then shownH = shownH + row:GetHeight() end end
+	check(guide:GetHeight() >= shownH, "and the window for the whole block")
+	-- A short window and big text: the other steps fold to their titles, the window holds.
+	AP.db.profile.objframemaxheight = 260
+	AP:SetStepTextSize(1.4)
+	AP:RefreshObjectivePanel()
+	check(guide:GetHeight() <= AP:GetPanelCap() and rows[1]:IsShown() and rows[1].metered,
+		"a block too tall for the window keeps the step you're on, with its box")
+	check(not rows[3].metered, "and folds the others to their titles")
+	local _, meterSize = rows[1].meter.lines[1].label:GetFont()
+	check(meterSize >= 15, "the box's words follow the step text size")
+	AP.db.profile.objframemaxheight = nil
+	AP:SetStepTextSize(1)
+	AP:RefreshObjectivePanel()
 	S.log[1].objectives[1].numFulfilled = 3
 	Mock.Fire("QUEST_LOG_UPDATE")
 	Mock.Advance(1)
@@ -1013,6 +1083,13 @@ do
 	equal((AP:GetCurrentStep()), 6, "the block done, the hand-in")
 	check(Mock.waypoint and Mock.waypoint.x == 0.3, "is marked")
 	equal(AP.db.char.arrived, nil, "and the arrival is forgotten")
+	-- A quest giver isn't a kill area: close by, it stays marked, and the arrow says you're there.
+	S.x, S.y = 0.3, 0.3015
+	AP:GuideChanged()
+	Mock.Advance(2)
+	Mock.Update(0.2)
+	check(Mock.waypoint and Mock.waypoint.x == 0.3 and AP.db.char.arrived == nil, "a quest giver close by stays marked")
+	equal(arrow.distance:GetText(), "You're here", "and the arrow says you're there")
 	-- With the arrow switched off, arriving still takes the pin away.
 	AP:StepBack()
 	AP.db.char.arrived = nil

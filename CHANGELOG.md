@@ -22,12 +22,15 @@
 - **The guide stops pointing once you're there.** When you reach a kill area,
   the map pin and the arrow go away, so they don't pull you to one spot while
   you fight. If the next thing to do is further off, it points again.
-- **Books that start a quest open by themselves.** Loot one (like the kobold's
-  chewed book) and its quest comes up and is taken, once you're out of combat.
+- **Books that start a quest open by themselves**, with quest automation on (it
+  is unless you switched it off). Loot one (like the kobold's chewed book) and
+  its quest comes up and is taken, once you're out of combat and away from a
+  vendor, the bank and the mail.
   The guide ticks the book as soon as it's in your bags.
 - **Level-ups tell your party and guild by themselves**, if you ticked them
   under *Settings → Extras*. The game doesn't let an addon do an emote without
-  a click, so the emote stays a button on the level-up card.
+  a click, so the emote stays a button on the level-up card (and so does
+  anything else the game won't send by itself).
 - `/apg chattest` also says which of the game's restrictions were on.
 - **After updating, close the game and start it again.** A /reload is not
   enough this time: there is a new file.

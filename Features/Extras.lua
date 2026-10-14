@@ -15,7 +15,8 @@ local Call, Readable = Compat.Call, Compat.Readable
 	This client won't let an addon post an emote without a click ("ADDON
 	BLOCKED: UNKNOWN()", even with none of its restrictions on), and nothing
 	while chat is locked down (boss fights, rated PvP). Party, raid and guild
-	chat do go out by themselves (/apg chattest, 2026-10-14). So a level-up
+	chat goes out by itself (/apg chattest, 2026-10-14; raid and guild are taken to
+	work the same, and fall back to a button if not). So a level-up
 	tells your party and guild at once, as the Turtle addon did, once any fight
 	is over; and brings a small card with a button for the emote (and for
 	anything the client blocked), which a click sends.
@@ -121,8 +122,9 @@ end
 
 --[[ What /apg chattest found on Forever (2026-10-14): an addon's emote is blocked
 	without a click even with no restriction on, while party chat goes out by
-	itself. Raid and guild chat are the same kind (seen only by your own group or
-	guild), so they go out by themselves too; the emote stays a button. ]]
+	itself. Raid and guild chat are taken to be the same kind (seen only by your
+	own group or guild), not yet seen; when the client blocks one, it goes on the
+	card as a button instead. The emote stays a button. ]]
 local BY_ITSELF = { PARTY = true, RAID = true, GUILD = true }
 
 local blockedNow          -- false while a send with no click is being tried; true once blocked
