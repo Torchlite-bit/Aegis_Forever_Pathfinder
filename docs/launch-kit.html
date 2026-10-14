@@ -86,7 +86,7 @@ button.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Aegis: Pathfinder · WoW: Forever · v0.2.4</div>
+  <div class="eyebrow">Aegis: Pathfinder · WoW: Forever · v0.2.4 · 0.3.0 next</div>
   <h1>Pathfinder Forever Launch Kit</h1>
   <p class="lede">Everything for taking Pathfinder (Forever) from your test build to players: what's waiting on you, working locally, the CurseForge page, the tester post, and a plan to calm the Discord down.</p>
 
@@ -101,10 +101,13 @@ button.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
       <div class="chip"><span class="pill done">Live</span><b>v0.2.4 on GitHub and CurseForge</b><span>CurseForge file 9167948 (project 1742985), uploaded as a Release. Every merge with a new version uploads by itself.</span></div>
       <div class="chip"><span class="pill done">Done</span><b>Reload that reloads</b><span>0.2.1 to 0.2.3, tested in game: Reload works from all three places, the menu's labels show, and the Default X closes.</span></div>
       <div class="chip"><span class="pill done">Done</span><b>Your name stays with you</b><span>0.2.4: where a quest says your character's name, the addon saves <code>&lt;name&gt;</code> instead.</span></div>
+      <div class="chip"><span class="pill wait">Pull request #15</span><b>0.3.0: Default first</b><span>A new install starts in Default, the game's own look. Players who have the addon keep their theme.</span></div>
     </div>
     <ol class="steps">
+      <li><b>Merge <a href="https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/pull/15" target="_blank" rel="noopener">pull request #15</a>.</b><p>That publishes v0.3.0 on GitHub and uploads it to CurseForge.</p></li>
       <li><b>Paste the new description</b> on the CurseForge page (below), and mark the file Beta there if you'd rather.</li>
-      <li><b>Post the tester message</b> on Discord.</li>
+      <li><b>Post the tester message</b> on Discord (below).</li>
+      <li><b>Restructure the Discord</b> when you have an evening (the plan is at the end).</li>
     </ol>
   </section>
 
@@ -122,7 +125,7 @@ button.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 
   <section id="testers">
     <h2>Tester post for Discord</h2>
-    <p>Ready to post: the v0.2.4 download has every fix. It uses today's channel names; swap them if you restructure first.</p>
+    <p>Ready to post: it points at the newest download, so it stays right after each release. It uses today's channel names; swap them if you restructure first.</p>
     <div class="paste"><header><span class="count" id="testerCount"></span><button class="copy" data-copy="tester">Copy post</button></header><pre id="tester">## 🧭 Aegis: Pathfinder is coming to WoW: Forever, and it needs testers
 
 Pathfinder's leveling guides need Forever's quests, and that's where you come in. This first build has no guides yet: it **records quests while you play** so we can write them.
@@ -131,10 +134,10 @@ Pathfinder's leveling guides need Forever's quests, and that's where you come in
 • Records every quest you pick up and hand in: who gives it and where, the objectives, XP, money, items and reputation
 • Records the XP each level needs and how long it takes
 • Accepts and turns in quests by itself (hold Shift to skip one), and sells greys and repairs if you switch that on
-• The Pathfinder themes, or Default in Blizzard's own look
+• Blizzard's own look (Default), or the Pathfinder themes
 
 **How to help**
-1. Download **Aegis_Forever_Pathfinder-v0.2.4.zip** (not "Source code") from &lt;https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/releases/latest&gt;
+1. Download the newest **Aegis_Forever_Pathfinder** zip (not "Source code") from &lt;https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/releases/latest&gt;
 2. Unzip into `_classic_beta_\Interface\AddOns\` (keep the folder named `Aegis_Forever_Pathfinder`) and restart the game fully
 3. Type `/apg`, click **Start collecting data** and tick **Automatically run**
 4. Play as you normally would
@@ -149,13 +152,11 @@ The data never names your realm. The one name in it is the one you're credited u
 
   <section id="curse">
     <h2>CurseForge</h2>
-    <p>The description has the old page's detail and badges back, brought up to 0.2.0, with full links (relative ones break on CurseForge). Uploads are set up the way the Instance Journal's are. Every merge to main publishes a GitHub release, and each new version is uploaded to CurseForge once. The setup is also saved in the repository as <code>docs/curseforge.md</code>.</p>
+    <p>The description has the old page's detail and badges, kept up to date with the addon, with full links (relative ones break on CurseForge). Uploads are set up the way the Instance Journal's are. Every merge to main publishes a GitHub release, and each new version is uploaded to CurseForge once. The setup is also saved in the repository as <code>docs/curseforge.md</code>.</p>
+    <div class="note"><p><b>Uploads are set up.</b> The <code>CF_API_KEY</code> secret is set and the project id (1742985) is in the TOC, so each new version goes up by itself. v0.2.4 is file 9167948.</p></div>
     <ol class="steps">
-      <li><b>Edit your project</b> (it has v0.1.0 already): switch the description editor to Markdown, paste the description below over the old one, and the summary into its box.</li>
-      <li><b>Copy the project ID</b> from its page (About this project → Project ID).</li>
-      <li><b>Have an API token.</b> One token works for every project on your account, so the Instance Journal's works here, but GitHub won't show a saved secret again: if you don't have it written down, make a new one on the authors site under your account's API tokens. Don't paste it into a chat.</li>
-      <li><b>On GitHub</b>, <i>Settings → Secrets and variables → Actions</i>: secret <code>CF_API_KEY</code> = the token; variable <code>CURSEFORGE_PROJECT_ID</code> = the ID. Optional: variable <code>CURSEFORGE_RELEASE_TYPE</code> = <code>beta</code> while it's in testing. If the upload's log says it can't find the WoW: Forever game version, add variable <code>CURSEFORGE_GAME_VERSION_IDS</code> with the id it names, and run it again.</li>
-      <li><b>Tell me it's set</b>, and I run <i>Actions → Test and release → Run workflow</i> and check the upload. After that, bump <code>## Version</code> and the changelog, and each merge uploads the new version by itself. If the Instance Journal's repository has <code>CURSEFORGE_GAME_VERSION_IDS</code> set, copy the same value here: it's the same game.</li>
+      <li><b>Edit your project:</b> switch the description editor to Markdown, paste the description below over the old one, and the summary into its box.</li>
+      <li><b>Optional:</b> on GitHub, <i>Settings → Secrets and variables → Actions → Variables</i>, add <code>CURSEFORGE_RELEASE_TYPE</code> = <code>beta</code> to upload new versions as Beta while it's in testing. Files already up can be marked Beta on CurseForge.</li>
     </ol>
     <div class="paste"><header><span class="count" id="summaryCount"></span><button class="copy" data-copy="summary">Copy summary</button></header><pre id="summary">Leveling guide for WoW: Forever. Collects quest and XP data while you play, to write its guides from. Quest automation and a Blizzard look included.</pre></div>
     <div class="paste"><header><span>Description (Markdown)</span><button class="copy" data-copy="description">Copy description</button></header><pre id="description"># Aegis: Pathfinder — Forever
@@ -174,7 +175,7 @@ Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the 
 
 **The Pathfinder look, on Forever.** The guide window, the ≡ menu, the guide browser, the options window and the minimap button are the Turtle WoW addon's, panel for panel: same layout, same fonts, same colour themes: Pathfinder Day, Night, Green (the original), Purple, Grey, Tan and Red.
 
-**Default: Blizzard's own look.** One more theme, **Default**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. Pick it under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
+**Default: Blizzard's own look.** One more theme, **Default**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. A new install starts in it; the Pathfinder themes are under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
 
 **No guides yet.** WoW: Forever is new, so the guide window says so and offers to **start collecting data** instead. The engine that follows guides is there and waiting.
 
