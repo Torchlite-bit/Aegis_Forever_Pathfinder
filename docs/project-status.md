@@ -60,7 +60,11 @@ clone, following `.claude/CLAUDE.md` (#10).
    (switch the editor to Markdown). Mark the uploaded files Beta if wanted, and set
    the repository variable `CURSEFORGE_RELEASE_TYPE` = `beta` for later uploads.
 3. **Tester post** for Discord: in the Launch Kit.
-4. **Discord restructure:** the plan is in the Launch Kit; the owner applies it.
+4. **Discord:** changelogs post themselves to #announcements once the
+   `DISCORD_WEBHOOK_URL` secret is set (`Tools/discord_post.py`, from #16). The
+   restructure (the plan is in the Launch Kit), a backup of the old posts and
+   carrying the latest download and changelog posts over are done by a bot from the
+   separate private repo `Aegis_Discord_Tools`, run from the owner's PC.
 5. **Undecided:** "Default" is the Blizzard look, but a new install still starts
    on Pathfinder Green. Ask whether new installs should start on Default.
 6. **Still to confirm in game** (from the 0.2.0 list): quest auto accept and

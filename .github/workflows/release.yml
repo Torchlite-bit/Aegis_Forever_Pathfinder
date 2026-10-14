@@ -8,6 +8,8 @@
 # is also uploaded to CurseForge, once, when the CF_API_KEY secret is set; the project id is
 # the TOC's ## X-Curse-Project-ID (a CURSEFORGE_PROJECT_ID variable or secret overrides it).
 # "Run workflow" on the Actions tab uploads the current version if it isn't there yet.
+# Each new version's changelog is also posted to Discord, once, when the DISCORD_WEBHOOK_URL
+# secret is set (Tools/discord_post.py).
 #
 # Nothing here runs for a branch other than main: a release only follows a merge.
 
@@ -42,6 +44,7 @@ jobs:
         run: |
           python Tools/smoke_test.py
           python Tools/test_ingest.py
+          python Tools/test_release.py
 
       - name: Build the release zip
         id: build
@@ -81,4 +84,22 @@ jobs:
           else
             python Tools/curseforge_upload.py dist
             if [ -f dist/curseforge.txt ]; then gh release upload "$TAG" dist/curseforge.txt --clobber; fi
+          fi
+
+      # Each new version's changelog goes to Discord once: the release keeps a discord.txt once posted.
+      # Needs the DISCORD_WEBHOOK_URL secret (Tools/discord_post.py); without it, nothing is posted.
+      - name: Post the changelog to Discord
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ steps.build.outputs.version }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_PING_ROLE_ID: ${{ vars.DISCORD_PING_ROLE_ID }}
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.build.outputs.version }}
+        run: |
+          if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -qx discord.txt; then
+            echo "$TAG is on Discord already."
+          else
+            python Tools/discord_post.py dist
+            if [ -f dist/discord.txt ]; then gh release upload "$TAG" dist/discord.txt --clobber; fi
           fi
