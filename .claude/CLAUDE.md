@@ -67,6 +67,10 @@ update `docs/project-status.md` in the same pull request.
    testing). Before mirroring, read the installed TOC's `## Version` and compare its file list
    with yours: if it holds a newer version or files your branch doesn't have, another
    session's build is being tested, so ask the owner before installing over it.
+   **The CurseForge app** on the owner's PC also writes there: when a version is
+   released, it replaces the folder with the release zip (LF line endings; a copy from
+   this clone has CRLF). On 2026-10-14 it swapped a 0.5.0 test build for the 0.4.1
+   release. Before asking the owner to test, check the installed `## Version` again.
    Before the first mirror of a session, check the installed copy isn't a folder link
    (`(Get-Item -LiteralPath $dst -Force).LinkType` is empty): mirroring into a link would write
    over this clone.

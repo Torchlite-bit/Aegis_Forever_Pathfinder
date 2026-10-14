@@ -122,6 +122,11 @@ clone, following `.claude/CLAUDE.md` (#10).
   XP as the second's reward frame opens, and links no chain when two or more went
   to that NPC. The offer in progress (`pendingDetail`) is still one slot.
 
+- **The CurseForge app updates the installed copy:** the owner has the CurseForge
+  app, and a new release replaces the AddOns folder with the release zip (LF line
+  endings tell it apart from a mirror of this clone, which has CRLF). A test build
+  installed before a release lands is gone after it. Check the installed TOC's
+  `## Version` before asking the owner to test; reinstall if it changed.
 - **Pathfinder's arrow (0.5.0, `UI/NavArrow.lua`):** map x grows east and y south;
   `C_Map.GetMapWorldSize` gives yards; `GetPlayerFacing` is radians from north,
   turning left adds; `Texture:SetRotation` turns the art left for a positive angle
