@@ -107,7 +107,7 @@ function Extras.LevelMessages(from, to, secs)
 		"Pathfinder: I leveled up from " .. from .. " to " .. to .. "!" .. time
 end
 
---- Only ever from a click (see the top of this file).
+--- From a click (see the top of this file), or from /apg chattest trying without one.
 local function Send(message, channel)
 	local send = C_ChatInfo and C_ChatInfo.SendChatMessage or SendChatMessage
 	return pcall(send, message, channel)
@@ -213,6 +213,57 @@ function Extras:OfferAnnouncement(level)
 		if card.level == level then card:Hide() end
 	end)
 	return #choices
+end
+
+--[[ /apg chattest: can a level-up go to chat by itself? Two seconds after the
+	command (so not from the key press), the level-up line, marked as a test,
+	goes to Emote, and to Party/Raid and Guild where there's one. Each is then
+	reported: posted (it came back in chat), blocked (the client said so), or
+	not seen. Nothing is kept. ]]
+local TEST_EVENTS = {
+	CHAT_MSG_EMOTE = "EMOTE", CHAT_MSG_PARTY = "PARTY", CHAT_MSG_PARTY_LEADER = "PARTY",
+	CHAT_MSG_RAID = "RAID", CHAT_MSG_RAID_LEADER = "RAID", CHAT_MSG_GUILD = "GUILD",
+}
+local LABELS = { EMOTE = "Emote", PARTY = "Party", RAID = "Raid", GUILD = "Guild" }
+
+function Extras:ChatTest()
+	local channels = { "EMOTE" }
+	if IsInGroup() then channels[#channels + 1] = IsInRaid() and "RAID" or "PARTY" end
+	if IsInGuild() then channels[#channels + 1] = "GUILD" end
+	local level = Readable(UnitLevel("player")) or 2
+	local _, line = Extras.LevelMessages(level - 1, level, 4 * 3600 + 28 * 60)
+	line = line .. " (a test)"
+	local result, sending = {}, nil
+	local function OnBlocked() if sending then result[sending] = "blocked" end end
+	local function OnChat(event, text)
+		local channel = TEST_EVENTS[event]
+		text = Readable(text)
+		if channel and type(text) == "string" and text:find("(a test)", 1, true) and not result[channel] then
+			result[channel] = "posted"
+		end
+	end
+	AP:On("ADDON_ACTION_BLOCKED", OnBlocked)
+	AP:On("ADDON_ACTION_FORBIDDEN", OnBlocked)
+	for event in pairs(TEST_EVENTS) do AP:On(event, OnChat) end
+	local names = {}
+	for _, channel in ipairs(channels) do names[#names + 1] = LABELS[channel] end
+	AP:Print("Chat test: in 2 seconds, one test line goes to " .. table.concat(names, ", ") .. ", with no click.")
+	C_Timer.After(2, function()
+		for _, channel in ipairs(channels) do
+			sending = channel
+			local ok, err = Send(line, channel)
+			if not ok and not result[channel] then result[channel] = "error: " .. tostring(err) end
+			sending = nil
+		end
+	end)
+	C_Timer.After(6, function()
+		AP:Off("ADDON_ACTION_BLOCKED", OnBlocked)
+		AP:Off("ADDON_ACTION_FORBIDDEN", OnBlocked)
+		for event in pairs(TEST_EVENTS) do AP:Off(event, OnChat) end
+		for _, channel in ipairs(channels) do
+			AP:Print("Chat test, " .. LABELS[channel] .. ": " .. (result[channel] or "not seen in chat"))
+		end
+	end)
 end
 
 AP:OnLogin(function()

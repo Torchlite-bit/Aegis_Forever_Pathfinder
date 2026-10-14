@@ -472,6 +472,16 @@ if skin == "pathfinder" then
 	check(Chat("Rest the mouse"), "/apg mouse explains itself")
 	Mock.Advance(3.5)
 	check(Chat("has the mouse there") or Chat("level"), "and then says what has the mouse")
+	-- /apg chattest tries chat with no click; the mock blocks it, as the client did.
+	local blockedBefore = #Mock.blocked
+	SlashCmdList.AEGISPATHFINDER("chattest")
+	check(Chat("Chat test: in 2 seconds"), "/apg chattest says what it will try")
+	Mock.Advance(2.5)
+	check(Mock.blocked[blockedBefore + 1] and Mock.blocked[blockedBefore + 1][2] == "EMOTE"
+		and Mock.blocked[blockedBefore + 1][1]:find("(a test)", 1, true), "it tries the emote with no click")
+	Mock.Advance(4)
+	check(Chat("Chat test, Emote: "), "and reports how it went")
+	for index = #Mock.blocked, blockedBefore + 1, -1 do table.remove(Mock.blocked, index) end
 	guide.ui.menu:Show()
 	Mock.Click(menuReload)
 	check(dialog():IsShown() and not guide.ui.menu:IsShown(), "the menu's Reload asks through the dialog")
