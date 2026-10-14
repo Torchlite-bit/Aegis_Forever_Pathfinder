@@ -42,6 +42,8 @@ otherwise just missing. The smoke test checks every shipped guide registers.
 | `map`, `x`, `y` | A uiMapID and 0–1 coordinates: where Pathfinder's arrow points, and the game's own map pin and arrow, set once as the step comes up |
 | `class` | Optional. Only these classes see the step: a list of `UnitClass`'s second return (`WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID`) |
 | `unverified` | Optional. `true` on a step not confirmed by the collected data yet (written from another source, like the other classes' letters from the Turtle guide). The smoke test only warns when the data disagrees with it |
+| `together` | Optional. `true`: done with the step before it, in the same area. A run of them is one block: in focus mode every step of it shows, each ticking itself (not on step 1) |
+| `fromitem` | Optional, on an ACCEPT. `true`: the quest starts from a looted item. The step ticks once a bag item that starts this quest is held (`C_Container.GetContainerItemQuestInfo`), so the item's name or id needn't be known. Quest automation opens such an item by itself |
 | `race` | Optional. Only these races see the step: `UnitRace`'s second return (`Human`, `Dwarf`, `NightElf`, `Gnome`, `Orc`, `Scourge`, `Tauren`, `Troll`). With both, both must match |
 
 A step for another class or race is left out for that character everywhere: the
@@ -56,6 +58,22 @@ How steps tick:
 - `TURNIN`: on `QUEST_TURNED_IN`, or `C_QuestLog.IsQuestFlaggedCompleted`
 - anything else: by hand (the step's ring, the → on the nav row, `/apg next`).
   A current ACCEPT or TURNIN shows as a band without a ring: its fallback is the →.
+  (In a block of steps done together there are no bands: every step has its ring.)
+
+In focus mode, a COMPLETE step (the current one, or any in the current block) shows
+its quest's live progress under it: a box with a line per counted objective, its
+name, "3 / 10" and a bar, from `C_QuestLog.GetQuestObjectives`. In the list, its
+line reads "Kobold Vermin slain - 3/10".
+
+## Kill areas
+
+A block with a COMPLETE, KILL or GRIND step is an area. Once you are within 60
+yards of the step's place, the game's pin and Pathfinder's arrow stop marking it
+(a pin the player set is left alone), and that is saved per character. A later
+step of the block more than 100 yards from where you arrived is marked again,
+until you reach it. Group steps with `together` only when they really are done
+in one area: a single spot a little way off (a tent, a boss's shack) more than
+100 yards away is marked on its own, nearer than that it isn't.
 
 Progress is per character (`AegisPathfinderCharDB.progress`).
 

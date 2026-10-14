@@ -14,6 +14,10 @@ local Call, Readable = Compat.Call, Compat.Readable
 	    "Sell All Junk" where it has it; and a "Sell greys" button on the vendor
 	    window when the game has no button of its own.
 	  * Repairing as the vendor opens: with your own money, or the guild's first.
+	  * Quests from items: a looted item that starts a quest (a kobold's chewed
+	    book) is opened at once, so its quest comes up and is accepted like an
+	    NPC's. Out of combat only, once per quest a session, with quest
+	    automation on.
 
 	Holding Shift as a window opens does none of it. Everything waits a moment
 	after the window's event, so the data collector reads the quest frame first.
@@ -122,6 +126,31 @@ function Auto:Greeting()
 	for index = 1, Call(GetNumAvailableQuests) or 0 do
 		local isTrivial = Call(GetAvailableQuestInfo, index)
 		if not isTrivial then return Later(function() SelectAvailableQuest(index) end) end
+	end
+end
+
+--[[ Quests from items ]]
+
+local opened = {}        -- [questID] = true: its item was opened this session
+
+--- Open a looted item that starts a quest not yet taken; the quest window it brings
+--- up is then accepted (QuestDetail). Returns the quest id, when one was opened.
+function Auto:OpenQuestItems()
+	if not Wanted() or InCombatLockdown() then return end
+	if not (C_Container and C_Container.GetContainerItemQuestInfo and C_Container.UseContainerItem) then return end
+	for bag = 0, (NUM_BAG_SLOTS or 4) do
+		for slot = 1, Call(C_Container.GetContainerNumSlots, bag) or 0 do
+			local ok, info = pcall(C_Container.GetContainerItemQuestInfo, bag, slot)
+			local questID = ok and type(info) == "table" and Readable(info.questID)
+			if type(questID) == "number" and not Readable(info.isActive) and not opened[questID]
+				and not Call(C_QuestLog.IsQuestFlaggedCompleted, questID) and LogHasRoom() then
+				opened[questID] = true
+				Later(function()
+					if not InCombatLockdown() then C_Container.UseContainerItem(bag, slot) end
+				end)
+				return questID
+			end
+		end
 	end
 end
 
@@ -238,4 +267,7 @@ AP:OnLogin(function()
 	AP:On("QUEST_GREETING", function() Auto:Greeting() end)
 	AP:On("MERCHANT_SHOW", function() Auto:MerchantShow() end)
 	AP:On("MERCHANT_CLOSED", function() Auto:MerchantClosed() end)
+	AP:On("BAG_UPDATE_DELAYED", function() Auto:OpenQuestItems() end)
+	-- A book looted in a fight waits for the fight's end.
+	AP:On("PLAYER_REGEN_ENABLED", function() Auto:OpenQuestItems() end)
 end)

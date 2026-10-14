@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.0 — Pathfinder's arrow
+## 0.5.0 — Pathfinder's arrow, and quests done together
 
 - **New: Pathfinder's arrow**, like the Turtle WoW addon's. An arrow on your
   screen turns to point at the place of the step you're on. Under it: what to
@@ -14,6 +14,21 @@
 - It shows with the guide window, so it hides when the guide does (in combat
   or dungeons, if you chose that). Inside dungeons the game gives no position,
   so it has nothing to point at there.
+- **Quests done together.** Where a guide does several things in one place,
+  they show together. At Northshire's kobold camp: the kobolds, the book a
+  kobold drops, and the wolves, each ticking itself.
+- **Your progress, on the step.** A kill or collect step shows a bar for what
+  the quest wants: "Kobold Vermin slain 3 / 10", "Tough Wolf Meat 0 / 8".
+- **The guide stops pointing once you're there.** When you reach a kill area,
+  the map pin and the arrow go away, so they don't pull you to one spot while
+  you fight. If the next thing to do is further off, it points again.
+- **Books that start a quest open by themselves.** Loot one (like the kobold's
+  chewed book) and its quest comes up and is taken, once you're out of combat.
+  The guide ticks the book as soon as it's in your bags.
+- **Level-ups tell your party and guild by themselves**, if you ticked them
+  under *Settings → Extras*. The game doesn't let an addon do an emote without
+  a click, so the emote stays a button on the level-up card.
+- `/apg chattest` also says which of the game's restrictions were on.
 - **After updating, close the game and start it again.** A /reload is not
   enough this time: there is a new file.
 

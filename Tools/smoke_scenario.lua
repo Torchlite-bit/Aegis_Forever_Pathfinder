@@ -307,6 +307,21 @@ Mock.Click(levelCard.buttons[1])
 check(Mock.sent[1] and Mock.sent[1][1]:find("leveled up from 5 to 6") and Mock.sent[1][2] == "EMOTE",
 	"a click sends the emote")
 check(not levelCard:IsShown(), "and the card goes once all it offers is sent")
+-- In a party, with party chat ticked: the party is told at once, after any fight; the emote waits for its click.
+S.inGroup, AP.db.char.levelparty = true, true
+Mock.inCombat = true
+Mock.Fire("PLAYER_LEVEL_UP", 7, 10, 0, 0, 0)
+Mock.Advance(1)
+equal(#Mock.sent, 1, "in a fight, the party waits")
+Mock.inCombat = false
+Mock.Fire("PLAYER_REGEN_ENABLED")
+check(Mock.sent[2] and Mock.sent[2][2] == "PARTY" and Mock.sent[2][1]:find("to 7", 1, true),
+	"after it, the party is told by itself")
+equal(#Mock.blocked, 0, "and nothing the client blocks is tried")
+check(levelCard:IsShown() and levelCard.buttons[1]:GetText():upper() == "EMOTE" and not levelCard.buttons[2]:IsShown(),
+	"the card offers only the emote")
+levelCard:Hide()
+S.inGroup, AP.db.char.levelparty = nil, false
 
 ------------------------------------------------------------------------------------------
 -- The windows show it
@@ -532,6 +547,7 @@ if skin == "pathfinder" then
 	check(Chat("has the mouse there") or Chat("level"), "and then says what has the mouse")
 	-- /apg chattest tries chat with no click; the mock blocks it, as the client did.
 	local blockedBefore = #Mock.blocked
+	Mock.restrictions[5] = 2                   -- the client's Chat restriction on
 	SlashCmdList.AEGISPATHFINDER("chattest")
 	check(Chat("Chat test: in 2 seconds"), "/apg chattest says what it will try")
 	Mock.Advance(2.5)
@@ -539,6 +555,9 @@ if skin == "pathfinder" then
 		and Mock.blocked[blockedBefore + 1][1]:find("(a test)", 1, true), "it tries the emote with no click")
 	Mock.Advance(4)
 	check(Chat("Chat test, Emote: "), "and reports how it went")
+	check(Chat("restrictions on as it sent: Chat"), "and which of the client's restrictions were on as it sent")
+	Mock.restrictions[5] = nil
+	check(AP.Extras.RestrictionsNow() == "none", "none on, it says so")
 	for index = #Mock.blocked, blockedBefore + 1, -1 do table.remove(Mock.blocked, index) end
 	guide.ui.menu:Show()
 	Mock.Click(menuReload)
@@ -644,6 +663,24 @@ Mock.Fire("QUEST_DETAIL", 0)
 Mock.Fire("QUEST_FINISHED")
 Mock.Advance(0.5)
 check(not Mock.accepted, "a quest closed at once is not accepted")
+-- A looted item that starts a quest (the kobold's chewed book) is opened by itself.
+Mock.bagSlot2 = { itemID = 990001, name = "Nibbled-On Book", questID = 91741 }
+Mock.inCombat = true
+Mock.Fire("BAG_UPDATE_DELAYED")
+Mock.Advance(0.5)
+equal(#Mock.used, 0, "a quest's item looted in a fight waits")
+Mock.inCombat = false
+Mock.Fire("PLAYER_REGEN_ENABLED")
+Mock.Advance(0.5)
+equal(Mock.used[1] and Mock.used[1].questID, 91741, "and is opened by itself once the fight ends")
+Mock.Fire("BAG_UPDATE_DELAYED")
+Mock.Advance(0.5)
+equal(#Mock.used, 1, "only once")
+Mock.bagSlot2 = { itemID = 990002, name = "Old Letter", questID = 91999, isActive = true }
+Mock.Fire("BAG_UPDATE_DELAYED")
+Mock.Advance(0.5)
+equal(#Mock.used, 1, "never one whose quest you already have")
+Mock.bagSlot2 = nil
 S.frame = { questID = 500, title = "Auto", choices = { { id = 1, name = "A" }, { id = 2, name = "B" } } }
 Mock.rewardTaken = nil
 Mock.Fire("QUEST_COMPLETE")
@@ -881,6 +918,124 @@ S.faction = "Alliance"
 AP:RefreshObjectivePanel()
 
 ------------------------------------------------------------------------------------------
+-- Steps done together, a COMPLETE step's live progress, and arriving in a kill area
+------------------------------------------------------------------------------------------
+
+do
+	check(not AP:RegisterGuide({ name = "Bad", steps = { { action = "NOTE", title = "x", together = true } } }),
+		"the first step can't be done together with a step before it")
+	-- Map 1429 is 3000 x 2000 yards in the mock. Steps 2, 3, 5 (and 4, for a Mage) are one block.
+	local ok, why = AP:RegisterGuide({ name = "Together Test (1-2)", category = "leveling", faction = "Alliance",
+		minLevel = 1, maxLevel = 2, steps = {
+			{ action = "ACCEPT", qid = 700, title = "Camp", map = 1429, x = 0.3, y = 0.3 },
+			{ action = "COMPLETE", qid = 700, title = "Camp", map = 1429, x = 0.5, y = 0.5, note = "Kill kobolds." },
+			{ action = "ACCEPT", qid = 701, title = "Chewed Book", together = true, fromitem = true, map = 1429, x = 0.51, y = 0.5 },
+			{ action = "NOTE", title = "Mages only", class = { "MAGE" }, together = true },
+			{ action = "COMPLETE", qid = 702, title = "Wolves", together = true, map = 1429, x = 0.7, y = 0.5 },
+			{ action = "TURNIN", qid = 700, title = "Camp", map = 1429, x = 0.3, y = 0.3 },
+		} })
+	check(ok, "a guide with steps done together registers: " .. tostring(why))
+	local tg = AP.guides["Together Test (1-2)"]
+	local arrow, rows = AP.navarrow, guide.ui.rows
+	S.log, S.completed, S.x, S.y, S.facing = {}, {}, 0.3, 0.3, 0
+	AP.db.char.progress, AP.db.char.arrived = {}, nil
+	AP:LoadGuide(tg.name)
+	S.log[1] = { questID = 700, title = "Camp", level = 1,
+		objectives = { { text = "Kobold Vermin slain", numFulfilled = 0, numRequired = 10 } } }
+	S.log[2] = { questID = 702, title = "Wolves", level = 1,
+		objectives = { { text = "Tough Wolf Meat", type = "item", numFulfilled = 0, numRequired = 8 } } }
+	Mock.Fire("QUEST_ACCEPTED", 700)
+	equal((AP:GetCurrentStep()), 2, "the camp's first step")
+	equal(table.concat(AP:GetCurrentBlock(), ","), "2,3,5", "it's a block with the book and the wolves")
+	S.class = "MAGE"
+	equal(#AP:GetCurrentBlock(), 4, "with the Mage's step, for a Mage")
+	S.class = "WARRIOR"
+	AP:RefreshObjectivePanel()
+	check(rows[1]:IsShown() and rows[2]:IsShown() and rows[3]:IsShown() and not (rows[4] and rows[4]:IsShown()),
+		"focus shows the block's three steps")
+	check(not rows[2].band:IsShown() and rows[2].check:IsShown(), "the book is a box to tick, not a band")
+	equal(select(5, rows[2]:GetPoint(1)), -rows[1]:GetHeight(), "each under the one before")
+	check(rows[1].meter and rows[1].meter:IsShown(), "the kobolds' progress shows in a box")
+	equal(rows[1].meter.lines[1].label:GetText(), "Kobold Vermin slain", "what the quest wants")
+	equal(rows[1].meter.lines[1].count:GetText(), "0 / 10", "and how much of it")
+	equal(rows[3].meter.lines[1].count:GetText(), "0 / 8", "the wolves' too")
+	check(rows[1].note:IsShown() and not rows[3].note:IsShown(), "the step you're on has its note; the others on hover")
+	S.log[1].objectives[1].numFulfilled = 3
+	Mock.Fire("QUEST_LOG_UPDATE")
+	Mock.Advance(1)
+	equal(rows[1].meter.lines[1].count:GetText(), "3 / 10", "it counts as you kill")
+	check(math.abs(rows[1].meter.lines[1].bar.ratio - 0.3) < 1e-6, "and the bar fills")
+	-- The book: looted, it ticks; the step you're on stays the kobolds.
+	Mock.bagSlot2 = { itemID = 990003, name = "Chewed Book", questID = 701 }
+	Mock.Fire("BAG_UPDATE_DELAYED")
+	Mock.Advance(1)
+	check(AP:IsStepDone(tg.name, 3) and rows[2].check:GetChecked(), "the book in your bags ticks its box")
+	equal((AP:GetCurrentStep()), 2, "while the kobolds are still to do")
+	Mock.bagSlot2 = nil
+	-- The list: the block without bands, a COMPLETE's line saying how far along it is.
+	AP:ToggleOverviewMode()
+	local listNote
+	for _, row in ipairs(rows) do
+		if row:IsShown() and row.step == 2 then listNote = row.note:GetText() end
+		if row:IsShown() and row.step == 3 then check(not row.band:IsShown(), "the list shows the book without a band") end
+	end
+	equal(listNote, "Kobold Vermin slain - 3/10", "the list says how far along the kobolds are")
+	AP:ToggleOverviewMode()
+
+	-- Arriving: 200 yards off, the camp is marked; 40 yards off, it isn't (the pin and the arrow go).
+	S.x, S.y = 0.5, 0.6
+	AP:GuideChanged()
+	Mock.Update(0.2)
+	check(Mock.waypoint and Mock.waypoint.x == 0.5 and arrow:IsShown(), "on the way, the camp is marked")
+	S.y = 0.52
+	Mock.Advance(1)
+	Mock.Update(0.2)
+	check(Mock.waypoint == nil and not arrow:IsShown(), "in the camp, nothing marks it")
+	equal(AP.db.char.arrived and AP.db.char.arrived.block, 2, "and that is saved for a /reload")
+	AP:GuideChanged()
+	check(Mock.waypoint == nil, "it stays unmarked")
+	-- The kobolds done, the wolves are 600 yards on: marked again, until you get there.
+	S.log[1].objectives[1].numFulfilled = 10
+	Mock.Fire("QUEST_LOG_UPDATE")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 5, "the kobolds done, the wolves are next")
+	check(Mock.waypoint and Mock.waypoint.x == 0.7, "far off, the wolves are marked")
+	Mock.waypoint = nil
+	AP:GuideChanged()
+	Mock.waypoint = { uiMapID = 1429, x = 0.11, y = 0.22 }      -- a pin the player put down
+	S.x, S.y = 0.7, 0.52
+	Mock.Advance(1)
+	equal(Mock.waypoint and Mock.waypoint.x, 0.11, "arriving leaves a pin the player set")
+	Mock.waypoint = nil
+	S.log[2].objectives[1].numFulfilled = 8
+	Mock.Fire("QUEST_LOG_UPDATE")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 6, "the block done, the hand-in")
+	check(Mock.waypoint and Mock.waypoint.x == 0.3, "is marked")
+	equal(AP.db.char.arrived, nil, "and the arrival is forgotten")
+	-- With the arrow switched off, arriving still takes the pin away.
+	AP:StepBack()
+	AP.db.char.arrived = nil
+	S.x, S.y = 0.7, 0.8
+	AP.db.char.navarrow = false
+	AP:GuideChanged()
+	check(Mock.waypoint and Mock.waypoint.x == 0.7, "back in the block, away from the wolves, they're marked")
+	S.y = 0.52
+	Mock.Advance(1)
+	check(Mock.waypoint == nil, "arriving takes the pin away, with the arrow off too")
+	AP.db.char.navarrow = nil
+	-- No position (a dungeon): never counted as arrived.
+	AP.db.char.arrived = nil
+	S.x = nil
+	AP:GuideChanged()
+	Mock.Advance(2)
+	equal(AP.db.char.arrived, nil, "with no position, never arrived")
+	AP:UnloadGuide()
+	S.log, S.completed, S.x, S.y = {}, {}, 0.4, 0.6
+	AP.db.char.progress, AP.db.char.arrived = {}, nil
+end
+
+------------------------------------------------------------------------------------------
 -- Stopping, clearing
 ------------------------------------------------------------------------------------------
 
@@ -985,6 +1140,18 @@ check(Mock.waypoint and Mock.waypoint.uiMapID == 1429 and math.abs(Mock.waypoint
 	"opening Northshire points at Deputy Willem")
 equal(guide.ui.rows[1].bandNote:GetText(), north.steps[1].note, "the first step says who and where")
 AP:UnloadGuide()
+AP:UnloadGuide()
+S.log, S.completed, S.class = {}, {}, "WARRIOR"
+AP.db.char.progress, AP.db.char.arrived = {}, nil
+AP:LoadGuide(NORTH)
+while (AP:GetCurrentStep()) < 8 do AP:StepForward() end
+equal(table.concat(AP:GetCurrentBlock(), ","), "8,9,10", "Northshire's kobold camp: the kobolds, the book and the wolves")
+S.x, S.y = 0.47, 0.365
+Mock.Advance(1)
+Mock.Update(0.2)
+check(Mock.waypoint == nil and not AP.navarrow:IsShown(), "in the camp, the guide stops marking it")
+AP:UnloadGuide()
+AP.db.char.arrived = nil
 equal(PlayThrough("WARLOCK"), StepsFor("WARLOCK"), "a Warlock gets the Warlock's letter and tome")
 equal(PlayThrough("WARRIOR"), StepsFor("WARRIOR"), "a Warrior gets the Warrior's letter, and no Warlock steps")
 check(StepsFor("WARLOCK") > StepsFor("WARRIOR"), "the classes' guides differ")

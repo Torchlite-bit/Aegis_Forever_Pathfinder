@@ -31,6 +31,17 @@ local Compat = AP.Compat
 	is "Scourge"). Everyone else never sees it: it is left out of the current
 	step, the list, the counts and the arrows. Progress stays keyed by the
 	step's index in the guide.
+
+	Steps done together: together = true joins a step to the one before it, so
+	a kill area's quests (and the book a kobold drops) show as one block, each
+	with its live progress, and each still ticks itself. fromitem = true on an
+	ACCEPT says its quest starts from a looted item: the step ticks as soon as
+	that item is in the bags.
+
+	Kill areas: once you are within ARRIVE yards of the place of a block with a
+	COMPLETE, KILL or GRIND step, the pin and Pathfinder's arrow stop marking it
+	(the mobs are all around you). A later step of the block more than NEAR
+	yards away is marked again. The arrival is saved per character.
 ]]
 
 AP.guides = {}
@@ -86,6 +97,9 @@ function AP:RegisterGuide(def)
 		local bad = BadToken(step.class, CLASSES) or BadToken(step.race, RACES)
 		if bad then
 			return false, string.format("%s, step %d: unknown class or race %s", def.name, index, bad)
+		end
+		if step.together and index == 1 then
+			return false, string.format("%s, step 1: together needs a step before it", def.name)
 		end
 	end
 	if not self.guides[def.name] then self.guidelist[#self.guidelist + 1] = def.name end
@@ -206,12 +220,84 @@ function AP:StepBack()
 	if previous then self:SetStepDone(previous, false) end
 end
 
+--[[ Steps done together ]]
+
+-- The first step of the block `index` is in. Blocks are worked out over the whole
+-- guide, so a step for another class can't join an earlier, unrelated block.
+local function BlockHead(guide, index)
+	while index > 1 and guide.steps[index] and guide.steps[index].together do index = index - 1 end
+	return index
+end
+
+--- The block you are on: your steps in it (their indices, in order) and its first
+--- step's index. Nothing past the end of the guide.
+function AP:GetCurrentBlock()
+	local guide = self:GetCurrentGuide()
+	if not guide then return nil end
+	local index, step = self:GetCurrentStep()
+	if not step then return nil end
+	local head, members = BlockHead(guide, index), {}
+	for _, i in ipairs(self:GuideSteps(guide)) do
+		if i >= head and BlockHead(guide, i) == head then members[#members + 1] = i end
+	end
+	return members, head
+end
+
+local AREA = { COMPLETE = true, KILL = true, GRIND = true }
+
+--- Whether a block (indices in `guide`) is a kill or collect area.
+function AP:IsAreaBlock(guide, members)
+	for _, i in ipairs(members or {}) do
+		if AREA[guide.steps[i].action] then return true end
+	end
+	return false
+end
+
+-- "Kobold Vermin slain: 3/10" or "3/10 Kobold Vermin slain" -> "Kobold Vermin slain".
+local function ObjectiveLabel(text)
+	if type(text) ~= "string" then return nil end
+	text = text:gsub("^%s*%d+%s*/%s*%d+%s*", ""):gsub(":?%s*%d+%s*/%s*%d+%s*$", "")
+	return text ~= "" and text or nil
+end
+
+--- A quest's objectives as the log has them now: { { label =, have =, need = } }, or
+--- nil when the quest isn't in the log. `fallback` names an objective with no text.
+function AP:QuestProgress(questID, fallback)
+	if not (questID and C_QuestLog and C_QuestLog.GetQuestObjectives) then return nil end
+	if Compat.Call(C_QuestLog.IsOnQuest, questID) ~= true then return nil end
+	local objectives = Compat.Call(C_QuestLog.GetQuestObjectives, questID)
+	if type(objectives) ~= "table" then return nil end
+	local out = {}
+	for _, objective in ipairs(objectives) do
+		local need = Compat.Readable(objective.numRequired)
+		if type(need) == "number" and need > 0 then
+			out[#out + 1] = { label = ObjectiveLabel(Compat.Readable(objective.text)) or fallback,
+				have = math.min(Compat.Readable(objective.numFulfilled) or 0, need), need = need }
+		end
+	end
+	return out
+end
+
 -- Whether the client already says a step is done.
+-- Whether a bag item starts quest `questID` (a kobold's chewed book). The client says
+-- which quest an item starts, so its name or id needn't be known.
+local function HoldsQuestItem(questID)
+	if not (C_Container and C_Container.GetContainerItemQuestInfo) then return false end
+	for bag = 0, (NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4) do
+		for slot = 1, Compat.Call(C_Container.GetContainerNumSlots, bag) or 0 do
+			local ok, info = pcall(C_Container.GetContainerItemQuestInfo, bag, slot)
+			if ok and type(info) == "table" and Compat.Readable(info.questID) == questID then return true end
+		end
+	end
+	return false
+end
+
 local function Satisfied(step)
 	local qid = step.qid
 	if not qid or not C_QuestLog then return false end
 	if Compat.Call(C_QuestLog.IsQuestFlaggedCompleted, qid) then return true end
 	if step.action == "ACCEPT" then
+		if step.fromitem and HoldsQuestItem(qid) then return true end
 		return Compat.Call(C_QuestLog.IsOnQuest, qid) == true
 	elseif step.action == "COMPLETE" then
 		return Compat.Call(C_QuestLog.ReadyForTurnIn, qid) == true or Compat.Call(C_QuestLog.IsComplete, qid) == true
@@ -234,10 +320,97 @@ end
 
 --- Whoever draws the guide hears about every change here.
 function AP:GuideChanged()
+	self:WatchArrival()
 	local index, step = self:GetCurrentStep()
 	self:PointAt(step, index)
 	if self.RefreshObjectivePanel then self:RefreshObjectivePanel() end
 	if self.RefreshNavArrow then self:RefreshNavArrow() end
+end
+
+--[[ Where a place is from you ]]
+
+-- Both points on one map: the place's, or the first map above it that has you on it.
+local function OneMap(t)
+	local map, tx, ty = t.map, t.x, t.y
+	for _ = 1, 8 do
+		local px, py = Compat.PlayerPositionOn(map)
+		if px then return map, tx, ty, px, py end
+		if not (C_Map and C_Map.GetMapInfo and C_Map.GetMapRectOnMap) then return nil end
+		local ok, info = pcall(C_Map.GetMapInfo, map)
+		local parent = ok and info and Compat.Readable(info.parentMapID)
+		if type(parent) ~= "number" or parent == 0 then return nil end
+		local left, right, top, bottom = Compat.CallAll(C_Map.GetMapRectOnMap, t.map, parent)
+		if type(left) ~= "number" or type(right) ~= "number" or type(top) ~= "number"
+			or type(bottom) ~= "number" then
+			return nil
+		end
+		map, tx, ty = parent, left + t.x * (right - left), top + t.y * (bottom - top)
+	end
+end
+
+--- How far a place ({ map, x, y }) is from you, east and south, in yards (in map
+--- widths when the map's size is unknown: then `sized` is false). Nothing when the
+--- client gives no position for you.
+function AP:OffsetTo(t)
+	local map, tx, ty, px, py = OneMap(t)
+	if not map then return nil end
+	local w, h = Compat.CallAll(C_Map.GetMapWorldSize, map)
+	local sized = type(w) == "number" and type(h) == "number" and w > 0 and h > 0
+	if not sized then w, h = 1, 1 end
+	return (tx - px) * w, (ty - py) * h, sized
+end
+
+-- Yards between two places on one map; nil when they're on different maps or its size is unknown.
+local function Apart(a, b)
+	if a.map ~= b.map then return nil end
+	local w, h = Compat.CallAll(C_Map.GetMapWorldSize, a.map)
+	if type(w) ~= "number" or type(h) ~= "number" or w <= 0 or h <= 0 then return nil end
+	local dx, dy = (a.x - b.x) * w, (a.y - b.y) * h
+	return math.sqrt(dx * dx + dy * dy)
+end
+
+--[[ Arriving in a kill area ]]
+
+local ARRIVE = 60          -- yards: you're in the area
+local NEAR = 100           -- yards: a later step of the block this close is in the same area
+local watch = 0            -- the arrival check's generation; a newer one ends the old
+
+--- Whether the step you are on is in a kill area you have arrived in: nothing marks it.
+function AP:InArrivedArea(step)
+	local saved = self.db and self.db.char.arrived
+	if not (saved and step and step.map and step.x and step.y) then return false end
+	local guide = self:GetCurrentGuide()
+	local _, head = self:GetCurrentBlock()
+	if not (guide and saved.guide == guide.name and saved.block == head) then return false end
+	local yards = Apart(saved, step)
+	return yards ~= nil and yards <= NEAR
+end
+
+--- Check, once a second while it matters, whether you have reached the kill area
+--- the guide is marking. It runs whatever the arrow or pin switches say.
+function AP:WatchArrival()
+	watch = watch + 1
+	local gen, char, guide = watch, self.db.char, self:GetCurrentGuide()
+	local members, head = self:GetCurrentBlock()
+	local saved = char.arrived
+	if saved and not (guide and saved.guide == guide.name and saved.block == head) then
+		char.arrived = nil
+	end
+	if not members or not self:IsAreaBlock(guide, members) then return end
+	local _, step = self:GetCurrentStep()
+	if not (step and step.map and step.x and step.y) or self:InArrivedArea(step) then return end
+	local place = { map = step.map, x = step.x, y = step.y }
+	local function Check(fromTimer)
+		if gen ~= watch then return end
+		local dx, dy, sized = self:OffsetTo(place)
+		if dx and sized and math.sqrt(dx * dx + dy * dy) <= ARRIVE then
+			char.arrived = { guide = guide.name, block = head, map = place.map, x = place.x, y = place.y }
+			if fromTimer then self:GuideChanged() end
+			return
+		end
+		C_Timer.After(1, function() Check(true) end)
+	end
+	Check(false)
 end
 
 --[[ The waypoint: the client's own map pin and arrow (C_Map user waypoints,
@@ -265,7 +438,7 @@ end
 --- Put the step's pin down. `index`: the step's index in the current guide.
 function AP:PointAt(step, index)
 	local char = self.db.char
-	if char.waypoints == false then return ClearOurPin() end
+	if char.waypoints == false or self:InArrivedArea(step) then return ClearOurPin() end
 	if pointed and pointed.step == step then return end
 	if not (step and step.map and step.x and step.y) then return ClearOurPin() end
 	if not (C_Map and C_Map.SetUserWaypoint and UiMapPoint) then return end
@@ -306,14 +479,16 @@ AP:OnLogin(function()
 	AP:On("QUEST_ACCEPTED", OnQuestEvent)
 	AP:On("QUEST_TURNED_IN", OnQuestEvent)
 	AP:On("QUEST_REMOVED", OnQuestEvent)
-	AP:On("QUEST_LOG_UPDATE", function()
-		-- The log changes often; the guide is scanned at most twice a second.
+	-- The log and the bags change often; the guide is scanned at most twice a second.
+	local function QueueScan()
 		if AP.scanQueued or not AP:GetCurrentGuide() then return end
 		AP.scanQueued = true
 		C_Timer.After(0.5, function()
 			AP.scanQueued = nil
 			AP:ScanGuide()
 		end)
-	end)
+	end
+	AP:On("QUEST_LOG_UPDATE", QueueScan)
+	AP:On("BAG_UPDATE_DELAYED", QueueScan)
 	if AP:GetCurrentGuide() then AP:ScanGuide() end
 end)

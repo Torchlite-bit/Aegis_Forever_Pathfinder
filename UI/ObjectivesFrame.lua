@@ -24,6 +24,12 @@ local Theme = AP.Theme
 	become a full-width `.zband` once current or done, red while outstanding and
 	green once satisfied -- with the step's note under the band in focus mode.
 	Only the character's own steps are painted and counted (AP:GuideSteps).
+
+	In focus mode a COMPLETE step shows its quest's live progress in a box
+	under it, as the 1.12 addon's meter did: what the quest wants, "3 / 10",
+	and a bar. Steps done together (a kill area's quests, the book a kobold
+	drops) show as one block: a row for each, the current one's note in full,
+	no bands, each ticking itself.
 ]]
 
 local G = {
@@ -357,13 +363,96 @@ local function SizeRowFonts(row)
 	Theme:SetFont(row.band.label, "body", math.floor(12 * TextScale() + 0.5))
 end
 
-local function PaintRow(row, guide, index, current, focus)
+--[[ The meter: a COMPLETE step's live progress, as the 1.12 addon drew it -- a
+	recessed box, a line for each counted objective: its name, "3 / 10" in the
+	accent, and a 6px bar under them. ]]
+local METER_PAD, METER_LINE, METER_GAP = 8, 22, 8
+-- Where a row's title starts: past the ring and the action glyph.
+local TEXT_LEFT = G.ROWPAD + G.DOTSIZE + 9 + G.ICONSIZE + 9
+
+local function MeterHeight(n)
+	return METER_PAD * 2 + n * METER_LINE + (n - 1) * METER_GAP
+end
+
+local function MeterLine(meter, k)
+	local line = meter.lines[k]
+	if line then return line end
+	line = {}
+	local y = -(METER_PAD + (k - 1) * (METER_LINE + METER_GAP))
+	line.count = meter:CreateFontString(nil, "OVERLAY")
+	Theme:SetFont(line.count, "body2", 12)
+	Theme:TextColor(line.count, "accent")
+	line.count:SetJustifyH("RIGHT")
+	line.count:SetPoint("TOPRIGHT", meter, "TOPRIGHT", -11, y)
+	line.label = meter:CreateFontString(nil, "OVERLAY")
+	Theme:SetFont(line.label, "body", 12)
+	Theme:TextColor(line.label, "textDim")
+	line.label:SetJustifyH("LEFT")
+	line.label:SetWordWrap(false)
+	line.label:SetPoint("TOPLEFT", meter, "TOPLEFT", 11, y)
+	line.label:SetPoint("RIGHT", line.count, "LEFT", -6, 0)
+	line.bar = Theme:ProgressBar(meter, 6)
+	line.bar:SetPoint("TOPLEFT", meter, "TOPLEFT", 11, y - 16)
+	line.bar:SetPoint("RIGHT", meter, "RIGHT", -11, 0)
+	meter.lines[k] = line
+	return line
+end
+
+-- Fill the row's meter from the quest log, under `below`; false (and hidden) with nothing to show.
+local function PaintMeter(row, step, below)
+	local progress = AP:QuestProgress(step.qid, step.title)
+	if not (progress and #progress > 0) then
+		if row.meter then row.meter:Hide() end
+		return false
+	end
+	local meter = row.meter
+	if not meter then
+		meter = CreateFrame("Frame", nil, row)
+		Theme:Inset(meter)
+		meter.lines = {}
+		row.meter = meter
+	end
+	meter:ClearAllPoints()
+	meter:SetPoint("TOPLEFT", below, "BOTTOMLEFT", G.ROWPAD - TEXT_LEFT, -6)
+	meter:SetPoint("RIGHT", row, "RIGHT", -G.ROWPAD, 0)
+	meter:SetHeight(MeterHeight(#progress))
+	for k, objective in ipairs(progress) do
+		local line = MeterLine(meter, k)
+		line.label:SetText(objective.label or "")
+		line.count:SetText(string.format("%d / %d", objective.have, objective.need))
+		line.bar:SetProgress(objective.have / objective.need)
+		line.label:Show()
+		line.count:Show()
+		line.bar:Show()
+	end
+	for k = #progress + 1, #meter.lines do
+		local line = meter.lines[k]
+		line.label:Hide()
+		line.count:Hide()
+		line.bar:Hide()
+	end
+	meter:Show()
+	return true
+end
+
+-- The first unfinished objective, for a COMPLETE step's line in the list: "Kobold Vermin slain - 3/10".
+local function ProgressLine(step)
+	for _, objective in ipairs(AP:QuestProgress(step.qid, step.title) or {}) do
+		if objective.have < objective.need then
+			return string.format("%s - %d/%d", objective.label or step.title, objective.have, objective.need)
+		end
+	end
+end
+
+--- Paint step `index` on `row`. `focus`: the one-step view; `inBlock`: one of several
+--- steps done together, on now.
+local function PaintRow(row, guide, index, current, focus, inBlock)
 	local step = guide.steps[index]
 	row.step, row.data = index, step
 	SizeRowFonts(row)
 	local done = AP:IsStepDone(guide.name, index)
 	local isCurrent = index == current
-	local bandable = (step.action == "ACCEPT" or step.action == "TURNIN") and (done or isCurrent)
+	local bandable = not inBlock and (step.action == "ACCEPT" or step.action == "TURNIN") and (done or isCurrent)
 	row.band:SetShown(bandable)
 	row.band:SetHeight(math.floor(G.ROWHEIGHT * TextScale() + 0.5))
 	for _, region in ipairs({ row.check, row.icon, row.title, row.note }) do region:SetShown(not bandable) end
@@ -383,13 +472,37 @@ local function PaintRow(row, guide, index, current, focus)
 			NOTE = "N", HEARTH = "H", SETHEARTH = "h", FLY = "F", GETFLIGHTPOINT = "f", BUY = "B", BOAT = "b",
 			GRIND = "G", TRAIN = "t", DIE = "D", PET = "P", MAP = "R" })[step.action])
 		row.title:SetText(step.title or step.action)
-		row.note:SetText(step.note or "")
+		local note = step.note or ""
+		if not focus and step.action == "COMPLETE" and (isCurrent or inBlock) then
+			note = ProgressLine(step) or note
+		end
+		-- In a block, only the step you're on has its note in full; the rest have theirs on hover.
+		local noted = not (focus and inBlock and not isCurrent)
+		row.note:SetText(noted and note or "")
+		row.note:SetShown(noted)
 		row.note:SetWordWrap(focus)
 	end
-	row.wash:SetShown(isCurrent)
-	row.bar:SetShown(isCurrent)
+	local metered = false
+	if focus and not bandable and step.action == "COMPLETE" and (isCurrent or inBlock) then
+		metered = PaintMeter(row, step, row.note:IsShown() and row.note:GetText() ~= "" and row.note or row.title)
+	elseif row.meter then
+		row.meter:Hide()
+	end
+	row.metered = metered
+	row.wash:SetShown(isCurrent or inBlock)
+	row.bar:SetShown(isCurrent or inBlock)
 	row:SetAlpha(done and not isCurrent and 0.55 or 1)
 	row:Show()
+end
+
+-- A painted focus row's height: the band and its note, or the title, the note and the meter.
+local function FocusHeight(row, rowH)
+	if row.bandNote:IsShown() then
+		return rowH + 6 + (row.bandNote:GetStringHeight() or 0) + 10
+	end
+	local noteH = row.note:IsShown() and (row.note:GetStringHeight() or 0) or 0
+	local meterH = row.metered and (6 + row.meter:GetHeight()) or 0
+	return math.max(rowH, 31 + noteH + meterH + 10)
 end
 
 --[[ The empty body: no guide to follow, so what to do instead. ]]
@@ -470,6 +583,8 @@ end
 local function PaintDone(row, guide)
 	row.step, row.data = nil, nil
 	SizeRowFonts(row)
+	if row.meter then row.meter:Hide() end
+	row.metered = false
 	row.band:Hide()
 	row.bandNote:Hide()
 	row.check:Hide()
@@ -492,33 +607,43 @@ local function PaintSteps(guide, current, mine)
 	local count = #mine
 	local rowH = math.floor(G.ROWHEIGHT * TextScale() + 0.5)
 	if not overview then
-		-- Focus: the step you are on, its note in full.
-		for i = 2, #rows do rows[i]:Hide() end
-		local row = rows[1] or NewRow(1)
-		row:ClearAllPoints()
-		row:SetPoint("TOPLEFT", ui.body, "TOPLEFT", 0, 0)
-		row:SetPoint("RIGHT", ui.body, "RIGHT", 0, 0)
-		local h
-		if not guide.steps[current] then
-			PaintDone(row, guide)
-			h = math.max(rowH, 31 + (row.note:GetStringHeight() or 0) + 10)
-		else
-			PaintRow(row, guide, current, current, true)
-			if row.bandNote:IsShown() then
-				-- A band, then its note 6px under it.
-				h = rowH + 6 + (row.bandNote:GetStringHeight() or 0) + 10
-			else
-				local noteH = row.note:IsShown() and (row.note:GetStringHeight() or 0) or 0
-				h = math.max(rowH, 31 + noteH + 10)
-			end
-		end
-		row:SetHeight(h)
+		-- Focus: the step you are on, its note in full -- or the steps done with it, one row each.
 		ui.scroll:Hide()
-		return h
+		if not guide.steps[current] then
+			for i = 2, #rows do rows[i]:Hide() end
+			local row = rows[1] or NewRow(1)
+			row:ClearAllPoints()
+			row:SetPoint("TOPLEFT", ui.body, "TOPLEFT", 0, 0)
+			row:SetPoint("RIGHT", ui.body, "RIGHT", 0, 0)
+			PaintDone(row, guide)
+			local h = math.max(rowH, 31 + (row.note:GetStringHeight() or 0) + 10)
+			row:SetHeight(h)
+			return h
+		end
+		local members = AP:GetCurrentBlock()
+		local list = members and #members > 1 and members or { current }
+		local y = 0
+		for i, index in ipairs(list) do
+			local row = rows[i] or NewRow(i)
+			row:ClearAllPoints()
+			row:SetPoint("TOPLEFT", ui.body, "TOPLEFT", 0, -y)
+			row:SetPoint("RIGHT", ui.body, "RIGHT", 0, 0)
+			PaintRow(row, guide, index, current, true, #list > 1)
+			local h = FocusHeight(row, rowH)
+			row:SetHeight(h)
+			y = y + h
+		end
+		for i = #list + 1, #rows do rows[i]:Hide() end
+		return y
 	end
 	-- Overview: the whole list, scrolled by step.
 	local cap = AP:GetPanelCap() - G.CHROME_TOP - G.FOOTER_H
 	local shown = math.min(count, VisibleRows(cap))
+	local inBlock = {}
+	local members = guide.steps[current] and AP:GetCurrentBlock()
+	if members and #members > 1 then
+		for _, index in ipairs(members) do inBlock[index] = true end
+	end
 	offset = math.max(0, math.min(offset, count - shown))
 	for i = 1, shown do
 		local row = rows[i] or NewRow(i)
@@ -526,7 +651,7 @@ local function PaintSteps(guide, current, mine)
 		row:SetPoint("TOPLEFT", ui.body, "TOPLEFT", 0, -(i - 1) * rowH)
 		row:SetPoint("RIGHT", ui.scroll, "LEFT", -4, 0)
 		row:SetHeight(rowH)
-		PaintRow(row, guide, mine[offset + i], current, false)
+		PaintRow(row, guide, mine[offset + i], current, false, inBlock[mine[offset + i]])
 	end
 	for i = shown + 1, #rows do rows[i]:Hide() end
 	ui.scroll:SetShown(count > shown)

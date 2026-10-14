@@ -123,8 +123,10 @@ secret overrides it). Optional variables: `CURSEFORGE_RELEASE_TYPE` (`release`, 
 
 ## Learned the hard way (from the cloud session; don't relearn these)
 
-- **Chat:** `C_ChatInfo.SendChatMessage` works only from a click (a hardware event), so
-  level-up announcements are a card with a button per channel.
+- **Chat:** an EMOTE through `C_ChatInfo.SendChatMessage` works only from a click (a
+  hardware event), even with no addon restriction on; party chat goes out by itself
+  (`/apg chattest`, 2026-10-14). So level-ups tell party/guild at once and the emote is a
+  button on a card.
 - **Reload:** `ReloadUI()` / `C_UI.Reload` is blocked for addons even from a click ("ADDON
   BLOCKED: Reload()"), though its documentation doesn't say so. Only a secure action button
   running the `/reload` macro works. An invisible secure button laid over our own button does

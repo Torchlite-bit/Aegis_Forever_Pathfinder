@@ -51,37 +51,14 @@ end
 
 --[[ The sums ]]
 
--- Both points on one map: the step's, or the first map above it that has you on it.
-local function OneMap(t)
-	local map, tx, ty = t.map, t.x, t.y
-	for _ = 1, 8 do
-		local px, py = Compat.PlayerPositionOn(map)
-		if px then return map, tx, ty, px, py end
-		if not (C_Map and C_Map.GetMapInfo and C_Map.GetMapRectOnMap) then return nil end
-		local ok, info = pcall(C_Map.GetMapInfo, map)
-		local parent = ok and info and Compat.Readable(info.parentMapID)
-		if type(parent) ~= "number" or parent == 0 then return nil end
-		local left, right, top, bottom = Compat.CallAll(C_Map.GetMapRectOnMap, t.map, parent)
-		if type(left) ~= "number" or type(right) ~= "number" or type(top) ~= "number"
-			or type(bottom) ~= "number" then
-			return nil
-		end
-		map, tx, ty = parent, left + t.x * (right - left), top + t.y * (bottom - top)
-	end
-end
-
 --- Where the step's place is from you: the arrow's angle (nil without a facing)
 --- and the yards (nil when the map's size is unknown). Nothing at all when the
---- client gives no position for you.
+--- client gives no position for you. AP:OffsetTo (Core/Guides.lua) measures.
 function AP:NavArrowBearing(t)
 	t = t or target
 	if not t then return nil end
-	local map, tx, ty, px, py = OneMap(t)
-	if not map then return nil end
-	local w, h = Compat.CallAll(C_Map.GetMapWorldSize, map)
-	local sized = type(w) == "number" and type(h) == "number" and w > 0 and h > 0
-	if not sized then w, h = 1, 1 end
-	local dx, dy = (tx - px) * w, (ty - py) * h          -- east, south
+	local dx, dy, sized = self:OffsetTo(t)               -- east, south
+	if not dx then return nil end
 	local yards = sized and math.sqrt(dx * dx + dy * dy) or nil
 	local facing = Compat.Call(GetPlayerFacing)
 	local angle
@@ -160,9 +137,12 @@ end
 function AP:RefreshNavArrow()
 	if not frame then return end
 	local _, step
-	if self:GetCurrentGuide() then _, step = self:GetCurrentStep() end
-	if step and step.map and step.x and step.y then
-		target = { map = step.map, x = step.x, y = step.y, action = step.action }
+	local guide = self:GetCurrentGuide()
+	if guide then _, step = self:GetCurrentStep() end
+	if step and step.map and step.x and step.y and not self:InArrivedArea(step) then
+		-- In a kill area's block every step reads as the area, the book a kobold drops too.
+		local action = self:IsAreaBlock(guide, (self:GetCurrentBlock())) and "COMPLETE" or step.action
+		target = { map = step.map, x = step.x, y = step.y, action = action }
 	else
 		target = nil
 	end
