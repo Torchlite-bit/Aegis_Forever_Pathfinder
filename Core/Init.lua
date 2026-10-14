@@ -17,11 +17,13 @@ local L = AP.L
 AegisPathfinder = AP
 AP.name = addonName
 AP.title = L.TITLE
-AP.version = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version")) or "0.2.4"
+AP.version = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version")) or "0.3.0"
 AP.media = "Interface\\AddOns\\" .. addonName .. "\\media\\"
 
 AP.PROFILE_DEFAULTS = {
-	theme = "pathfinder",
+	-- 0.3.0: a new install starts in Default, the game's own look. The first load writes
+	-- every default into the saved file, so an earlier install keeps the theme it has.
+	theme = "blizzard",
 	windowscale = 1,
 	switchcolours = "theme",
 	objframeopacity = 0.5,

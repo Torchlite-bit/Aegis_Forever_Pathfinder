@@ -72,10 +72,14 @@ def run(skin):
     if skin != "blizzard-plain":
         lua.execute("WOWMOCK.InstallModernArt()")
         lua.execute("WOWMOCK.InstallEncoding()")
-    if skin.startswith("blizzard"):
+    if skin == "blizzard":
+        pass  # A new install: nothing saved, so it starts in Default.
+    elif skin == "blizzard-plain":
         lua.execute('AegisPathfinderDB = { profile = { theme = "blizzard" } }')
     else:
-        # A character 0.1.0 saved, with quest automation written as off.
+        # An earlier install, which saved Pathfinder Green (every load writes the defaults),
+        # and a character 0.1.0 saved, with quest automation written as off.
+        lua.execute('AegisPathfinderDB = { profile = { theme = "pathfinder" } }')
         lua.execute('AegisPathfinderCharDB = { autoquest = false }')
 
     before = set(lua.eval("function() local t = {} for k in pairs(_G) do t[#t + 1] = k end return t end")().values())

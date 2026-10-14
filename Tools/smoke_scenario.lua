@@ -38,6 +38,9 @@ Mock.Fire("PLAYER_ENTERING_WORLD", true, false)
 Mock.Advance(1)
 
 equal(AP.Theme:IsBlizzard(), skin == "blizzard", "the skin follows the saved theme")
+-- The Blizzard run is a new install (nothing saved); the Pathfinder run an earlier one.
+equal(AP.db.profile.theme, skin == "blizzard" and "blizzard" or "pathfinder",
+	"a new install starts in Default, and an earlier one keeps the theme it saved")
 check(Chat("loaded"), "the load line is said")
 local guide = AP.objectiveframe
 check(guide and guide:IsShown(), "the guide window opens at login")

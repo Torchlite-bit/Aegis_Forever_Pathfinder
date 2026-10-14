@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — Default first
+
+- **New installs start in Default**, the game's own look. If you already use
+  the addon, you keep the theme you have. The Pathfinder themes are under
+  *Settings → Appearance → Theme*.
+
+---
+
 ## 0.2.4 — your name stays with you
 
 - **Fixed: your character's name could go out with your data.** Some quests
