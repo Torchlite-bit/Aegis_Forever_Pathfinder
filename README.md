@@ -1,4 +1,8 @@
-# Aegis: Pathfinder — Forever (v0.2.0)
+<p align="center">
+  <img src="docs/images/pathfinder-forever-logo.png" alt="The Aegis: Pathfinder (Forever) logo: a gold compass star on a shield, with silver wings, inside a blue rune ring" width="220">
+</p>
+
+# Aegis: Pathfinder — Forever
 
 **The Pathfinder leveling guide, ported to WoW: Forever. No guides yet, so for
 now it collects the data to write them.**
