@@ -40,11 +40,12 @@ browser; published copy at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq).
 | #12 | **0.2.3**: text drawn in our fonts is set again after login and as the ≡ menu opens (labels were blank after a skin switch); `/apg mouse` names what has the mouse; window stacking keeps each frame above its parent (the Default X took clicks on only a few pixels) |
 | #13 | **0.2.4**: the player's name, which the game writes into some quest text, is saved as `<name>` (and cleaned from saved data at login and before sending); the intake strips the credit name and its first word; the stored data was cleaned |
 | #15 | **0.3.0**: a new install starts in Default (an earlier install keeps its saved theme) |
+| #16 | Each new version's changelog posts itself to Discord through a webhook (`DISCORD_WEBHOOK_URL`), once |
 
-**Released:** v0.2.4 on GitHub, and on CurseForge as file 9167948 (project
+**Released:** v0.3.0 on GitHub, and on CurseForge as file 9168527 (project
 1742985, game version id 17053, found by itself; uploaded as a *Release*, since
 `CURSEFORGE_RELEASE_TYPE` isn't set). Earlier files: v0.2.0 9166895, v0.2.1
-9167387, v0.2.3 9167632. The `CF_API_KEY` repository variable (a duplicate of
+9167387, v0.2.3 9167632, v0.2.4 9167948. The `CF_API_KEY` repository variable (a duplicate of
 the secret) was deleted on 2026-10-13.
 
 **Working locally:** from 2026-10-13, sessions run on the owner's PC, in the
@@ -63,7 +64,11 @@ clone, following `.claude/CLAUDE.md` (#10).
    (switch the editor to Markdown). Mark the uploaded files Beta if wanted, and set
    the repository variable `CURSEFORGE_RELEASE_TYPE` = `beta` for later uploads.
 3. **Tester post** for Discord: in the Launch Kit.
-4. **Discord restructure:** the plan is in the Launch Kit; the owner applies it.
+4. **Discord:** changelogs post themselves to #announcements once the
+   `DISCORD_WEBHOOK_URL` secret is set (`Tools/discord_post.py`, from #16). The
+   restructure (the plan is in the Launch Kit), a backup of the old posts and
+   carrying the latest download and changelog posts over are done by a bot from the
+   separate private repo `Aegis_Discord_Tools`, run from the owner's PC.
 5. **Decided (0.3.0):** a new install starts on Default; an earlier install keeps
    the theme it saved.
 6. **Still to confirm in game** (from the 0.2.0 list): quest auto accept and

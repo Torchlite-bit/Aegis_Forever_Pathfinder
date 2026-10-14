@@ -42,8 +42,8 @@ update `docs/project-status.md` in the same pull request.
    the mouse: for anything about clicks, secure buttons or combat, tell the owner exactly what
    to test in game.
 3. **Test**, and fix any failure before going on:
-   `python Tools/smoke_test.py` and `python Tools/test_ingest.py` (they need `lupa` 2.8, the
-   version CI pins).
+   `python Tools/smoke_test.py`, `python Tools/test_ingest.py` and `python Tools/test_release.py`
+   (the first two need `lupa` 2.8, the version CI pins).
 4. **Install**: mirror the clone into the installed copy, leaving out exactly what
    `Tools/package.py` leaves out of the release zip: its `LEFT_OUT` folders (`Tools`, `docs`,
    `data`, `dist`), dot files and folders (`.git`, `.github`, `.claude`, …), `__pycache__`, and
@@ -80,7 +80,9 @@ Every push and pull request runs the tests. On `main` only, it then builds the z
 (`Tools/package.py`: the addon folder alone, plus the version's CHANGELOG entry as notes) and
 publishes the GitHub release `v<TOC version>`, or refreshes it if that version exists. A new
 version is also uploaded to CurseForge once (`Tools/curseforge_upload.py`); the release keeps a
-`curseforge.txt` marker so the same version is never uploaded twice. Needs the `CF_API_KEY`
+`curseforge.txt` marker so the same version is never uploaded twice. Then the version's
+changelog is posted to Discord once (`Tools/discord_post.py`, a `discord.txt` marker), when the
+`DISCORD_WEBHOOK_URL` secret is set; the optional `DISCORD_PING_ROLE_ID` variable mentions a role. Needs the `CF_API_KEY`
 repository **secret**; the project id comes from the TOC (a `CURSEFORGE_PROJECT_ID` variable or
 secret overrides it). Optional variables: `CURSEFORGE_RELEASE_TYPE` (`release`, `beta`,
 `alpha`), `CURSEFORGE_GAME_VERSION_IDS` (found by itself so far: 17053).
