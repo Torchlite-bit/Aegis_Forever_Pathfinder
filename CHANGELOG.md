@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 — Forever blue
+
+- **The logo is blue** for WoW: Forever: the minimap button, the guide's first page
+  and the guide browser show the Aegis: Pathfinder logo with a blue rune ring and
+  lettering, to tell it apart from the Turtle WoW addon's red one.
+
+---
 ## 0.3.0 — Default first
 
 - **New installs start in Default**, the game's own look. If you already use
