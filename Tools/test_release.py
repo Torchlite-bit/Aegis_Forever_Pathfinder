@@ -59,6 +59,12 @@ class DiscordPost(unittest.TestCase):
         self.assertIn("New installs start in Default", embed["description"])
         self.assertEqual(body["allowed_mentions"], {"parse": []}, "an @everyone in the notes pings no one")
         self.assertNotIn("content", body)
+        self.assertEqual(embed["thumbnail"], {"url": discord_post.LOGO_URL})
+        self.assertEqual(body["avatar_url"], discord_post.LOGO_URL)
+        self.assertEqual(discord_post.LOGO_URL,
+                         "https://raw.githubusercontent.com/Torchlite-bit/Aegis_Pathfinder_Forever/main/.github/discord-logo.png")
+        self.assertTrue(os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                                    ".github", "discord-logo.png")), "the logo is in the repository")
         with open(os.path.join(self.folder, "discord.txt"), encoding="utf-8") as handle:
             self.assertIn("999", handle.read())
         self.assertNotIn(HOOK, out, "the address is never printed")
