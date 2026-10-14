@@ -64,8 +64,10 @@ clone, following `.claude/CLAUDE.md` (#10).
    (switch the editor to Markdown). Mark the uploaded files Beta if wanted, and set
    the repository variable `CURSEFORGE_RELEASE_TYPE` = `beta` for later uploads.
 3. **Tester post** for Discord: in the Launch Kit.
-4. **Discord:** changelogs post themselves to #announcements once the
-   `DISCORD_WEBHOOK_URL` secret is set (`Tools/discord_post.py`, from #16). The
+4. **Discord:** changelogs post themselves into this addon's post in the **releases**
+   forum once the `DISCORD_WEBHOOK_URL` secret (the forum's webhook) and the
+   `DISCORD_THREAD_ID` variable (the post) are set (`Tools/discord_post.py`, #16, #17).
+   The Instance Journal does the same in its own post. The
    restructure (the plan is in the Launch Kit), a backup of the old posts and
    carrying the latest download and changelog posts over are done by a bot from the
    separate private repo `Aegis_Discord_Tools`, run from the owner's PC.

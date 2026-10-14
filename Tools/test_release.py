@@ -50,7 +50,8 @@ class DiscordPost(unittest.TestCase):
         with mock.patch.object(discord_post, "post", return_value="999") as post:
             code, out = self.run_main({"DISCORD_WEBHOOK_URL": HOOK})
         self.assertEqual(code, 0)
-        webhook, body = post.call_args[0]
+        webhook, body, thread_id = post.call_args[0]
+        self.assertIsNone(thread_id)
         self.assertEqual(webhook, HOOK)
         embed = body["embeds"][0]
         self.assertEqual(embed["title"], "Aegis: Pathfinder (Forever) v0.3.0")
@@ -61,6 +62,13 @@ class DiscordPost(unittest.TestCase):
         with open(os.path.join(self.folder, "discord.txt"), encoding="utf-8") as handle:
             self.assertIn("999", handle.read())
         self.assertNotIn(HOOK, out, "the address is never printed")
+
+    def test_into_the_addons_forum_post(self):
+        with mock.patch.object(discord_post, "post", return_value="1") as post:
+            self.run_main({"DISCORD_WEBHOOK_URL": HOOK, "DISCORD_THREAD_ID": "555"})
+        self.assertEqual(post.call_args[0][2], "555")
+        with self.assertRaises(SystemExit):
+            self.run_main({"DISCORD_WEBHOOK_URL": HOOK, "DISCORD_THREAD_ID": "post 555"})
 
     def test_a_role_is_mentioned_only_when_named(self):
         body = discord_post.message("0.3.0", "notes", role_id="4242")
@@ -99,6 +107,9 @@ class DiscordPost(unittest.TestCase):
         with mock.patch("urllib.request.urlopen", fake_urlopen):
             self.assertEqual(discord_post.post(HOOK, {"embeds": []}), "77")
         self.assertTrue(seen["url"].endswith("?wait=true"))
+        with mock.patch("urllib.request.urlopen", fake_urlopen):
+            discord_post.post(HOOK, {"embeds": []}, "555")
+        self.assertTrue(seen["url"].endswith("?wait=true&thread_id=555"))
         self.assertTrue(seen["agent"].startswith("DiscordBot ("))
 
 

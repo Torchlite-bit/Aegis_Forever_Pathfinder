@@ -94,6 +94,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: v${{ steps.build.outputs.version }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_THREAD_ID: ${{ vars.DISCORD_THREAD_ID }}
           DISCORD_PING_ROLE_ID: ${{ vars.DISCORD_PING_ROLE_ID }}
           RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.build.outputs.version }}
         run: |

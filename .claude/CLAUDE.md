@@ -82,7 +82,9 @@ publishes the GitHub release `v<TOC version>`, or refreshes it if that version e
 version is also uploaded to CurseForge once (`Tools/curseforge_upload.py`); the release keeps a
 `curseforge.txt` marker so the same version is never uploaded twice. Then the version's
 changelog is posted to Discord once (`Tools/discord_post.py`, a `discord.txt` marker), when the
-`DISCORD_WEBHOOK_URL` secret is set; the optional `DISCORD_PING_ROLE_ID` variable mentions a role. Needs the `CF_API_KEY`
+`DISCORD_WEBHOOK_URL` secret is set (the releases forum's webhook); the `DISCORD_THREAD_ID`
+variable names this addon's post in that forum, and the optional `DISCORD_PING_ROLE_ID` mentions
+a role. The Instance Journal posts the same way, into its own post. Needs the `CF_API_KEY`
 repository **secret**; the project id comes from the TOC (a `CURSEFORGE_PROJECT_ID` variable or
 secret overrides it). Optional variables: `CURSEFORGE_RELEASE_TYPE` (`release`, `beta`,
 `alpha`), `CURSEFORGE_GAME_VERSION_IDS` (found by itself so far: 17053).
