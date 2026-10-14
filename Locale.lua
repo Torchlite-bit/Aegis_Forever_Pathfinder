@@ -36,7 +36,7 @@ L.ARROW_PHRASES = {
 	HEARTH = "Return to the inn", SETHEARTH = "Return to the inn",
 	FLY = "Head to the flight master", GETFLIGHTPOINT = "Head to the flight master",
 	BOAT = "Head to the dock", BUY = "Head to the vendor", USE = "Head to where you use the item",
-	TRAIN = "Head to the trainer",
+	TRAIN = "Head to the trainer", LOOT = "Go and pick it up",
 }
 L.ARROW_PHRASE = "Follow the path"
 L.ARROW_YARDS = "%d yd"

@@ -412,8 +412,7 @@ function AP:RefreshGuideBrowser()
 			if guide then
 				row.label:SetText(guide.name)
 				row.levels:SetText(GuideLevels(guide))
-				row.badge:SetKind(guide.category == "dungeons" and "dg" or guide.category == "class" and "cl"
-					or guide.category == "professions" and "pf" or "xp")
+				row.badge:SetKind(self:BadgeKind(guide.category))
 				Theme:TextColor(row.label, view.selected == guide and "accent" or "text")
 				row:Show()
 			else

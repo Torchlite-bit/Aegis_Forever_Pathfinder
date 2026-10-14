@@ -582,6 +582,13 @@ if skin == "pathfinder" then
 	check(Chat("Rest the mouse"), "/apg mouse explains itself")
 	Mock.Advance(3.5)
 	check(Chat("has the mouse there") or Chat("level"), "and then says what has the mouse")
+	-- /apg flights saves the maps and flight masters, for writing routes.
+	SlashCmdList.AEGISPATHFINDER("flights")
+	local atlas = AegisPathfinderDB.atlas
+	check(atlas and atlas.maps[1429] and atlas.maps[1429].name == "Elwynn Forest", "/apg flights saves the maps")
+	check(atlas.flights[1429] and atlas.flights[1429][1].name == "Stormwind, Elwynn" and atlas.flights[1429][1].x == 0.66,
+		"and the flight masters on them")
+	check(Chat("Saved 3 maps and 1 flight masters %(from map 947%)"), "and says so, the world map found from where you stand")
 	-- /apg chattest tries chat with no click; the mock blocks it, as the client did.
 	local blockedBefore = #Mock.blocked
 	Mock.restrictions[5] = 2                   -- the client's Chat restriction on
@@ -1110,6 +1117,56 @@ do
 	AP:UnloadGuide()
 	S.log, S.completed, S.x, S.y = {}, {}, 0.4, 0.6
 	AP.db.char.progress, AP.db.char.arrived = {}, nil
+end
+
+------------------------------------------------------------------------------------------
+-- Pick-ups and travel: an item in the bags, a trip's end, a flight point learned
+------------------------------------------------------------------------------------------
+
+do
+	local ok, why = AP:RegisterGuide({ name = "Travel Test (1-2)", category = "leveling", faction = "Alliance",
+		minLevel = 1, maxLevel = 2, steps = {
+			{ action = "RUN", title = "The road", map = 1429, x = 0.5, y = 0.5 },
+			{ action = "LOOT", title = "Test Tome", item = "Test Tome", map = 1429, x = 0.6, y = 0.5 },
+			{ action = "GETFLIGHTPOINT", title = "Stormwind", node = 2, map = 1429, x = 0.66, y = 0.62 },
+			{ action = "FLY", title = "Fly back", map = 1429, x = 0.3, y = 0.3 },
+			{ action = "NOTE", title = "The end" },
+		} })
+	check(ok, "a guide with pick-ups and trips registers: " .. tostring(why))
+	local tg = AP.guides["Travel Test (1-2)"]
+	local arrow = AP.navarrow
+	S.x, S.y, S.facing = 0.5, 0.6, 0
+	AP.db.char.progress = {}
+	Mock.taxiUndiscovered = true
+	AP:LoadGuide(tg.name)
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 1, "200 yards off, the trip isn't done")
+	check(AP:TicksItself(tg.steps[1]) and AP:TicksItself(tg.steps[2]) and AP:TicksItself(tg.steps[3])
+		and not AP:TicksItself(tg.steps[5]), "trips, pick-ups and flight points tick themselves; a note doesn't")
+	S.y = 0.505
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 2, "there, it ticks by itself")
+	S.x, S.y = 0.6, 0.6
+	Mock.Update(0.2)
+	equal(arrow.instruction:GetText(), "Go and pick it up", "the arrow says to pick it up")
+	check(not AP:InArrivedArea(tg.steps[2]), "a pick-up isn't a kill area: it stays marked")
+	Mock.bagSlot2 = { itemID = 990010, name = "Test Tome" }
+	Mock.Fire("BAG_UPDATE_DELAYED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 3, "the book in your bags ticks it")
+	Mock.bagSlot2 = nil
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 3, "a flight point not learned yet waits")
+	Mock.taxiUndiscovered = nil
+	Mock.Fire("TAXIMAP_OPENED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 4, "once learned, it ticks")
+	S.x, S.y = 0.31, 0.31
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 5, "landing by the flight master ticks the flight")
+	AP:UnloadGuide()
+	S.x, S.y = 0.4, 0.6
+	AP.db.char.progress = {}
 end
 
 ------------------------------------------------------------------------------------------

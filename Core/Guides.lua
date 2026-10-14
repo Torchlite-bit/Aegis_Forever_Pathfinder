@@ -38,6 +38,12 @@ local Compat = AP.Compat
 	ACCEPT says its quest starts from a looted item: the step ticks as soon as
 	that item is in the bags.
 
+	Pick-ups and travel: a LOOT step with item = "<name>" ticks once an item of
+	that name is in the bags (a library book). A RUN, FLY, BOAT, HEARTH or MAP
+	step ticks once you are within TRAVEL_ARRIVE yards of its place. A
+	GETFLIGHTPOINT step with node = <taxi node id> ticks once the client says
+	you know that flight point.
+
 	Kill areas: once you are within ARRIVE yards of the place of a block with a
 	COMPLETE, KILL or GRIND step, the pin and Pathfinder's arrow stop marking it
 	(the mobs are all around you). A later step of the block more than NEAR
@@ -52,6 +58,7 @@ AP.CATEGORIES = {
 	{ key = "dungeons", label = "Dungeons", glyph = "medal" },
 	{ key = "class", label = "Class Quests", glyph = "star" },
 	{ key = "professions", label = "Professions", glyph = "gear" },
+	{ key = "collections", label = "Collections", glyph = "book" },
 	{ key = "favorites", label = "Favorites", glyph = "heart" },
 }
 
@@ -81,6 +88,13 @@ local function Allowed(list, token)
 		if value == token then return true end
 	end
 	return false
+end
+
+local BADGE_KIND = { dungeons = "dg", class = "cl", professions = "pf", collections = "co" }
+
+--- The badge a guide of `category` wears: "xp" for leveling.
+function AP:BadgeKind(category)
+	return BADGE_KIND[category] or "xp"
 end
 
 --- Add a guide. Returns true, or false and why not.
@@ -292,7 +306,50 @@ local function HoldsQuestItem(questID)
 	return false
 end
 
+-- Whether an item named `name` is in the bags.
+local function HoldsItemNamed(name)
+	if not (C_Container and C_Container.GetContainerItemInfo) then return false end
+	for bag = 0, (NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4) do
+		for slot = 1, Compat.Call(C_Container.GetContainerNumSlots, bag) or 0 do
+			local ok, info = pcall(C_Container.GetContainerItemInfo, bag, slot)
+			if ok and type(info) == "table" then
+				local held = Compat.Readable(info.itemName)
+				if type(held) ~= "string" then
+					local link = Compat.Readable(info.hyperlink)
+					held = type(link) == "string" and link:match("%[(.-)%]") or nil
+				end
+				if held == name then return true end
+			end
+		end
+	end
+	return false
+end
+
+-- Whether the client says you know flight point `node` on `map`.
+local function KnowsFlightPoint(map, node)
+	if not (C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap and map) then return false end
+	local ok, nodes = pcall(C_TaxiMap.GetTaxiNodesForMap, map)
+	if not (ok and type(nodes) == "table") then return false end
+	for _, info in ipairs(nodes) do
+		if Compat.Readable(info.nodeID) == node then return Compat.Readable(info.isUndiscovered) == false end
+	end
+	return false
+end
+
+local TRAVEL = { RUN = true, FLY = true, BOAT = true, HEARTH = true, MAP = true }
+
+--- Whether a step ticks without a click: a quest step with its quest, a pick-up
+--- with its item, a flight point with its node, a trip with its place.
+function AP:TicksItself(step)
+	if step.item then return true end
+	if step.action == "GETFLIGHTPOINT" then return step.node ~= nil end
+	if TRAVEL[step.action] then return step.map ~= nil end
+	return step.qid ~= nil and (step.action == "ACCEPT" or step.action == "TURNIN" or step.action == "COMPLETE")
+end
+
 local function Satisfied(step)
+	if step.item and HoldsItemNamed(step.item) then return true end
+	if step.action == "GETFLIGHTPOINT" and step.node and KnowsFlightPoint(step.map, step.node) then return true end
 	local qid = step.qid
 	if not qid or not C_QuestLog then return false end
 	if Compat.Call(C_QuestLog.IsQuestFlaggedCompleted, qid) then return true end
@@ -372,6 +429,7 @@ end
 --[[ Arriving in a kill area ]]
 
 local ARRIVE = 60          -- yards: you're in the area
+local TRAVEL_ARRIVE = 40   -- yards: a trip's end (a flight master, an inn, a dock) reached
 local NEAR = 100           -- yards: a later step of the block this close is in the same area
 local watch = 0            -- the arrival check's generation; a newer one ends the old
 
@@ -396,8 +454,21 @@ function AP:WatchArrival()
 	if saved and not (guide and saved.guide == guide.name and saved.block == head) then
 		char.arrived = nil
 	end
+	local index, step = self:GetCurrentStep()
+	-- A trip ticks once you get there.
+	if step and TRAVEL[step.action] and step.map and step.x and step.y then
+		local trip = { map = step.map, x = step.x, y = step.y }
+		local function Arrived(fromTimer)
+			if gen ~= watch then return end
+			local dx, dy, sized = self:OffsetTo(trip)
+			if dx and sized and math.sqrt(dx * dx + dy * dy) <= TRAVEL_ARRIVE then
+				return self:SetStepDone(index, true)
+			end
+			C_Timer.After(1, function() Arrived(true) end)
+		end
+		return Arrived(false)
+	end
 	if not members or not self:IsAreaBlock(guide, members) then return end
-	local _, step = self:GetCurrentStep()
 	if not (step and step.map and step.x and step.y) or self:InArrivedArea(step) then return end
 	local place = { map = step.map, x = step.x, y = step.y }
 	local function Check(fromTimer)
@@ -490,5 +561,6 @@ AP:OnLogin(function()
 	end
 	AP:On("QUEST_LOG_UPDATE", QueueScan)
 	AP:On("BAG_UPDATE_DELAYED", QueueScan)
+	AP:On("TAXIMAP_OPENED", QueueScan)
 	if AP:GetCurrentGuide() then AP:ScanGuide() end
 end)
