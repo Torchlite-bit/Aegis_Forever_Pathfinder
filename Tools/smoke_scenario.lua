@@ -368,6 +368,18 @@ for _, button in ipairs(options.navButtons) do
 end
 AP:RefreshConfigPanel()
 
+-- The theme's note is set after the page is laid out: it has room for the longest of them
+-- (an empty note was given one line, and Default's three ran into Switches).
+do
+	local note = options.themeNote
+	check(note and note.reserved, "the theme note keeps its room")
+	for _, def in ipairs(AP.Theme.THEMES) do
+		note:SetText(def.note or "")
+		check(note:GetStringHeight() <= note.reserved, "the note for " .. def.label .. " fits its room")
+	end
+	AP:RefreshConfigPanel()
+	equal(options.navTitle ~= nil, skin == "blizzard", "the Blizzard skin names the list, with no header strip")
+end
 equal(AP.Theme.themeByKey.blizzard.label, "Default", "Blizzard's look is called Default")
 equal(AP.Theme.themeByKey.capybara.label, "Pathfinder Tan", "and the colour themes are Pathfinder's")
 -- Only the game's own code can reload: every Reload asks through one dialog whose Reload

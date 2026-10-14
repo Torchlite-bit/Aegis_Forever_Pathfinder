@@ -1,11 +1,14 @@
 # Changelog
 
-## 0.3.2 — greys sold again
+## 0.3.2 — greys sold again, tidier settings
 
 - **Fixed: grey items weren't sold** at a vendor, even with *Sell greys* switched
   on under *Settings → Automation*. WoW: Forever opens the vendor's window a
   moment after it tells addons, and the addon gave up when the window wasn't
   there yet. It now waits for it. Repairs already worked.
+- **Fixed, in Default:** the theme's description on *Settings → Appearance* ran
+  into "Switches" below it, and a dark strip sat above "Pathfinder" in the
+  settings list. The description has room for its longest text, and the strip is gone.
 
 ---
 ## 0.3.1 — Forever blue
