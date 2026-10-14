@@ -237,6 +237,7 @@ function AP:GuideChanged()
 	local index, step = self:GetCurrentStep()
 	self:PointAt(step, index)
 	if self.RefreshObjectivePanel then self:RefreshObjectivePanel() end
+	if self.RefreshNavArrow then self:RefreshNavArrow() end
 end
 
 --[[ The waypoint: the client's own map pin and arrow (C_Map user waypoints,

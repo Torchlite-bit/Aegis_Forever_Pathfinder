@@ -40,7 +40,8 @@ Switching to or from it reloads the interface.
 human starting area, from Deputy Willem to Goldshire, written from the data
 players sent in. Open it from
 the guide browser (**+** on the guide window). Each step ticks itself as you
-accept, finish and hand in quests, and puts the game's own pin and arrow on the
+accept, finish and hand in quests. **Pathfinder's arrow** points the way, with
+how far it is and about how long it takes, and the game's own pin and arrow go on the
 next place. Class quests show only for your class. The other zones' guides
 will be written the same way ([docs/guide-api.md](docs/guide-api.md)), so
 please keep **collecting data**.
@@ -164,6 +165,7 @@ installs it in the right place and keeps it up to date.
 | `/apg next`, `/apg prev` | Step forward or back (with a guide) |
 | `/apg resetpanels` | Put every window back where it opens |
 | `/apg minimapbutton` | Show or hide the minimap button |
+| `/apg arrow` | Show or hide Pathfinder's arrow |
 
 There's deliberately no `/aegis`: that's the Aegis Instance Journal's.
 Both windows have key bindings under *Key Bindings → AddOns*. The settings

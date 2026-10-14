@@ -39,7 +39,7 @@ otherwise just missing. The smoke test checks every shipped guide registers.
 | `qid` | The quest id. `ACCEPT`, `COMPLETE` and `TURNIN` steps with one tick themselves |
 | `title` | What the step row shows |
 | `note` | The line under it, in full in focus mode (under the band, for a current ACCEPT or TURNIN); on hover in the list |
-| `map`, `x`, `y` | A uiMapID and 0–1 coordinates: the step's map pin and arrow, set once as the step comes up |
+| `map`, `x`, `y` | A uiMapID and 0–1 coordinates: where Pathfinder's arrow points, and the game's own map pin and arrow, set once as the step comes up |
 | `class` | Optional. Only these classes see the step: a list of `UnitClass`'s second return (`WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID`) |
 | `unverified` | Optional. `true` on a step not confirmed by the collected data yet (written from another source, like the other classes' letters from the Turtle guide). The smoke test only warns when the data disagrees with it |
 | `race` | Optional. Only these races see the step: `UnitRace`'s second return (`Human`, `Dwarf`, `NightElf`, `Gnome`, `Orc`, `Scourge`, `Tauren`, `Troll`). With both, both must match |

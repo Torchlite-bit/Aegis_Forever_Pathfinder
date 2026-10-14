@@ -105,6 +105,12 @@ clone, following `.claude/CLAUDE.md` (#10).
    links (91758, 96627) came from it too and may be wrong. `merged.json` is made by
    `Tools/ingest.py`: don't edit it by hand; read old `abandoned` counts and chains
    with this in mind.
+9. **Pathfinder's arrow (0.5.0): to check in game.** Face north with the place
+   north: the arrow points up. Turn left: it swings right. Its yards against the
+   game's own waypoint distance. Dragging, and its place after a /reload. Goldshire
+   and Stormwind (maps other than Elwynn's). `/dump GetPlayerFacing()` facing north
+   should be about 0 and facing west about 1.57. With default windows, open
+   Settings > Navigation: the arrow (top middle) stays clear of it while you size it.
 
 ## Learned the hard way (don't relearn these)
 
@@ -116,6 +122,17 @@ clone, following `.claude/CLAUDE.md` (#10).
   XP as the second's reward frame opens, and links no chain when two or more went
   to that NPC. The offer in progress (`pendingDetail`) is still one slot.
 
+- **Pathfinder's arrow (0.5.0, `UI/NavArrow.lua`):** map x grows east and y south;
+  `C_Map.GetMapWorldSize` gives yards; `GetPlayerFacing` is radians from north,
+  turning left adds; `Texture:SetRotation` turns the art left for a positive angle
+  (the client's SuperTrackedFrame passes `-angle` to point clockwise), and the art
+  points up at rest. So the arrow's angle is `atan2(-dx, -dy) - facing`, with dx/dy
+  the step's offset in yards (east, south). A step on a map the player isn't on is
+  lifted onto the first parent map that has them (`GetMapRectOnMap`). The frame
+  stays shown while there is a step (a hidden frame gets no OnUpdate) and only its
+  parts hide when the client gives no position (dungeons), with the mouse let through.
+  It is MEDIUM strata, parented to UIParent, not a registered window, and shows with
+  the guide window. Never read `GetRotation` back (it can be secret).
 - **Guides (0.4.0):** a step for one class or race (`class`/`race`) is left out
   for everyone else everywhere: current step, list, counts, arrows, `/apg next`
   and `prev` (`AP:GuideSteps`, `StepForward`, `StepBack`). A current ACCEPT or

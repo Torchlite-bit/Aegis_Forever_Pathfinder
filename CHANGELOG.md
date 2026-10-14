@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.5.0 — Pathfinder's arrow
+
+- **New: Pathfinder's arrow**, like the Turtle WoW addon's. An arrow on your
+  screen turns to point at the place of the step you're on. Under it: what to
+  do there ("Head to the quest giver"), how many yards away it is, and about
+  how long it takes to run there. Close by, it says "You're here".
+- **Drag it anywhere.** It keeps its place. *Reset windows* puts it back.
+  *Lock window* on the guide holds the arrow too, and lets clicks go through it.
+- **Settings → Navigation** has a switch for it, its size, and "Put the arrow
+  back". `/apg arrow` switches it on and off too. The game's own map pin keeps
+  its own switch, and both can be on.
+- It shows with the guide window, so it hides when the guide does (in combat
+  or dungeons, if you chose that). Inside dungeons the game gives no position,
+  so it has nothing to point at there.
+- **After updating, close the game and start it again.** A /reload is not
+  enough this time: there is a new file.
+
+---
+
 ## 0.4.1 — two quests handed in at once
 
 - **Fixed, in the collected data:** when you hand in two quests less than a

@@ -12,7 +12,7 @@ local Theme = AP.Theme
 	  Data Collection  starting and stopping, Automatically run, submit, clear
 	  Appearance       theme (the Blizzard skin among them), switch colours,
 	                   window scale, the guide window, hiding it, the minimap
-	  Navigation       the step's map pin and arrow
+	  Navigation       the game's map pin for the step, and Pathfinder's arrow
 	  Automation       quests, selling greys, repairing
 	  Extras           chat lines, reputation detail, level-up announcements
 	  Maintenance      windows, rescanning
@@ -274,7 +274,8 @@ function Pages.Appearance(k)
 		function(v) AP:SetStepTextSize(v) end)
 	k.toggle("Show the progress bar", function() return Profile().showprogress ~= false end,
 		function(on) AP:SetGuideProgressShown(on) end)
-	k.note("Lock window and Transparency are in the menu at the guide's top left too.")
+	k.note("Lock window and Transparency are in the menu at the guide's top left too. Lock window holds "
+		.. "Pathfinder's arrow too, and lets clicks go through it.")
 	k.space(SECTION_GAP)
 	k.section("Hiding the guide")
 	k.switch("profile", "hideininstance", "Hide the guide in dungeons and raids")
@@ -294,6 +295,16 @@ function Pages.Navigation(k)
 		function() AP:GuideChanged() end, { defaultOn = true })
 	k.note("Forever's map pins and the arrow at the top of the screen, the ones you place by "
 		.. "ctrl-clicking the map. Pathfinder sets one for each step that says where, as the step comes up.")
+	k.space(SECTION_GAP)
+	k.section("Pathfinder's arrow")
+	k.switch("char", "navarrow", "Show Pathfinder's arrow", function() AP:RefreshNavArrow() end,
+		{ defaultOn = true })
+	k.note("An arrow on your screen that turns to point at the step's place. Under it: what to do "
+		.. "there, how far it is, and about how long it takes to run. Drag it to move it; Lock window "
+		.. "holds it too. It shows with the guide window. /apg arrow switches it too.")
+	k.slider("Arrow size", 0.6, 1.6, 0.05, function() return Profile().navarrowscale or 1 end,
+		function(v) AP:SetNavArrowScale(v) end, SUB_INDENT, function() return not AP:IsNavArrowOn() end)
+	k.buttons({ { "Put the arrow back", 160, function() AP:ResetNavArrowPosition() end } })
 	k.space(SECTION_GAP)
 end
 

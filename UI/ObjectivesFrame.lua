@@ -87,6 +87,7 @@ function AP:SetGuideLocked(on)
 	if not frame then return end
 	frame.locked = on and true or nil
 	frame.grip:SetShown(not on)
+	if self.RefreshNavArrow then self:RefreshNavArrow() end
 	if self.RefreshConfigPanel then self:RefreshConfigPanel() end
 end
 
@@ -859,4 +860,5 @@ function AP:ResetWindowLayout()
 	if self.ResetCollectorPosition then self:ResetCollectorPosition() end
 	if self.ResetConfigPosition then self:ResetConfigPosition() end
 	if self.ResetBrowserPosition then self:ResetBrowserPosition() end
+	if self.ResetNavArrowPosition then self:ResetNavArrowPosition() end
 end

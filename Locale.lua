@@ -13,7 +13,8 @@ L.SHORT = "Pathfinder"
 L.LOADED = "%s v%s loaded -- /apg"
 L.SLASH_HELP = "/apg -- the guide window. /apg collect -- data collection. /apg config -- settings. "
 	.. "/apg browser -- the guide browser. /apg submit -- send us what was collected. /apg resetpanels -- "
-	.. "put the windows back. /apg minimapbutton -- show or hide the minimap button."
+	.. "put the windows back. /apg minimapbutton -- show or hide the minimap button. /apg arrow -- show "
+	.. "or hide Pathfinder's arrow."
 
 -- The guide window with no guide in it.
 L.NO_GUIDES_TITLE = "No guides yet"
@@ -27,6 +28,21 @@ L.PICK_GUIDE_BODY = "Click + above to open the guide browser and pick a guide. T
 	.. "normally would."
 L.GUIDE_DONE = "Guide done"
 L.GUIDE_DONE_NOTE = "You finished %s. Click + above to pick another guide."
+-- Pathfinder's arrow (UI/NavArrow.lua): what to do at the step's place, by its action.
+L.ARROW_PHRASES = {
+	ACCEPT = "Head to the quest giver", TURNIN = "Head to the quest giver",
+	COMPLETE = "Continue to the objective", KILL = "Continue to the objective", GRIND = "Continue to the objective",
+	RUN = "Follow the path ahead", MAP = "Follow the path ahead",
+	HEARTH = "Return to the inn", SETHEARTH = "Return to the inn",
+	FLY = "Head to the flight master", GETFLIGHTPOINT = "Head to the flight master",
+	BOAT = "Head to the dock", BUY = "Head to the vendor", USE = "Head to where you use the item",
+	TRAIN = "Head to the trainer",
+}
+L.ARROW_PHRASE = "Follow the path"
+L.ARROW_YARDS = "%d yd"
+L.ARROW_HERE = "You're here"
+L.ARROW_ON = "Pathfinder's arrow is on. It shows with the guide window."
+L.ARROW_OFF = "Pathfinder's arrow is off. /apg arrow brings it back."
 L.START_COLLECTING = "Start collecting data"
 L.STOP_COLLECTING = "Stop collecting data"
 L.OPEN_COLLECTOR = "Data collection"
