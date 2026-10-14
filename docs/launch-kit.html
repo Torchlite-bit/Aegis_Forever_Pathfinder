@@ -86,28 +86,28 @@ button.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Aegis: Pathfinder · WoW: Forever · v0.2.4 · 0.3.0 next</div>
+  <div class="eyebrow">Aegis: Pathfinder · WoW: Forever · v0.3.0</div>
   <h1>Pathfinder Forever Launch Kit</h1>
-  <p class="lede">Everything for taking Pathfinder (Forever) from your test build to players: what's waiting on you, working locally, the CurseForge page, the tester post, and a plan to calm the Discord down.</p>
+  <p class="lede">Everything for taking Pathfinder (Forever) from your test build to players: what's waiting on you, working locally, the CurseForge page, the tester post, and the Discord's new layout.</p>
 
   <nav class="bar" aria-label="Sections">
-    <a href="#now">Waiting on you</a><a href="#pc">Working locally</a><a href="#testers">Tester post</a><a href="#curse">CurseForge</a><a href="#discord">Discord plan</a>
+    <a href="#now">Waiting on you</a><a href="#pc">Working locally</a><a href="#testers">Tester post</a><a href="#curse">CurseForge</a><a href="#discord">Discord</a>
   </nav>
 
   <section id="now">
     <h2>Waiting on you</h2>
     <p>Nothing reaches GitHub's main branch, players or CurseForge until you merge it.</p>
     <div class="status">
-      <div class="chip"><span class="pill done">Live</span><b>v0.2.4 on GitHub and CurseForge</b><span>CurseForge file 9167948 (project 1742985), uploaded as a Release. Every merge with a new version uploads by itself.</span></div>
+      <div class="chip"><span class="pill done">Live</span><b>v0.3.0 on GitHub and CurseForge</b><span>CurseForge file 9168527 (project 1742985), uploaded as a Release. Every merge with a new version uploads by itself. New installs start in Default.</span></div>
       <div class="chip"><span class="pill done">Done</span><b>Reload that reloads</b><span>0.2.1 to 0.2.3, tested in game: Reload works from all three places, the menu's labels show, and the Default X closes.</span></div>
       <div class="chip"><span class="pill done">Done</span><b>Your name stays with you</b><span>0.2.4: where a quest says your character's name, the addon saves <code>&lt;name&gt;</code> instead.</span></div>
-      <div class="chip"><span class="pill wait">Pull request #15</span><b>0.3.0: Default first</b><span>A new install starts in Default, the game's own look. Players who have the addon keep their theme.</span></div>
+      <div class="chip"><span class="pill done">Done</span><b>The Discord, restructured</b><span>13 October 2026, by the Aegis Tools bot: shared forums, a releases forum, #downloads, and 43 old channels in ARCHIVE with their history.</span></div>
     </div>
     <ol class="steps">
-      <li><b>Merge <a href="https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/pull/15" target="_blank" rel="noopener">pull request #15</a>.</b><p>That publishes v0.3.0 on GitHub and uploads it to CurseForge.</p></li>
+      <li><b>Changelogs to Discord:</b> give the releases forum a webhook and add its address as the secret <code>DISCORD_WEBHOOK_URL</code> in both Forever repositories (the post ids are already set), then merge <a href="https://github.com/Torchlite-bit/Aegis_Forever_Instance_Journal/pull/14" target="_blank" rel="noopener">the Instance Journal's pull request #14</a>.</li>
       <li><b>Paste the new description</b> on the CurseForge page (below), and mark the file Beta there if you'd rather.</li>
       <li><b>Post the tester message</b> on Discord (below).</li>
-      <li><b>Restructure the Discord</b> when you have an evening (the plan is at the end).</li>
+      <li><b>Finish the Discord</b>: the last few steps are at the end.</li>
     </ol>
   </section>
 
@@ -255,52 +255,52 @@ A port of **Aegis: Pathfinder**, which descends from TourGuide (Tekkub), Vanilla
   </section>
 
   <section id="discord">
-    <h2>A calmer Discord</h2>
-    <p>Each addon has its own category of five or six channels, so every new addon or Forever port adds another five. The plan: shared channels, tagged by addon and by client, and let people choose what they see.</p>
+    <h2>The Discord, as it is now</h2>
+    <p>Restructured on 13 October 2026. Every addon shares one set of channels, tagged by addon and by client, so a new addon or Forever port adds a role, a tag and a post, never a category. Nothing was deleted: the old channels are in ARCHIVE with their history, and every invite still works.</p>
     <div class="compare">
-      <div><b>~57</b><span>channels today, with Class Chat</span></div>
-      <div><b>14</b><span>channels after, plus a collapsed archive</span></div>
-      <div><b>7</b><span>what a new member sees</span></div>
-      <div><b>0</b><span>new channels for a Forever port</span></div>
+      <div><b>~57</b><span>channels before, with Class Chat</span></div>
+      <div><b>18</b><span>channels now, plus ARCHIVE</span></div>
+      <div><b>43</b><span>old channels in ARCHIVE, history kept</span></div>
+      <div><b>0</b><span>new channels for a new addon or port</span></div>
     </div>
 
     <div class="cat"><h4>Server info · read-only</h4>
-      <div class="chan"><div class="n">#start-here<em>renamed #rules</em></div><div class="d">Welcome, rules, ToS, useful links, support, and an addon directory: one message per addon with what it is, which client, and its GitHub and CurseForge links.<small>Replaces #welcome, #rules, #useful-links, #support-the-projects, #aegis-tos and all six download channels.</small></div></div>
-      <div class="chan"><div class="n">#announcements<em>announcement</em></div><div class="d">News: new addons, big updates, server changes. Ping addon roles, not @everyone.</div></div>
-      <div class="chan"><div class="n">releases<em>forum</em></div><div class="d">One post per addon; each new version's changelog arrives there as a reply, posted by that addon's release workflow through the forum's webhook. Members follow the posts they care about. Only staff and the webhook post.<small>Replaces all six changelog channels. First: Pathfinder (Forever) and Instance Journal (Forever).</small><div class="tags"><i>Turtle WoW</i><i>WoW: Forever</i></div></div></div>
+      <div class="chan"><div class="n">#welcome</div><div class="d">Where the main invite (discord.gg/Hr66t25vE7) lands: the welcome post, the Terms of Service, and the addon directory.</div></div>
+      <div class="chan"><div class="n">#rules</div><div class="d">Unchanged.</div></div>
+      <div class="chan"><div class="n">#useful-links</div><div class="d">Unchanged.</div></div>
+      <div class="chan"><div class="n">#support-the-projects</div><div class="d">Unchanged.</div></div>
+      <div class="chan"><div class="n">#announcements</div><div class="d">News: new addons, big updates, server changes. Moved here from Notifications.</div></div>
+      <div class="chan"><div class="n">releases<em>forum</em></div><div class="d">One post per addon: its download post, pictures and newest changelog, carried over with their first dates. Each new version's changelog arrives as a reply, posted by the addon's release workflow. Only staff and the webhook post.<small>Replaces the six download and six changelog channels.</small><div class="tags"><i>Turtle WoW</i><i>WoW: Forever</i></div></div></div>
     </div>
     <div class="cat"><h4>Community</h4>
-      <div class="chan"><div class="n">#general-chat</div><div class="d">One chat for every addon and client; longer topics go in a thread.<small>Replaces the six addon "general" channels.</small></div></div>
+      <div class="chan"><div class="n">#general-chat</div><div class="d">One chat for every addon and client. Discord's join messages go here now.<small>Replaces the six addon "general" channels.</small></div></div>
       <div class="chan"><div class="n">#off-topic</div><div class="d">Unchanged.</div></div>
-      <div class="chan"><div class="n">class-chat<em>forum</em></div><div class="d">One post per topic, filtered by class.<small>Replaces the Class Chat category.</small><div class="tags"><i>Warrior</i><i>Paladin</i><i>Hunter</i><i>Rogue</i><i>Priest</i><i>Shaman</i><i>Mage</i><i>Warlock</i><i>Druid</i><i>Turtle WoW</i><i>WoW: Forever</i></div></div></div>
+      <div class="chan"><div class="n">class-chat<em>forum</em></div><div class="d">One post per topic, filtered by class. Shown to the Class discussion role.<small>Replaces the Class Chat category.</small><div class="tags"><i>Warrior</i><i>Paladin</i><i>Hunter</i><i>Rogue</i><i>Priest</i><i>Shaman</i><i>Mage</i><i>Warlock</i><i>Druid</i><i>Turtle WoW</i><i>WoW: Forever</i></div></div></div>
     </div>
-    <div class="cat"><h4>Aegis addons · renamed Support</h4>
-      <div class="chan"><div class="n">help-and-bugs<em>forum</em></div><div class="d">Every bug, Lua error and question. Tags required; status tags only staff can set. Pinned "Read first": addon and client tags, version, the Lua error text, steps.<small>Rename your busiest bug forum so its posts stay; replaces the other bug forums and #troubleshooting.</small><div class="tags"><i>Pathfinder (TWoW)</i><i>Pathfinder (Forever)</i><i>Instance Journal</i><i>SBA</i><i>Exchange</i><i>Courier</i><i>RallyPower</i><i>Turtle WoW</i><i>WoW: Forever</i><i>Bug</i><i>Lua error</i><i>Question</i><i>Need info</i><i>Fixed</i></div></div></div>
-      <div class="chan"><div class="n">suggestions<em>forum</em></div><div class="d">One idea per post; 👍 to vote.<small>Rename discord-suggestions; replaces the six suggestion forums.</small><div class="tags"><i>each addon</i><i>Discord server</i><i>Turtle WoW</i><i>WoW: Forever</i><i>Planned</i><i>Done</i><i>Declined</i></div></div></div>
-      <div class="chan"><div class="n">share-and-submit<em>forum</em></div><div class="d">Data files, recorder data, SBA profiles, screenshots. A maintainer tags a post Imported and closes it, so open posts are the to-do list.<small>Replaces #recorder-data, #addons-profiles and #screenshots. Check first that no tool reads #recorder-data; if one does, keep it open for now.</small></div></div>
-      <div class="chan"><div class="n">#testing<em>Tester role</em></div><div class="d">One thread per test program, with the build link and what to test at the top. Bugs still go in help-and-bugs so none get lost in chat.<small>Renamed #volunteer.</small></div></div>
+    <div class="cat"><h4>Aegis addons · was Support</h4>
+      <div class="chan"><div class="n">#downloads<em>read-only</em></div><div class="d">The welcome and the addon directory, as a point of reference: every addon, its clients, and a link to its releases post.</div></div>
+      <div class="chan"><div class="n">#testing<em>Tester role</em></div><div class="d">Only the Tester role sees it. One thread per test program.</div></div>
+      <div class="chan"><div class="n">suggestions<em>forum</em></div><div class="d">One idea per post; 👍 to vote. Status tags only staff can set.<small>SBA's suggestions forum renamed, its 18 posts tagged SBA; replaces the other suggestion forums.</small><div class="tags"><i>each addon</i><i>Discord server</i><i>Turtle WoW</i><i>WoW: Forever</i><i>Planned</i><i>Done</i><i>Declined</i></div></div></div>
+      <div class="chan"><div class="n">help-and-bugs<em>forum</em></div><div class="d">Every bug, Lua error and question. A tag is required; Need info and Fixed only staff can set. Pinned "Read first".<small>SBA's bug forum renamed, its 16 posts tagged SBA; replaces the other bug forums and #troubleshooting.</small><div class="tags"><i>Pathfinder (TWoW)</i><i>Pathfinder (Forever)</i><i>Instance Journal</i><i>SBA</i><i>Exchange</i><i>Courier</i><i>RallyPower</i><i>Turtle WoW</i><i>WoW: Forever</i><i>Bug</i><i>Lua error</i><i>Question</i><i>Need info</i><i>Fixed</i></div></div></div>
+      <div class="chan"><div class="n">share-and-submit<em>forum</em></div><div class="d">Data files, recorder data, profiles, screenshots. A maintainer tags a post Imported once it's in.<small>Replaces #recorder-data, #addons-profiles and #screenshots.</small></div></div>
     </div>
     <div class="cat"><h4>Unchanged</h4>
-      <div class="chan"><div class="n">Moderators' Lounge</div><div class="d">#moderators-chat, #community-updates and the Moderators voice channel. #aegis-protection can move in here if only staff need it.</div></div>
-      <div class="chan"><div class="n">ARCHIVE<em>collapsed</em></div><div class="d">The 46 retired channels, read-only, history kept. Replies allowed in open threads for 30 days, then visible only to the Archive role.</div></div>
+      <div class="chan"><div class="n">Moderators' Lounge</div><div class="d">#moderators-chat, #community-updates and the Moderators voice channel. #aegis-protection stays where it is.</div></div>
+      <div class="chan"><div class="n">ARCHIVE</div><div class="d">The 43 retired channels, read-only, each with a pinned note saying where to go now. The class channels stay hidden, as they were. #aegis-tos is here; its text is in #welcome.</div></div>
     </div>
 
-    <h3>Roles, from Discord's Onboarding questions</h3>
-    <p><b>Which client?</b> Turtle WoW, WoW: Forever, or both. <b>Which addons?</b> One role per addon. A Forever port is its own addon with its own role: Pathfinder (TWoW) and Pathfinder (Forever) are two. <b>Anything else?</b> Tester (shows #testing), Class discussion, or the old channels (Archive). Give <b>Aegis Dev</b> by hand to maintainers, so they can tag, close and pin in the forums.</p>
-    <p><b>A new addon or Forever port</b> is then a role, a tag in the shared forums, a post in releases, a #testing thread and a directory entry: no new channels.</p>
+    <h3>Roles</h3>
+    <p>Made, but nobody has them yet: <b>Turtle WoW</b> and <b>WoW: Forever</b>; one per addon: <b>Pathfinder (TWoW)</b>, <b>Pathfinder (Forever)</b>, <b>Instance Journal</b>, <b>SBA</b>, <b>Exchange</b>, <b>Courier</b>, <b>RallyPower</b>; <b>Tester</b> (shows #testing), <b>Class discussion</b> (shows class-chat), <b>Archive</b>, and <b>Aegis Dev</b> for maintainers (tag, close and pin in the forums). A Forever port is its own addon with its own role.</p>
 
-    <h3>One evening, in order</h3>
+    <h3>Still to do</h3>
     <ol class="steps">
-      <li><b>Check invites</b> (<i>Server Settings → Invites</i>): deleting a channel kills its invites, so archive old channels; don't delete them.</li>
-      <li><b>Make the roles</b> and the ARCHIVE category (everyone: view, no new messages).</li>
-      <li><b>Rename to keep history:</b> #rules → #start-here, SUPPORT → AEGIS ADDONS, #volunteer → #testing (Tester only), your busiest bug forum → help-and-bugs, discord-suggestions → suggestions.</li>
-      <li><b>Set up the forums:</b> tags, "Read first" posts, 👍 default reaction on suggestions. Create share-and-submit, class-chat and releases (one post per addon; give it a webhook for the release workflows).</li>
-      <li><b>Fill #start-here</b> with the ordered messages and the addon directory; make it read-only.</li>
-      <li><b>Retire the old channels:</b> pin one line in each ("Archived. Chat: #general-chat · Bugs: help-and-bugs · …"), then drag it into ARCHIVE and sync permissions.</li>
-      <li><b>Turn on Onboarding:</b> the 7 default channels, the three questions, and the Server Guide welcome and to-dos.</li>
-      <li><b>Check as a new member</b> (<i>View Server As Role</i>), then announce the new layout and where to pick roles.</li>
+      <li><b>Delete the copies</b> the carry-over left in #welcome, and the "Archived" notes in #rules, #useful-links and #support-the-projects. Deleting is yours to do: hold Shift and click 🗑️.</li>
+      <li><b>Switch Administrator off</b> for the Aegis Tools role (<i>Server Settings → Roles</i>).</li>
+      <li><b>Remove the empty categories</b> by hand when you're happy: the six old addon categories, Class Chat and Notifications.</li>
+      <li><b>Give out roles:</b> Tester to your testers, Aegis Dev to maintainers. For people to pick their own, Discord's Onboarding needs a <b>Community</b> server first (<i>Server Settings → Enable Community</i>); then add the three questions: which client, which addons, and Tester / Class discussion / Archive.</li>
+      <li><b>New invite links</b> to the new channels, if you'd like them; the old ones still work.</li>
     </ol>
-    <div class="note"><p><b>Why I can't move the channels for you:</b> there's no Discord connector, and this session's network blocks discord.com. To let a future session do it, you'd add a Discord bot token as an environment secret and allow <code>discord.com</code> in the environment's network settings. A bot with Manage Channels and Manage Roles could then make every change above.</p></div>
+    <div class="note"><p><b>How it was done:</b> by the Aegis Tools bot, from the private repository <code>Aegis_Discord_Tools</code> on your PC. Every change was a written plan first (<code>restructure plan</code>, <code>carry-over plan</code>), applied only after your yes, and logged. To add an addon later: add it to the directory in <code>carryover.py</code>, run <code>directory --yes</code>, and give it a post in releases.</p></div>
   </section>
 </div>
 

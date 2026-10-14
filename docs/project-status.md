@@ -67,10 +67,12 @@ clone, following `.claude/CLAUDE.md` (#10).
 4. **Discord:** changelogs post themselves into this addon's post in the **releases**
    forum once the `DISCORD_WEBHOOK_URL` secret (the forum's webhook) and the
    `DISCORD_THREAD_ID` variable (the post) are set (`Tools/discord_post.py`, #16, #17).
-   The Instance Journal does the same in its own post. The
-   restructure (the plan is in the Launch Kit), a backup of the old posts and
-   carrying the latest download and changelog posts over are done by a bot from the
-   separate private repo `Aegis_Discord_Tools`, run from the owner's PC.
+   The Instance Journal does the same in its own post. The thread variables are
+   set (Pathfinder's post: 1559762159624519801); the webhook secret is the owner's.
+   The server was **restructured on 2026-10-13** by the Aegis Tools bot (private
+   repo `Aegis_Discord_Tools`, run from the owner's PC): see the Launch Kit's
+   Discord section for the layout and what's left (deleting the carry-over's
+   copies, Administrator off, empty categories, Community and Onboarding).
 5. **Decided (0.3.0):** a new install starts on Default; an earlier install keeps
    the theme it saved.
 6. **Still to confirm in game** (from the 0.2.0 list): quest auto accept and
