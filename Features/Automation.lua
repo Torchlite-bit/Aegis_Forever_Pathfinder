@@ -137,8 +137,13 @@ local function GameSellsJunk()
 	return C_MerchantFrame and C_MerchantFrame.SellAllJunkItems and C_MerchantFrame.GetNumJunkItems and true or false
 end
 
+--[[ Whether a vendor is open, from MERCHANT_SHOW to MERCHANT_CLOSED. Forever opens its
+	merchant window through the player interaction manager (its own event), so at
+	MERCHANT_SHOW the window may not be shown yet: asking the window missed every sale. ]]
+local merchantOpen = false
+
 function Auto:SellGreys(quiet)
-	if not (MerchantFrame and MerchantFrame:IsVisible()) then return 0 end
+	if not (merchantOpen or (MerchantFrame and MerchantFrame:IsVisible())) then return 0 end
 	local count
 	if GameSellsJunk() then
 		count = Call(C_MerchantFrame.GetNumJunkItems) or 0
@@ -200,10 +205,20 @@ function Auto:Repair()
 end
 
 function Auto:MerchantShow()
+	merchantOpen = true
 	self:PlaceButton()
 	if IsShiftKeyDown() then return end
 	self:Repair()
-	if Char().autosell then self:SellGreys(true) end
+	-- A frame later, once the merchant window is up and the game has counted the junk.
+	if Char().autosell then
+		C_Timer.After(0, function()
+			if merchantOpen then Auto:SellGreys(true) end
+		end)
+	end
+end
+
+function Auto:MerchantClosed()
+	merchantOpen = false
 end
 
 AP:OnLogin(function()
@@ -213,4 +228,5 @@ AP:OnLogin(function()
 	AP:On("GOSSIP_SHOW", function() Auto:Gossip() end)
 	AP:On("QUEST_GREETING", function() Auto:Greeting() end)
 	AP:On("MERCHANT_SHOW", function() Auto:MerchantShow() end)
+	AP:On("MERCHANT_CLOSED", function() Auto:MerchantClosed() end)
 end)

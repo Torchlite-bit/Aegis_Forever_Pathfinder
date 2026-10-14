@@ -83,10 +83,16 @@ local function Kit(holder)
 		kit.place(h, 20, HEADER_GAP)
 		return h
 	end
-	function kit.note(text)
+	--- Fine print. `reserve`: for text set later, the longest it can be, so the page leaves room
+	--- for it (an empty note was laid out as one line, and a longer one ran into what followed).
+	function kit.note(text, reserve)
 		local fs = Theme:FinePrint(body, BODY_W)
+		fs:SetText(reserve or text or "")
+		kit.place(fs, function(w)
+			fs.reserved = TextHeight(fs, w)
+			return fs.reserved
+		end, 0)
 		fs:SetText(text or "")
-		kit.place(fs, function(w) return TextHeight(fs, w) end, 0)
 		return fs
 	end
 	function kit.refresh(fn) kit.refreshers[#kit.refreshers + 1] = fn end
@@ -226,7 +232,7 @@ function Pages.DataCollection(k)
 		{ L.COLLECTOR_CLEAR, 120, function() AP:ConfirmClearData() end } })
 	k.note("Submit data packs it into a share code to paste in our GitHub form, where it is added by "
 		.. "itself, or in our Discord. Your name goes in the contributors list (About).")
-	local stats = k.note("")
+	local stats = k.note("", string.format(L.COLLECTOR_STATS, "9,999 quests", 9999, "99 levels") .. " so far.")
 	k.refresh(function()
 		stats:SetText(C:StatsText() .. " so far.")
 	end)
@@ -239,7 +245,12 @@ function Pages.Appearance(k)
 	local items = {}
 	for _, def in ipairs(Theme.THEMES) do items[#items + 1] = { value = def.key, label = def.label } end
 	k.dropdown(nil, items, function() return AP:GetTheme() end, function(key) AP:SetTheme(key) end)
-	local themeNote = k.note("")
+	local longest = ""
+	for _, def in ipairs(Theme.THEMES) do
+		if #(def.note or "") > #longest then longest = def.note end
+	end
+	local themeNote = k.note("", longest)
+	k.themeNote = themeNote
 	k.refresh(function()
 		local def = Theme.themeByKey[AP:GetTheme()]
 		themeNote:SetText(def and def.note or "")
@@ -420,6 +431,7 @@ local function Build()
 	kit.finish()
 	for _, p in ipairs(kit.pages) do p:SetHeight(p.contentHeight) end
 	frame.pages, frame.refreshers, frame.dropdowns = kit.pages, kit.refreshers, kit.dropdowns
+	frame.themeNote = kit.themeNote
 	frame.scroll, frame.holder, frame.scrollbar = scroll, holder, bar
 	frame.visible = HEIGHT - CHROME_TOP - PAD_TOP - PAD_BOTTOM - m.bottom
 
@@ -439,17 +451,15 @@ local function Build()
 	navEdge:SetWidth(1)
 	Theme:Tint(navEdge, "text", 0.08)
 	frame.navButtons = {}
-	-- In the Blizzard skin, the pages sit under a category bar, as the game's own Options list has them.
+	-- In the Blizzard skin, the pages sit under the addon's name, as the game's own Options list has
+	-- them. (Its category-header art, Options_CategoryHeader_1, drew on Forever as a dark strip above
+	-- the name, so the name stands alone.)
 	local listTop = 8
 	if Theme:IsBlizzard() then
-		local bar = nav:CreateTexture(nil, "ARTWORK")
-		bar:SetPoint("TOPLEFT", nav, "TOPLEFT", 2, -6)
-		bar:SetPoint("TOPRIGHT", nav, "TOPRIGHT", -4, -6)
-		bar:SetHeight(30)
-		if not Theme.Modern.Atlas(bar, "Options_CategoryHeader_1") then bar:SetColorTexture(1, 0.82, 0, 0.12) end
 		local name = nav:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-		name:SetPoint("LEFT", bar, "LEFT", 16, 0)
+		name:SetPoint("TOPLEFT", nav, "TOPLEFT", 18, -14)
 		name:SetText(AP.L.SHORT)
+		frame.navTitle = name
 		listTop = 42
 	end
 	for i, p in ipairs(frame.pages) do

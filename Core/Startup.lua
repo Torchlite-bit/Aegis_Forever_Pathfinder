@@ -58,6 +58,7 @@ local COMMANDS = {
 		AP:Print((AP.Collector:IsRunning() and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. ": " .. AP.Collector:StatsText())
 	end,
 	mouse = function() AP:ReportMouse() end,
+	chattest = function() AP.Extras:ChatTest() end,
 	help = function() AP:Print(L.SLASH_HELP) end,
 }
 

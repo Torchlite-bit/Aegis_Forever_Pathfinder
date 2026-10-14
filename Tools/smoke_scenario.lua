@@ -241,6 +241,12 @@ equal(#Mock.blocked, 0, "and nothing is tried without a click")
 local levelCard = _G.AegisPathfinderLevelUp
 check(levelCard and levelCard:IsShown(), "a level-up shows the card")
 check(levelCard.title:GetText():find("Level 6", 1, true), "naming the level")
+if skin == "blizzard" then
+	local _, _, _, _, titleY = levelCard.title:GetPoint(1)
+	local _, noteTo, _, _, noteY = levelCard.note:GetPoint(1)
+	check(titleY >= -5 and noteTo == levelCard and noteY <= -AP.Theme.metrics.header,
+		"Default: the title sits in the top bar, the note below it")
+end
 Mock.chatLockdown = true
 Mock.Click(levelCard.buttons[1])
 equal(#Mock.sent, 0, "chat lockdown: the click sends nothing")
@@ -368,6 +374,18 @@ for _, button in ipairs(options.navButtons) do
 end
 AP:RefreshConfigPanel()
 
+-- The theme's note is set after the page is laid out: it has room for the longest of them
+-- (an empty note was given one line, and Default's three ran into Switches).
+do
+	local note = options.themeNote
+	check(note and note.reserved, "the theme note keeps its room")
+	for _, def in ipairs(AP.Theme.THEMES) do
+		note:SetText(def.note or "")
+		check(note:GetStringHeight() <= note.reserved, "the note for " .. def.label .. " fits its room")
+	end
+	AP:RefreshConfigPanel()
+	equal(options.navTitle ~= nil, skin == "blizzard", "the Blizzard skin names the list, with no header strip")
+end
 equal(AP.Theme.themeByKey.blizzard.label, "Default", "Blizzard's look is called Default")
 equal(AP.Theme.themeByKey.capybara.label, "Pathfinder Tan", "and the colour themes are Pathfinder's")
 -- Only the game's own code can reload: every Reload asks through one dialog whose Reload
@@ -454,6 +472,16 @@ if skin == "pathfinder" then
 	check(Chat("Rest the mouse"), "/apg mouse explains itself")
 	Mock.Advance(3.5)
 	check(Chat("has the mouse there") or Chat("level"), "and then says what has the mouse")
+	-- /apg chattest tries chat with no click; the mock blocks it, as the client did.
+	local blockedBefore = #Mock.blocked
+	SlashCmdList.AEGISPATHFINDER("chattest")
+	check(Chat("Chat test: in 2 seconds"), "/apg chattest says what it will try")
+	Mock.Advance(2.5)
+	check(Mock.blocked[blockedBefore + 1] and Mock.blocked[blockedBefore + 1][2] == "EMOTE"
+		and Mock.blocked[blockedBefore + 1][1]:find("(a test)", 1, true), "it tries the emote with no click")
+	Mock.Advance(4)
+	check(Chat("Chat test, Emote: "), "and reports how it went")
+	for index = #Mock.blocked, blockedBefore + 1, -1 do table.remove(Mock.blocked, index) end
 	guide.ui.menu:Show()
 	Mock.Click(menuReload)
 	check(dialog():IsShown() and not guide.ui.menu:IsShown(), "the menu's Reload asks through the dialog")
@@ -561,19 +589,31 @@ equal(Mock.rewardTaken, 0, "a quest without a choice is handed in")
 AP.db.char.autoquest = false
 
 AP.db.char.autosell, AP.db.char.autorepair = true, "own"
-MerchantFrame:Show()
+-- As Forever does it: MERCHANT_SHOW first, the merchant window a moment later (the player
+-- interaction manager shows it on its own event). 0.3.1 asked the window and sold nothing.
 Mock.Fire("MERCHANT_SHOW")
-equal(#Mock.sold, 1, "greys are sold, with the game's own Sell All Junk")
-equal(Mock.repaired, "own", "and gear repaired")
+equal(Mock.repaired, "own", "gear is repaired as the vendor opens")
+MerchantFrame:Show()
+Mock.Advance(0.1)
+equal(#Mock.sold, 1, "greys are sold, with the game's own Sell All Junk, though the window came after the event")
 check(AP.Automation.button and not AP.Automation.button:IsShown(), "no Sell greys button beside the game's own")
+-- Closed before the next frame: nothing is sold.
+Mock.sold = {}
+MerchantFrame:Hide()
+Mock.Fire("MERCHANT_SHOW")
+Mock.Fire("MERCHANT_CLOSED")
+Mock.Advance(0.1)
+equal(#Mock.sold, 0, "a vendor closed at once sells nothing")
 -- A client without Sell All Junk: one item at a time, and the button.
 local gameJunk = C_MerchantFrame
 C_MerchantFrame, Mock.sold = nil, {}
-MerchantFrame:Hide()
 MerchantFrame:Show()
 Mock.Fire("MERCHANT_SHOW")
+Mock.Advance(0.1)
 equal(#Mock.sold, 1, "greys are sold one by one without it")
 check(AP.Automation.button:IsShown(), "and the Sell greys button is there")
+Mock.Fire("MERCHANT_CLOSED")
+MerchantFrame:Hide()
 C_MerchantFrame = gameJunk
 
 ------------------------------------------------------------------------------------------

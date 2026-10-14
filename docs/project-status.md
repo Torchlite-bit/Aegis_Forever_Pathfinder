@@ -91,6 +91,10 @@ clone, following `.claude/CLAUDE.md` (#10).
 - **A new frame is shown:** `Hide()` on a frame just made fires its OnHide.
   Hide it before setting an OnHide that forgets state (0.2.1's first Reload
   question came up blank that way).
+- **Vendors open late:** Forever shows the merchant window through the player
+  interaction manager (`PLAYER_INTERACTION_MANAGER_FRAME_SHOW`), so at `MERCHANT_SHOW`
+  `MerchantFrame` may not be shown yet. 0.3.1 checked the window and never sold a
+  grey; 0.3.2 tracks MERCHANT_SHOW/MERCHANT_CLOSED and sells a frame later.
 - **Discord posts the bot made are the bot's:** nobody else can edit them, so a
   change to a releases post, #downloads or #welcome goes through the bot
   (`Aegis_Discord_Tools`). The carry-over copied old posts with their old channel
