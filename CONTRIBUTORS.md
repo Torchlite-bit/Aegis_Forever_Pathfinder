@@ -11,6 +11,6 @@ Send yours: [docs/data-submission.md](docs/data-submission.md).
 
 | Player | Quests | Levels |
 |---|---:|---:|
-| [Genesys Firstborn](https://github.com/Torchlite-bit) | 34 | 6 |
+| [Genesys Firstborn](https://github.com/Torchlite-bit) | 46 | 7 |
 
 <!-- data-contributors:end -->
