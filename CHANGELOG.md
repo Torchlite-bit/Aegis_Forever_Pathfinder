@@ -11,6 +11,7 @@
   settings list. The description has room for its longest text, and the strip is gone.
 
 ---
+
 ## 0.3.1 — Forever blue
 
 - **The logo is blue** for WoW: Forever: the minimap button, the guide's first page
