@@ -1,6 +1,7 @@
 {
  "builds": {
-  "1.60.1.70338": true
+  "1.60.1.70338": true,
+  "1.60.1.70374": true
  },
  "created": 1791898946,
  "levels": {
@@ -104,24 +105,47 @@
   },
   "5": {
    "builds": {
-    "1.60.1.70338": true
+    "1.60.1.70338": true,
+    "1.60.1.70374": true
    },
    "by": {
-    "Human:WARLOCK:Alliance": 2
+    "Human:WARLOCK:Alliance": 16
    },
    "first": 1791922165,
-   "last": 1791922231,
+   "last": 1791953873,
+   "seconds": {
+    "count": 1,
+    "last": 16118,
+    "max": 16118,
+    "min": 16118
+   },
    "xpMax": {
-    "count": 2,
+    "count": 16,
     "last": 2800,
     "max": 2800,
     "min": 2800
+   }
+  },
+  "6": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 5
+   },
+   "first": 1791953958,
+   "last": 1791954949,
+   "xpMax": {
+    "count": 5,
+    "last": 3600,
+    "max": 3600,
+    "min": 3600
    }
   }
  },
  "observers": {
   "Human:PALADIN:Alliance": 9,
-  "Human:WARLOCK:Alliance": 5
+  "Human:WARLOCK:Alliance": 22
  },
  "quests": {
   "15": {
@@ -558,20 +582,22 @@
   },
   "21": {
    "builds": {
-    "1.60.1.70338": true
+    "1.60.1.70338": true,
+    "1.60.1.70374": true
    },
    "by": {
-    "Human:WARLOCK:Alliance": 2
+    "Human:WARLOCK:Alliance": 3
    },
    "chain": {
     "prev": {
      "15": true
     }
    },
+   "completionText": "Once again, you have earned my respect, and the gratitude of the Stormwind Army.  There may yet be kobolds in the mine, but I will marshal others against them.  We have further tasks for you.",
    "description": "Your previous investigations are proof that the Echo Ridge Mine needs purging.  Return to the mine and help clear it of kobolds.\n\nWaste no time, <name>.  The longer the kobolds are left unmolested in the mine, the deeper a foothold they gain in Northshire.",
    "first": 1791921667,
    "frequency": 0,
-   "last": 1791921671,
+   "last": 1791953343,
    "level": 5,
    "objectiveText": "Kill 12 Kobold Laborers, then return to Marshal McBride at Northshire Abbey.",
    "objectives": [
@@ -607,8 +633,20 @@
    },
    "poi": {
     "objective": {
-     "1415:46:68": 1,
-     "1429:49:28": 13
+     "1415:46:68": 4,
+     "1429:49:28": 41
+    },
+    "turnin": {
+     "1429:49:42": 15
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:48:29": 2,
+     "1429:48:30": 3,
+     "1429:48:31": 3,
+     "1429:48:32": 2,
+     "1429:49:28": 2
     }
    },
    "rewards": {
@@ -626,15 +664,184 @@
       "name": "Outfitter Boots"
      }
     },
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "5": {
+      "count": 1,
+      "last": 450,
+      "max": 450,
+      "min": 450
+     }
+    },
     "xpOffered": {
-     "4": 450
+     "4": 450,
+     "5": 450
+    }
+   },
+   "seen": {
+    "abandoned": 1,
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Skirmish at Echo Ridge",
+   "turnins": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4886,
+     "xMax": 0.4886,
+     "xMin": 0.4886,
+     "xyCount": 1,
+     "y": 0.4166,
+     "yMax": 0.4166,
+     "yMin": 0.4166,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "2158": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "completionText": "Rest and relaxation for the tired and cold -- that's our motto! Please, take a seat by the fire and rest your weary bones.\n\nWould you like to try a sampling of some of our fine food and drink?",
+   "description": "Every adventurer should rest when exhaustion sets in - and there is no finer place to get rest and relaxation than at the Lion's Pride Inn!\n\nMy best friend, Innkeeper Farley, runs the Lion's Pride. If you tell him I sent you, he may give you the special discounted rates on food and drink.\n\nTo find the Lion's Pride Inn, travel south along the road from here -- you can't miss it!",
+   "first": 1791954111,
+   "frequency": 0,
+   "last": 1791954283,
+   "level": 5,
+   "objectiveText": "Speak with Innkeeper Farley at the Lion's Pride Inn.",
+   "pickups": {
+    "npc:6774@1429": {
+     "count": 1,
+     "id": 6774,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Falkhaan Isenstrider",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4568,
+     "xMax": 0.4568,
+     "xMin": 0.4568,
+     "xyCount": 1,
+     "y": 0.4775,
+     "yMax": 0.4775,
+     "yMin": 0.4775,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:44:66": 9
+    }
+   },
+   "rewards": {
+    "choices": {
+     "159": {
+      "count": 5,
+      "name": "Refreshing Spring Water"
+     },
+     "4656": {
+      "count": 5,
+      "name": "Small Pumpkin"
+     }
+    },
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 25,
+      "max": 25,
+      "min": 25
+     }
+    },
+    "xp": {
+     "6": {
+      "count": 1,
+      "last": 110,
+      "max": 110,
+      "min": 110
+     }
+    },
+    "xpObserved": {
+     "6": {
+      "count": 1,
+      "last": 110,
+      "max": 110,
+      "min": 110
+     }
+    },
+    "xpOffered": {
+     "6": 110
     }
    },
    "seen": {
     "accepted": 1,
-    "offered": 1
+    "offered": 1,
+    "turnedIn": 1
    },
-   "title": "Skirmish at Echo Ridge"
+   "title": "Rest and Relaxation",
+   "turnins": {
+    "npc:295@1429": {
+     "count": 1,
+     "id": 295,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Innkeeper Farley",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "x": 0.4375,
+     "xMax": 0.4375,
+     "xMin": 0.4375,
+     "xyCount": 1,
+     "y": 0.6589,
+     "yMax": 0.6589,
+     "yMin": 0.6589,
+     "zone": "Lion's Pride Inn"
+    }
+   }
   },
   "288": {
    "frequency": 0,
@@ -1172,20 +1379,25 @@
   },
   "3904": {
    "builds": {
-    "1.60.1.70338": true
+    "1.60.1.70338": true,
+    "1.60.1.70374": true
    },
    "by": {
-    "Human:WARLOCK:Alliance": 2
+    "Human:WARLOCK:Alliance": 3
    },
    "chain": {
+    "next": {
+     "3905": true
+    },
     "prev": {
      "3903": true
     }
    },
+   "completionText": "Oh thank you, <name>!  You saved my harvest!  And I hope you showed a few of those Defias that they can't cause trouble around here.\n\nWe might be short on guards these days, but we're lucky to have heroes like you to protect us!",
    "description": "A gang of brigands, the Defias, moved into the Northshire Vineyards while I was harvesting!  I reported it to the Northshire guards and they assured me they'd take care of things, but... I'm afraid for my crop of grapes!  If the Defias don't steal them then I fear our guards will trample them when they chase away the thugs.\n\nPlease, you must help me!  I gathered most of my grapes into buckets, but I left them in the vineyards to the southeast.\n\nBring me those crates!  Save my harvest!",
    "first": 1791921337,
    "frequency": 0,
-   "last": 1791921338,
+   "last": 1791953845,
    "level": 4,
    "objectiveText": "Bring 8 crates of Milly's Harvest to Milly Osworth at Northshire Abbey.",
    "objectives": [
@@ -1221,20 +1433,222 @@
    },
    "poi": {
     "objective": {
-     "1415:46:70": 1,
-     "1429:54:49": 34
+     "1415:46:70": 4,
+     "1429:54:49": 92
+    },
+    "turnin": {
+     "1429:51:39": 2
     }
    },
+   "progress": {
+    "1": {
+     "1429:54:47": 3,
+     "1429:54:48": 2,
+     "1429:54:49": 1,
+     "1429:55:49": 2
+    }
+   },
+   "progressText": "Do you have my harvest, <name>?  ",
    "rewards": {
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 50,
+      "max": 50,
+      "min": 50
+     }
+    },
+    "xp": {
+     "5": {
+      "count": 1,
+      "last": 180,
+      "max": 180,
+      "min": 180
+     }
+    },
+    "xpObserved": {
+     "5": {
+      "count": 1,
+      "last": 180,
+      "max": 180,
+      "min": 180
+     }
+    },
     "xpOffered": {
-     "4": 180
+     "4": 180,
+     "5": 180
     }
    },
    "seen": {
     "accepted": 1,
-    "offered": 1
+    "offered": 1,
+    "turnedIn": 1
    },
-   "title": "Milly's Harvest"
+   "title": "Milly's Harvest",
+   "turnins": {
+    "npc:9296@1429": {
+     "count": 1,
+     "id": 9296,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Milly Osworth",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.5077,
+     "xMax": 0.5077,
+     "xMin": 0.5077,
+     "xyCount": 1,
+     "y": 0.3947,
+     "yMax": 0.3947,
+     "yMin": 0.3947,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "3905": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "prev": {
+     "3904": true
+    }
+   },
+   "completionText": "Let's see here...\n\nOh my!  Milly's grapes have been saved!  When she told me that brigands overran her vineyards I nearly despaired, but my faith in the Light did not waver!\n\nAnd through your bravery,  we now have grapes for more wine!  May the Light bless you, <name>, and keep you safe!",
+   "description": "Now that my crop is saved, take this Grape Manifest to Brother Neals.  He manages the store of food and drink in Northshire, and I'm sure he'll be delighted to hear that he has fresh grapes.\n\nYou'll find Brother Neals in the abbey, in the bell tower... where he likes to taste his wine.",
+   "first": 1791953845,
+   "frequency": 0,
+   "last": 1791953925,
+   "level": 4,
+   "objectiveText": "Bring the Grape Manifest to Brother Neals in Northshire Abbey.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Bring the Grape Manifest to Brother Neals in Northshire Abbey.",
+     "type": "log"
+    }
+   ],
+   "pickups": {
+    "npc:9296@1429": {
+     "count": 1,
+     "id": 9296,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Milly Osworth",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.5077,
+     "xMax": 0.5077,
+     "xMin": 0.5077,
+     "xyCount": 1,
+     "y": 0.3947,
+     "yMax": 0.3947,
+     "yMin": 0.3947,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:49:42": 4
+    }
+   },
+   "progressText": "You look to be in fine spirits!  Come!  Have a seat, and have a drink!",
+   "rewards": {
+    "choices": {
+     "11475": {
+      "count": 1,
+      "name": "Wine-stained Cloak"
+     },
+     "2690": {
+      "count": 1,
+      "name": "Latched Belt"
+     }
+    },
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "5": {
+      "count": 1,
+      "last": 360,
+      "max": 360,
+      "min": 360
+     }
+    },
+    "xpObserved": {
+     "5": {
+      "count": 1,
+      "last": 360,
+      "max": 360,
+      "min": 360
+     }
+    },
+    "xpOffered": {
+     "5": 360
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Grape Manifest",
+   "turnins": {
+    "npc:952@1429": {
+     "count": 1,
+     "id": 952,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Brother Neals",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4943,
+     "xMax": 0.4943,
+     "xMin": 0.4943,
+     "xyCount": 1,
+     "y": 0.4147,
+     "yMax": 0.4147,
+     "yMin": 0.4147,
+     "zone": "Elwynn Forest"
+    }
+   }
   },
   "393": {
    "frequency": 0,
@@ -1263,6 +1677,34 @@
     }
    },
    "title": "The Greenwarden"
+  },
+  "47": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 4
+   },
+   "description": "The Kobolds in these parts sometimes carry Gold Dust on them.  I could really use the stuff - bring me a load of it and I'll give you the best price in town...best price in town!\n\nYou can find kobolds in the Fargodeep Mine to the south, and around the Jasperlode Mine to the northeast.",
+   "first": 1791954792,
+   "last": 1791954826,
+   "objectiveText": "Bring 10 Gold Dust to Remy \"Two Times\" in Goldshire.  Gold Dust is gathered from Kobolds in Elwynn Forest.",
+   "rewards": {
+    "items": {
+     "1191": {
+      "count": 1,
+      "name": "Bag of Marbles"
+     }
+    },
+    "moneyOffered": 175,
+    "xpOffered": {
+     "6": 625
+    }
+   },
+   "seen": {
+    "offered": 4
+   },
+   "title": "Gold Dust Exchange"
   },
   "5261": {
    "builds": {
@@ -1379,22 +1821,146 @@
     }
    }
   },
-  "6": {
+  "54": {
    "builds": {
-    "1.60.1.70338": true
+    "1.60.1.70374": true
    },
    "by": {
-    "Human:WARLOCK:Alliance": 2
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "62": true
+    },
+    "prev": {
+     "91752": true
+    }
+   },
+   "completionText": "Well, it says here that you've been awarded Acting Deputy Status with the Stormwind Marshals.  Congratulations.\n\nAnd good luck - keeping Elwynn safe is no picnic... what with most the army busy doing who knows what for who knows which noble!\n\nIt's hard to keep track of politics in these dark days...",
+   "description": "<name>, you are a warlock with proven interest in the security of Northshire.  You are now tasked with the protection of the surrounding Elwynn Forest.\n\nIf you accept this duty, then I have prepared papers that must be delivered to Marshal Dughan in Goldshire.  Goldshire lies along the southern road, past the border gates.",
+   "first": 1791953346,
+   "frequency": 0,
+   "last": 1791954297,
+   "level": 5,
+   "objectiveText": "Take Marshal McBride's Documents to Marshal Dughan in Goldshire.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Take Marshal McBride's Documents to Marshal Dughan in Goldshire.",
+     "type": "log"
+    }
+   ],
+   "pickups": {
+    "auto:?@1429": {
+     "count": 1,
+     "kind": "auto",
+     "mapID": 1429,
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4886,
+     "xMax": 0.4886,
+     "xMin": 0.4886,
+     "xyCount": 1,
+     "y": 0.4166,
+     "yMax": 0.4166,
+     "yMin": 0.4166,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:42:66": 36
+    }
+   },
+   "progressText": "You have word from McBride?  Northshire is a garden compared to Elwynn Forest, but I wonder what Marshal McBride has to report.\n\nHere, let me have his papers...",
+   "rewards": {
+    "items": {
+     "6078": {
+      "count": 1,
+      "name": "Pikeman Shield"
+     }
+    },
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "xp": {
+     "6": {
+      "count": 1,
+      "last": 230,
+      "max": 230,
+      "min": 230
+     }
+    },
+    "xpObserved": {
+     "6": {
+      "count": 1,
+      "last": 230,
+      "max": 230,
+      "min": 230
+     }
+    },
+    "xpOffered": {
+     "5": 230,
+     "6": 230
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Report to Goldshire",
+   "turnins": {
+    "npc:240@1429": {
+     "count": 1,
+     "id": 240,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal Dughan",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Goldshire",
+     "x": 0.4217,
+     "xMax": 0.4217,
+     "xMin": 0.4217,
+     "xyCount": 1,
+     "y": 0.6588,
+     "yMax": 0.6588,
+     "yMin": 0.6588,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "6": {
+   "builds": {
+    "1.60.1.70338": true,
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
    },
    "chain": {
     "prev": {
      "18": true
     }
    },
+   "completionText": "Hah - you caught him!  You've done Elwynn a great service, and earned a nice bounty!",
    "description": "Garrick Padfoot - a cutthroat who's plagued our farmers and merchants for weeks - was seen at a shack near the vineyards, which lies east of the Abbey and across the bridge.  Bring me the villain's head, and earn his bounty!\n\nBut be wary, <name>.  Garrick has gathered a gang of thugs around him.  He will not be an easy man to reach.",
    "first": 1791921284,
    "frequency": 0,
-   "last": 1791921285,
+   "last": 1791953958,
    "level": 5,
    "objectiveText": "Kill Garrick Padfoot and bring his head to Deputy Willem at Northshire Abbey.",
    "objectives": [
@@ -1430,10 +1996,19 @@
    },
    "poi": {
     "objective": {
-     "1415:47:70": 1,
-     "1429:58:48": 36
+     "1415:47:70": 4,
+     "1429:58:48": 95
+    },
+    "turnin": {
+     "1429:48:43": 7
     }
    },
+   "progress": {
+    "1": {
+     "1429:57:48": 1
+    }
+   },
+   "progressText": "Did you find Garrick's shack?  Are we finally free of that villain?",
    "rewards": {
     "choices": {
      "3070": {
@@ -1449,15 +2024,133 @@
       "name": "Tapered Pants"
      }
     },
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 75,
+      "max": 75,
+      "min": 75
+     }
+    },
+    "xp": {
+     "5": {
+      "count": 1,
+      "last": 340,
+      "max": 340,
+      "min": 340
+     }
+    },
+    "xpObserved": {
+     "5": {
+      "count": 1,
+      "last": 340,
+      "max": 340,
+      "min": 340
+     }
+    },
     "xpOffered": {
-     "4": 340
+     "4": 340,
+     "5": 340
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Bounty on Garrick Padfoot",
+   "turnins": {
+    "npc:823@1429": {
+     "count": 1,
+     "id": 823,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Deputy Willem",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4817,
+     "xMax": 0.4817,
+     "xMin": 0.4817,
+     "xyCount": 1,
+     "y": 0.428,
+     "yMax": 0.428,
+     "yMin": 0.428,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "62": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 2
+   },
+   "chain": {
+    "prev": {
+     "54": true
+    }
+   },
+   "description": "The mine in Northshire isn't the only one with problems!  I have reports that the Fargodeep Mine in Elwynn has also become a haven for Kobolds.\n\nExplore the mine and confirm these reports, then return to me.  The mine is almost due south of Goldshire, between the Stonefield and Maclure homesteads.",
+   "first": 1791954298,
+   "frequency": 0,
+   "last": 1791954299,
+   "level": 7,
+   "objectiveText": "Explore the Fargodeep Mine, then return to Marshal Dughan in Goldshire.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Scout through the Fargodeep Mine",
+     "type": "event"
+    }
+   ],
+   "pickups": {
+    "npc:240@1429": {
+     "count": 1,
+     "id": 240,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal Dughan",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Goldshire",
+     "x": 0.4217,
+     "xMax": 0.4217,
+     "xMin": 0.4217,
+     "xyCount": 1,
+     "y": 0.6588,
+     "yMax": 0.6588,
+     "yMin": 0.6588,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "rewards": {
+    "moneyOffered": 125,
+    "xpOffered": {
+     "6": 480
     }
    },
    "seen": {
     "accepted": 1,
     "offered": 1
    },
-   "title": "Bounty on Garrick Padfoot"
+   "title": "The Fargodeep Mine"
   },
   "7": {
    "builds": {
@@ -2100,20 +2793,27 @@
   },
   "91752": {
    "builds": {
-    "1.60.1.70338": true
+    "1.60.1.70338": true,
+    "1.60.1.70374": true
    },
    "by": {
-    "Human:WARLOCK:Alliance": 2
+    "Human:WARLOCK:Alliance": 3
    },
    "chain": {
+    "next": {
+     "54": true,
+     "91758": true,
+     "96627": true
+    },
     "prev": {
      "91745": true
     }
    },
+   "completionText": "Thank you for returning these stolen books, <name>. I'll get them back to Brother Paxton at once.\n\nYou're becoming quite the hero around here. Great job!",
    "description": "Every once in a while, a kobold comes through yelling \"Picture for Narf!\" I don't know who Narf is. Maybe one of the head kobolds at the back of the mine? I bet he has a whole sack of books by now.\n\nGo get those books and bring them to our local law enforcement, Marshal McBride. You should find a friend to help. Those kobolds inside the mine are a lot meaner.",
    "first": 1791922165,
    "frequency": 0,
-   "last": 1791922167,
+   "last": 1791953344,
    "level": 3,
    "objectiveText": "Retrieve a Sack of \"Picture\" Books from Shinyfinder Narf. Bring the sack to Marshal McBride just inside Northshire's Abbey.",
    "objectives": [
@@ -2149,13 +2849,411 @@
    },
    "poi": {
     "objective": {
-     "1429:49:28": 3
+     "1415:46:68": 3,
+     "1429:49:28": 30
+    },
+    "turnin": {
+     "1429:49:42": 17
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:49:28": 1
+    }
+   },
+   "progressText": "Have you retrieved those stolen books yet?",
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 100,
+     "max": 100,
+     "min": 100
+    },
+    "moneyOffered": 100,
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "5": {
+      "count": 1,
+      "last": 320,
+      "max": 320,
+      "min": 320
+     }
+    },
+    "xpObserved": {
+     "5": {
+      "count": 1,
+      "last": 320,
+      "max": 320,
+      "min": 320
+     }
+    },
+    "xpOffered": {
+     "5": 320
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "tag": "Elite",
+   "tagID": 1,
+   "title": "The Big Picture",
+   "turnins": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4886,
+     "xMax": 0.4886,
+     "xMin": 0.4886,
+     "xyCount": 1,
+     "y": 0.4166,
+     "yMax": 0.4166,
+     "yMin": 0.4166,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "91758": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "91772": true
+    },
+    "prev": {
+     "91752": true
+    }
+   },
+   "completionText": "I can help ye' track down this varmint. Let me whip somethin' up for ye'.",
+   "description": "You're not done with those kobolds yet. We just got word from Kelsey that a kobold left the mine carrying a large sack of books. I need you to track down this kobold so we can retrieve the books for Brother Paxton.\n\nGo talk to Tordrin Sternblade. He's the new Hunter trainer that just arrived from Ironforge. You can find him behind the abbey, near the stable. He can help you track this kobold thief.",
+   "first": 1791953344,
+   "frequency": 0,
+   "last": 1791953376,
+   "level": 4,
+   "objectiveText": "Speak to Tordrin Sternblade near the stable behind Northshire's Abbey.",
+   "pickups": {
+    "npc:197@1429": {
+     "count": 1,
+     "id": 197,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal McBride",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4886,
+     "xMax": 0.4886,
+     "xMin": 0.4886,
+     "xyCount": 1,
+     "y": 0.4166,
+     "yMax": 0.4166,
+     "yMin": 0.4166,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:51:41": 4
     }
    },
    "rewards": {
-    "moneyOffered": 100,
+    "money": {
+     "count": 1,
+     "last": 35,
+     "max": 35,
+     "min": 35
+    },
+    "moneyOffered": 35,
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "5": {
+      "count": 1,
+      "last": 180,
+      "max": 180,
+      "min": 180
+     }
+    },
+    "xpObserved": {
+     "5": {
+      "count": 1,
+      "last": 180,
+      "max": 180,
+      "min": 180
+     }
+    },
     "xpOffered": {
-     "5": 320
+     "5": 180
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Follow That Kobold!",
+   "turnins": {
+    "npc:248415@1429": {
+     "count": 1,
+     "id": 248415,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Tordrin Sternblade",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.5122,
+     "xMax": 0.5122,
+     "xMin": 0.5122,
+     "xyCount": 1,
+     "y": 0.4095,
+     "yMax": 0.4095,
+     "yMin": 0.4095,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "91772": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "91775": true
+    },
+    "prev": {
+     "91758": true
+    }
+   },
+   "completionText": "What's this, <name>? Tracking kobolds?\n\nWell, of course they're headed toward the Fargodeep mine! That place is infested with kobolds.\n\nGood work, I guess. I'm going to need someone to take care of that problem.",
+   "description": "Alright. Take this kobold tracking kit. It'll let ye' track the kobold that Marshal McBride is concerned with.\n\nFollow the tracks and bring what ye' find to Marshal Dughan in Goldshire.\n\nI have a feelin' these varmints are up to somethin' outside Northshire. So ye'll be needin' Dughan's help.",
+   "first": 1791953377,
+   "frequency": 0,
+   "last": 1791954295,
+   "level": 4,
+   "objectiveText": "Follow the kobold tracks and report to Marshal Dughan in Goldshire with your findings and the Kobold Tracking Kit.",
+   "objectives": [
+    {
+     "required": 6,
+     "text": "Followed Kobold Tracks",
+     "type": "object"
+    }
+   ],
+   "pickups": {
+    "npc:248415@1429": {
+     "count": 1,
+     "id": 248415,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Tordrin Sternblade",
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.5122,
+     "xMax": 0.5122,
+     "xMin": 0.5122,
+     "xyCount": 1,
+     "y": 0.4095,
+     "yMax": 0.4095,
+     "yMin": 0.4095,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:45:57": 25
+    },
+    "turnin": {
+     "1429:42:66": 5
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:44:61": 2,
+     "1429:45:58": 1,
+     "1429:45:60": 1,
+     "1429:46:56": 1,
+     "1429:47:55": 1
+    }
+   },
+   "progressText": "Have you figured out where the Kobolds are heading?",
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 55,
+     "max": 55,
+     "min": 55
+    },
+    "moneyOffered": 55,
+    "reputation": {
+     "Stormwind": {
+      "count": 1,
+      "factionID": 72,
+      "last": 100,
+      "max": 100,
+      "min": 100
+     }
+    },
+    "xp": {
+     "6": {
+      "count": 1,
+      "last": 270,
+      "max": 270,
+      "min": 270
+     }
+    },
+    "xpObserved": {
+     "6": {
+      "count": 1,
+      "last": 270,
+      "max": 270,
+      "min": 270
+     }
+    },
+    "xpOffered": {
+     "5": 270,
+     "6": 270
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "Shhh! We're Hunting Kobolds",
+   "turnins": {
+    "npc:240@1429": {
+     "count": 1,
+     "id": 240,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal Dughan",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Goldshire",
+     "x": 0.4217,
+     "xMax": 0.4217,
+     "xMin": 0.4217,
+     "xyCount": 1,
+     "y": 0.6588,
+     "yMax": 0.6588,
+     "yMin": 0.6588,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "91775": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 2
+   },
+   "chain": {
+    "prev": {
+     "91772": true
+    }
+   },
+   "description": "While you're investigating the Fargodeep Mine, see if you can find any of Brother Paxton's books to return. In particular, Paxton is very concerned about a book titled, \"Fun with Elementals\". He thinks even a kobold could use it to summon an elemental servant. Be warned, the depths of the mine are fairly dangerous. You should bring friends.\n\nTake this book bag to protect the books when you find them!",
+   "first": 1791954295,
+   "frequency": 0,
+   "last": 1791954296,
+   "level": 6,
+   "objectiveText": "Find 6 Lost Books and \"Fun with Elementals\" and return them to Marshal Dughan.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Picture Book: Fun with Elementals",
+     "type": "item"
+    },
+    {
+     "required": 6,
+     "text": "Lost Book",
+     "type": "item"
+    }
+   ],
+   "pickups": {
+    "npc:240@1429": {
+     "count": 1,
+     "id": 240,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Marshal Dughan",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Goldshire",
+     "x": 0.4217,
+     "xMax": 0.4217,
+     "xMin": 0.4217,
+     "xyCount": 1,
+     "y": 0.6588,
+     "yMax": 0.6588,
+     "yMin": 0.6588,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:42:80": 56
+    }
+   },
+   "rewards": {
+    "moneyOffered": 250,
+    "xpOffered": {
+     "6": 675
     }
    },
    "seen": {
@@ -2164,7 +3262,7 @@
    },
    "tag": "Elite",
    "tagID": 1,
-   "title": "The Big Picture"
+   "title": "Book Return"
   },
   "92124": {
    "builds": {
@@ -2436,6 +3534,306 @@
    "tagID": 81,
    "title": "Songblade Search"
   },
+  "95998": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "96626": true,
+     "97921": true
+    },
+    "prev": {
+     "96627": true
+    }
+   },
+   "completionText": "So now that we've learned the basics, why don't you go and learn a tradeskill. They will also teach you the know-how to create a proper camp fixture suitable to your new profession.",
+   "description": "Well howdy there, warlock. I can see you've got the look of an adventurer about you. Good for you. The world needs more of us restless souls, seeking fortune and glory.\n\nIt's a big wide world out there and you'll need to learn to thrive in the wilds to be successful. Not sure how your outdoorsman skills are but I reckon I could teach you a thing or two, if you'd be apt to learn.\n\nHave a seat near the fire, get comfy. I'll walk you through it.",
+   "first": 1791954319,
+   "frequency": 0,
+   "last": 1791954388,
+   "level": 6,
+   "objectiveText": "Sit near Sam's Basic Campfire and wait until you receive the Boosted Rest buff.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Sit near the campfire",
+     "type": "object"
+    },
+    {
+     "required": 1,
+     "text": "Gain the Boosted Rest buff",
+     "type": "object"
+    }
+   ],
+   "pickups": {
+    "npc:263399@1429": {
+     "count": 1,
+     "id": 263399,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Sam Sarsaparilla",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Goldshire",
+     "x": 0.4481,
+     "xMax": 0.4481,
+     "xMin": 0.4481,
+     "xyCount": 1,
+     "y": 0.6327,
+     "yMax": 0.6327,
+     "yMin": 0.6327,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:45:63": 1
+    }
+   },
+   "progress": {
+    "1": {
+     "1429:45:63": 1
+    }
+   },
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "xp": {
+     "6": {
+      "count": 1,
+      "last": 410,
+      "max": 410,
+      "min": 410
+     }
+    },
+    "xpObserved": {
+     "6": {
+      "count": 1,
+      "last": 410,
+      "max": 410,
+      "min": 410
+     }
+    },
+    "xpOffered": {
+     "6": 410
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "The Great Outdoors",
+   "turnins": {
+    "npc:263399@1429": {
+     "count": 1,
+     "id": 263399,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Sam Sarsaparilla",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Goldshire",
+     "x": 0.4484,
+     "xMax": 0.4484,
+     "xMin": 0.4484,
+     "xyCount": 1,
+     "y": 0.6322,
+     "yMax": 0.6322,
+     "yMin": 0.6322,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
+  "96626": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 2
+   },
+   "chain": {
+    "prev": {
+     "95998": true
+    }
+   },
+   "description": "So you want to learn more about camping, huh? Good for you, warlock. The first step any adventurer needs to take is to become a cook and learn how to make a campfire.\n\nCooking's not just about making tasty foods. It's also the foundation for your camp.",
+   "first": 1791954388,
+   "frequency": 0,
+   "last": 1791954389,
+   "level": 6,
+   "objectiveText": "Speak with Tomas in Goldshire to learn to become a cook.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Learn cooking from Tomas in Goldshire",
+     "type": "object"
+    }
+   ],
+   "pickups": {
+    "npc:263399@1429": {
+     "count": 1,
+     "id": 263399,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Sam Sarsaparilla",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Goldshire",
+     "x": 0.4484,
+     "xMax": 0.4484,
+     "xMin": 0.4484,
+     "xyCount": 1,
+     "y": 0.6322,
+     "yMax": 0.6322,
+     "yMin": 0.6322,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "objective": {
+     "1429:44:66": 46
+    }
+   },
+   "rewards": {
+    "xpOffered": {
+     "6": 270
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1
+   },
+   "title": "Camping 101: Cooking"
+  },
+  "96627": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 3
+   },
+   "chain": {
+    "next": {
+     "95998": true
+    },
+    "prev": {
+     "91752": true
+    }
+   },
+   "completionText": "I appreciate the lookin' out, warlock. That marshal's just a worrywart.\n\nHey, you've got the look of an adventurer yourself. How would you like to learn about camping?",
+   "description": "<name>, you have proven your competence as a protector thus far. That is why I am now entrusting you with an unusual task.\n\nI've heard of a new adventurer down the road by Goldshire. Go and see what he's doing.",
+   "first": 1791953347,
+   "frequency": 0,
+   "last": 1791954319,
+   "level": 6,
+   "objectiveText": "Speak to Sam Sarsparilla near Goldshire.",
+   "pickups": {
+    "auto:?@1429": {
+     "count": 1,
+     "kind": "auto",
+     "mapID": 1429,
+     "playerLevel": {
+      "count": 1,
+      "last": 5,
+      "max": 5,
+      "min": 5
+     },
+     "subzone": "Northshire Valley",
+     "x": 0.4886,
+     "xMax": 0.4886,
+     "xMin": 0.4886,
+     "xyCount": 1,
+     "y": 0.4166,
+     "yMax": 0.4166,
+     "yMin": 0.4166,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "poi": {
+    "turnin": {
+     "1429:45:63": 37
+    }
+   },
+   "rewards": {
+    "money": {
+     "count": 1,
+     "last": 0,
+     "max": 0,
+     "min": 0
+    },
+    "xp": {
+     "6": {
+      "count": 1,
+      "last": 410,
+      "max": 410,
+      "min": 410
+     }
+    },
+    "xpObserved": {
+     "6": {
+      "count": 1,
+      "last": 410,
+      "max": 410,
+      "min": 410
+     }
+    },
+    "xpOffered": {
+     "5": 410,
+     "6": 410
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1,
+    "turnedIn": 1
+   },
+   "title": "The Adventurer",
+   "turnins": {
+    "npc:263399@1429": {
+     "count": 1,
+     "id": 263399,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Sam Sarsaparilla",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Goldshire",
+     "x": 0.4481,
+     "xMax": 0.4481,
+     "xMin": 0.4481,
+     "xyCount": 1,
+     "y": 0.6327,
+     "yMax": 0.6327,
+     "yMin": 0.6327,
+     "zone": "Elwynn Forest"
+    }
+   }
+  },
   "970": {
    "frequency": 0,
    "level": 21,
@@ -2447,6 +3845,69 @@
     }
    ],
    "title": "The Tower of Althalaxx"
+  },
+  "97921": {
+   "builds": {
+    "1.60.1.70374": true
+   },
+   "by": {
+    "Human:WARLOCK:Alliance": 2
+   },
+   "chain": {
+    "prev": {
+     "95998": true
+    }
+   },
+   "description": "Looks to me like you've gained some skill in herbalism. Picking flowers isn't just for dilly-dallying, you know. It can be useful... and profitable.\n\nI reckon I know someone that can teach you how to craft an Incense Candle for your camp. High spirits are a key component to keeping healers and spellcasters in the fight, and an Incense Candle can provide a boost that magic users will surely appreciate.",
+   "first": 1791954390,
+   "frequency": 0,
+   "last": 1791954392,
+   "level": 6,
+   "objectiveText": "Speak with Herbalist Pomeroy in Elwynn Forest to learn to craft a camping item for your profession once you have shown proficiency in your skill.",
+   "objectives": [
+    {
+     "required": 1,
+     "text": "Raise your herbalism skill to 20",
+     "type": "object"
+    }
+   ],
+   "pickups": {
+    "npc:263399@1429": {
+     "count": 1,
+     "id": 263399,
+     "kind": "npc",
+     "mapID": 1429,
+     "name": "Sam Sarsaparilla",
+     "playerLevel": {
+      "count": 1,
+      "last": 6,
+      "max": 6,
+      "min": 6
+     },
+     "subzone": "Goldshire",
+     "x": 0.4484,
+     "xMax": 0.4484,
+     "xMin": 0.4484,
+     "xyCount": 1,
+     "y": 0.6322,
+     "yMax": 0.6322,
+     "yMin": 0.6322,
+     "zone": "Elwynn Forest"
+    }
+   },
+   "rewards": {
+    "spells": {
+     "1229705": "Incense Candle"
+    },
+    "xpOffered": {
+     "6": 270
+    }
+   },
+   "seen": {
+    "accepted": 1,
+    "offered": 1
+   },
+   "title": "Camping 101: Herbalism"
   }
  },
  "schemaVersion": 1,
@@ -2459,6 +3920,16 @@
    "id": "6ace398999adfc5be5069917",
    "levels": 6,
    "quests": 34,
+   "via": "share code"
+  },
+  {
+   "addonVersion": "0.3.3",
+   "build": "1.60.1.70374",
+   "contributor": "Genesys Firstborn",
+   "exportedAt": 1791954953,
+   "id": "6acebea8965aa55df455f345",
+   "levels": 2,
+   "quests": 16,
    "via": "share code"
   }
  ]
