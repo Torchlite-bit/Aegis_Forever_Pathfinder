@@ -1,8 +1,7 @@
 # Writing guides for Pathfinder on Forever
 
-No guides ship yet. This page describes the seam they plug into
-(`Core/Guides.lua`), so the first guide written from collected data works
-without engine changes.
+The seam guides plug into (`Core/Guides.lua`). The first one,
+`Guides/Northshire.lua` (a short test guide), was written from collected data.
 
 ## Registering a guide
 
@@ -28,7 +27,9 @@ AegisPathfinder:RegisterGuide({
 ```
 
 `RegisterGuide` returns `true`, or `false` and the reason (no name, no steps,
-an unknown action).
+an unknown action, an unknown class or race). A guide file should report a
+refusal (`if not ok then geterrorhandler()(why) end`): a refused guide is
+otherwise just missing. The smoke test checks every shipped guide registers.
 
 ## Steps
 
@@ -37,15 +38,24 @@ an unknown action).
 | `action` | One of the 1.12 addon's: `ACCEPT`, `COMPLETE`, `TURNIN`, `RUN`, `MAP`, `KILL`, `GRIND`, `USE`, `BUY`, `NOTE`, `HEARTH`, `SETHEARTH`, `FLY`, `GETFLIGHTPOINT`, `BOAT`, `TRAIN`, `DIE`, `PET` |
 | `qid` | The quest id. `ACCEPT`, `COMPLETE` and `TURNIN` steps with one tick themselves |
 | `title` | What the step row shows |
-| `note` | The line under it, in full in focus mode |
-| `map`, `x`, `y` | A uiMapID and 0–1 coordinates: the step's map pin and arrow |
+| `note` | The line under it, in full in focus mode (under the band, for a current ACCEPT or TURNIN); on hover in the list |
+| `map`, `x`, `y` | A uiMapID and 0–1 coordinates: the step's map pin and arrow, set once as the step comes up |
+| `class` | Optional. Only these classes see the step: a list of `UnitClass`'s second return (`WARRIOR`, `PALADIN`, `HUNTER`, `ROGUE`, `PRIEST`, `SHAMAN`, `MAGE`, `WARLOCK`, `DRUID`) |
+| `unverified` | Optional. `true` on a step not confirmed by the collected data yet (written from another source, like the other classes' letters from the Turtle guide). The smoke test only warns when the data disagrees with it |
+| `race` | Optional. Only these races see the step: `UnitRace`'s second return (`Human`, `Dwarf`, `NightElf`, `Gnome`, `Orc`, `Scourge`, `Tauren`, `Troll`). With both, both must match |
+
+A step for another class or race is left out for that character everywhere: the
+current step, the list, the counts, the arrows and `/apg next`/`/apg prev`.
+Progress stays keyed by the step's index in the guide, so inserting steps in a
+later version shifts hand-ticked marks (quest steps tick again from the client).
 
 How steps tick:
 
 - `ACCEPT`: when the quest is in the log (`QUEST_ACCEPTED`, `C_QuestLog.IsOnQuest`)
 - `COMPLETE`: when `C_QuestLog.ReadyForTurnIn` or `IsComplete`
 - `TURNIN`: on `QUEST_TURNED_IN`, or `C_QuestLog.IsQuestFlaggedCompleted`
-- anything else: by hand (the step's ring, the → on the nav row, `/apg next`)
+- anything else: by hand (the step's ring, the → on the nav row, `/apg next`).
+  A current ACCEPT or TURNIN shows as a band without a ring: its fallback is the →.
 
 Progress is per character (`AegisPathfinderCharDB.progress`).
 
@@ -64,4 +74,12 @@ Every field a step needs is in the collected data (see
 | Route length check | `levels[n].xpMax` against the sum of `rewards.xp[n].last` |
 
 A converter (`Tools/build_guide.py`, still to write) can turn a merged
-export into these tables.
+export into these tables. Until then a guide is written by hand from the data, as
+Northshire was. `Tools/smoke_test.py` checks every shipped quest step against
+`data/merged.json`: the id and title are in the data, and an ACCEPT or TURNIN
+stands within 0.03 of where the data saw that quest picked up or handed in. A
+quest the data hasn't seen is allowed only on an `unverified` step, and the data
+disagreeing with an `unverified` step is a warning, not a failure: new data
+(merged on `main` by the intake's pull request) must never stop a release. A
+disagreement on any other step fails the tests, and with them the release, until
+the guide is fixed. The run prints how many steps the data confirms.

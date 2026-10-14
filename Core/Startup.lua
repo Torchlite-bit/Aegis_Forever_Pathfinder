@@ -46,14 +46,8 @@ local COMMANDS = {
 	guides = function() AP:ToggleGuideBrowser() end,
 	resetpanels = function() AP:ResetWindowLayout() end,
 	minimapbutton = function() AP:ToggleMinimapButton() end,
-	next = function()
-		local current = AP:GetCurrentStep()
-		if current then AP:SetStepDone(current, true) end
-	end,
-	prev = function()
-		local current = AP:GetCurrentStep()
-		if current and current > 1 then AP:SetStepDone(current - 1, false) end
-	end,
+	next = function() AP:StepForward() end,
+	prev = function() AP:StepBack() end,
 	status = function()
 		AP:Print((AP.Collector:IsRunning() and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. ": " .. AP.Collector:StatsText())
 	end,

@@ -517,6 +517,12 @@ C_Map = {
 	GetMapInfo = function(mapID) return { name = "Map " .. mapID } end,
 	CanSetUserWaypointOnMap = function() return true end,
 	SetUserWaypoint = function(point) Mock.waypoint = point end,
+	-- As the client has it: the pin's map and a position vector.
+	GetUserWaypoint = function()
+		local point = Mock.waypoint
+		if point then return { uiMapID = point.uiMapID, position = setmetatable({ x = point.x, y = point.y }, Vector) } end
+	end,
+	ClearUserWaypoint = function() Mock.waypoint = nil end,
 }
 UiMapPoint = { CreateFromCoordinates = function(mapID, x, y) return { uiMapID = mapID, x = x, y = y } end }
 C_SuperTrack = { SetSuperTrackedUserWaypoint = function(on) Mock.superTracked = on end }

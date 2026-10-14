@@ -44,7 +44,8 @@ equal(AP.db.profile.theme, skin == "blizzard" and "blizzard" or "pathfinder",
 check(Chat("loaded"), "the load line is said")
 local guide = AP.objectiveframe
 check(guide and guide:IsShown(), "the guide window opens at login")
-check(guide.ui.empty:IsShown(), "with no guides, the guide window shows its empty state")
+check(guide.ui.empty:IsShown(), "with no guide open, the guide window shows its empty state")
+equal(guide.ui.empty.title:GetText(), "PICK A GUIDE", "and, now there is a guide, says to pick one")
 equal(guide.ui.empty.start:GetText(), skin == "blizzard" and "Start collecting data" or "START COLLECTING DATA",
 	"the empty state offers to start collecting")
 check(not AP.Collector:IsRunning(), "the collector is off until started")
@@ -361,7 +362,13 @@ check(browser.ui.home:IsShown(), "on Home")
 check(browser.ui.levelCard.lines[1].left:GetText():find("Level 5"), "Home lists the XP each level needs")
 for _, row in ipairs(browser.ui.categories) do
 	Mock.Click(row)
-	check(browser.ui.empty:IsShown(), "an empty category says there are no guides yet")
+	if row.key == "leveling" then
+		check(not browser.ui.empty:IsShown(), "Leveling isn't empty")
+		equal(browser.ui.rows[1].guide and browser.ui.rows[1].guide.name, "Northshire Valley (1-6)",
+			"it lists the Northshire test guide")
+	else
+		check(browser.ui.empty:IsShown(), "an empty category says so")
+	end
 end
 Mock.Click(browser.ui.tabs[1])
 
@@ -629,35 +636,95 @@ C_MerchantFrame = gameJunk
 -- A guide, through the registration API
 ------------------------------------------------------------------------------------------
 
+-- The mock is a Human Warrior: the Mage's and the Dwarf's steps (2 and 4) aren't theirs.
 local ok, why = AP:RegisterGuide({ name = "Test Guide (1-2)", category = "leveling", faction = "Alliance",
 	minLevel = 1, maxLevel = 2, steps = {
 		{ action = "ACCEPT", qid = 600, title = "First", map = 1429, x = 0.5, y = 0.5, note = "Here." },
+		{ action = "NOTE", title = "Mages only", class = { "MAGE" }, map = 1429, x = 0.9, y = 0.9 },
 		{ action = "COMPLETE", qid = 600, title = "First" },
+		{ action = "NOTE", title = "Dwarves only", race = "Dwarf", map = 1429, x = 0.8, y = 0.8 },
 		{ action = "TURNIN", qid = 600, title = "First" },
 		{ action = "RUN", title = "Onwards", map = 1429, x = 0.3, y = 0.3 },
 	} })
 check(ok, "a guide registers: " .. tostring(why))
 check(not AP:RegisterGuide({ name = "Bad", steps = { { action = "FLAP" } } }), "an unknown action is refused")
+check(not AP:RegisterGuide({ name = "Bad", steps = { { action = "NOTE", class = { "Warlock" } } } }),
+	"a class not written as the client's token is refused")
+check(not AP:RegisterGuide({ name = "Bad", steps = { { action = "NOTE", race = { "Undead" } } } }),
+	"so is a race (an Undead is Scourge)")
+local test = AP.guides["Test Guide (1-2)"]
 AP:LoadGuide("Test Guide (1-2)")
+equal(#AP:GuideSteps(test), 4, "a step for another class or race isn't the character's")
+equal(guide.ui.navCount:GetText(), "0 / 4", "and isn't counted")
 equal((AP:GetCurrentStep()), 1, "the guide starts at its first step")
 check(Mock.waypoint and Mock.waypoint.x == 0.5, "the step's place goes on the map")
 check(not guide.ui.empty:IsShown(), "the empty state gives way to the steps")
+local focusRow = guide.ui.rows[1]
+check(focusRow.band:IsShown() and focusRow.bandNote:IsShown() and focusRow.bandNote:GetText() == "Here.",
+	"an ACCEPT step's band shows its note under it, in focus mode")
+equal((focusRow.band:GetPoint(1)), "TOPLEFT", "the band sits at the top of the row, not over all of it")
+check(select(2, focusRow.bandNote:GetPoint(1)) == focusRow.band, "the note hangs under the band")
+check(focusRow:GetHeight() >= focusRow.band:GetHeight() + 6 + focusRow.bandNote:GetStringHeight(),
+	"and the row is tall enough for it")
+equal(AP.db.char.pointed and AP.db.char.pointed.index, 1, "which step's pin is down is saved, for a /reload")
+AP.db.char.waypoints = false
+AP:GuideChanged()
+check(Mock.waypoint == nil, "switching waypoints off takes our pin away")
+AP.db.char.waypoints = true
+AP:GuideChanged()
+check(Mock.waypoint and Mock.waypoint.x == 0.5, "and on puts it back")
 S.log = { { questID = 600, title = "First", level = 1, objectives = { { text = "Thing", numFulfilled = 0, numRequired = 1 } } } }
 Mock.Fire("QUEST_ACCEPTED", 600)
-equal((AP:GetCurrentStep()), 2, "accepting ticks the ACCEPT step")
+equal((AP:GetCurrentStep()), 3, "accepting ticks the ACCEPT step, and the Mage's step is passed by")
+check(Mock.waypoint == nil, "a step with no place takes our pin away")
 S.log[1].objectives[1].numFulfilled = 1
 Mock.Fire("QUEST_LOG_UPDATE")
 Mock.Advance(1)
-equal((AP:GetCurrentStep()), 3, "finishing the objectives ticks COMPLETE")
+equal((AP:GetCurrentStep()), 5, "finishing the objectives ticks COMPLETE, past the Dwarf's step")
 S.log = {}
 Mock.Fire("QUEST_TURNED_IN", 600, 100, 0)
 Mock.Advance(2)
-equal((AP:GetCurrentStep()), 4, "handing in ticks TURNIN")
+local current, _, position, mineCount = AP:GetCurrentStep()
+equal(current, 6, "handing in ticks TURNIN")
+equal(position .. " of " .. mineCount, "4 of 4", "the step's place among the character's own")
+equal(guide.ui.navStep:GetText(), "STEP 4", "the nav row counts the character's steps")
+check(Mock.waypoint and Mock.waypoint.x == 0.3, "the next step's place goes on the map, never another class's")
+Mock.waypoint = { uiMapID = 1429, x = 0.11, y = 0.22 }
+AP:ScanGuide()
+equal(Mock.waypoint.x, 0.11, "the same step isn't pointed at again: a pin the player set stays")
+AP:StepBack()
+equal((AP:GetCurrentStep()), 5, "the left arrow goes back to the hand-in")
+equal(Mock.waypoint and Mock.waypoint.x, 0.11, "a step with no place leaves a pin the player set")
+AP:StepBack()
+equal((AP:GetCurrentStep()), 3, "and back again, over the Dwarf's step")
+AP:StepForward()
+equal((AP:GetCurrentStep()), 5, "the right arrow forward, over it too")
+AP:StepForward()
+equal((AP:GetCurrentStep()), 6, "and on to the end")
+S.class = "MAGE"
+equal(#AP:GuideSteps(test), 5, "a Mage has the Mage's step")
+S.class = "WARRIOR"
 AP:ToggleOverviewMode()
 AP:RefreshObjectivePanel()
+for _, row in ipairs(guide.ui.rows) do
+	if row:IsShown() then
+		check(not (row.data and (row.data.class or row.data.race)), "the list leaves the others' steps out")
+		check(not row.bandNote:IsShown(), "the list shows no notes under bands (they're on hover)")
+	end
+end
 AP:ToggleOverviewMode()
+Mock.waypoint = { uiMapID = 1429, x = 0.3, y = 0.3 }
+AP:StepForward()
+check(select(2, AP:GetCurrentStep()) == nil, "the last step done, the guide is done")
+equal(focusRow.title:GetText(), "Guide done", "and says so")
+check(Mock.waypoint == nil, "its pin is taken away")
 AP:UnloadGuide()
 check(guide.ui.empty:IsShown(), "no guide, the empty state again")
+S.faction = "Horde"
+AP:RefreshObjectivePanel()
+equal(guide.ui.empty.title:GetText(), "NO GUIDES YET", "a Horde character, with no guide for them, isn't told to pick one")
+S.faction = "Alliance"
+AP:RefreshObjectivePanel()
 
 ------------------------------------------------------------------------------------------
 -- Stopping, clearing
@@ -678,6 +745,97 @@ check(confirm:IsShown(), "Clear data asks first")
 Mock.Click(confirm.yes)
 equal(next(AP.Collector:GetData().quests), nil, "Clear data forgets the quests")
 Mock.export = exportText
+
+------------------------------------------------------------------------------------------
+-- The Northshire test guide (Guides/Northshire.lua), played through
+------------------------------------------------------------------------------------------
+
+local NORTH = "Northshire Valley (1-6)"
+local north = AP.guides[NORTH]
+check(north, "the Northshire guide registers (RegisterGuide refused nothing)")
+equal(north.faction, "Alliance", "for the Alliance")
+local wellFormed = true
+for index, step in ipairs(north.steps) do
+	local where = "Northshire step " .. index
+	local quest = step.action == "ACCEPT" or step.action == "COMPLETE" or step.action == "TURNIN"
+	local placed = step.map ~= nil
+	if not (step.title and step.title ~= "") then wellFormed = false; check(false, where .. " has a title") end
+	if quest and type(step.qid) ~= "number" then wellFormed = false; check(false, where .. " has a quest id") end
+	if placed ~= (step.x ~= nil) or placed ~= (step.y ~= nil)
+		or (placed and not (step.x > 0 and step.x < 1 and step.y > 0 and step.y < 1)) then
+		wellFormed = false
+		check(false, where .. " has a whole place on the map")
+	end
+	if step.note and step.note:find("<name>", 1, true) then wellFormed = false; check(false, where .. " names no one") end
+end
+check(wellFormed, "every Northshire step has a title, its quest id and a whole place, and names no one")
+
+-- Plays the guide through as `class`, doing each step as the game would tick it.
+-- Returns how many steps the class had.
+local function PlayThrough(class)
+	S.class, S.log, S.completed = class, {}, {}
+	AP.db.char.progress = {}
+	AP:LoadGuide(NORTH)
+	local mine = AP:GuideSteps(north)
+	local stuck
+	for _, index in ipairs(mine) do
+		local current, step = AP:GetCurrentStep()
+		if current ~= index then
+			stuck = string.format("%s: step %d (%s %s) came when step %d was due", class, current,
+				step and step.action or "?", step and step.title or "the end", index)
+			break
+		end
+		if step.action == "ACCEPT" then
+			S.log[#S.log + 1] = { questID = step.qid, title = step.title, level = 1,
+				objectives = { { text = "Thing", numFulfilled = 0, numRequired = 1 } } }
+			Mock.Fire("QUEST_ACCEPTED", step.qid)
+		elseif step.action == "COMPLETE" then
+			for _, entry in ipairs(S.log) do
+				if entry.questID == step.qid then entry.objectives[1].numFulfilled = 1 end
+			end
+			Mock.Fire("QUEST_LOG_UPDATE")
+			Mock.Advance(1)
+		elseif step.action == "TURNIN" then
+			for i = #S.log, 1, -1 do
+				if S.log[i].questID == step.qid then table.remove(S.log, i) end
+			end
+			S.completed[step.qid] = true
+			Mock.Fire("QUEST_TURNED_IN", step.qid, 0, 0)
+			Mock.Advance(1)
+		else
+			AP:StepForward()
+		end
+	end
+	check(not stuck, stuck or (class .. ": every step comes in order, and each one ticks"))
+	check(select(2, AP:GetCurrentStep()) == nil, class .. ": the guide ends")
+	equal(guide.ui.navCount:GetText(), #mine .. " / " .. #mine, class .. ": all of the class's steps are counted done")
+	AP:UnloadGuide()
+	return #mine
+end
+
+-- How many steps are for everyone, and for one class.
+local function StepsFor(class)
+	local n = 0
+	for _, step in ipairs(north.steps) do
+		local mine = not step.class
+		for _, token in ipairs(step.class or {}) do
+			if token == class then mine = true end
+		end
+		if mine then n = n + 1 end
+	end
+	return n
+end
+
+AP:LoadGuide(NORTH)
+check(Mock.waypoint and Mock.waypoint.uiMapID == 1429 and math.abs(Mock.waypoint.x - 0.4814) < 0.01,
+	"opening Northshire points at Deputy Willem")
+equal(guide.ui.rows[1].bandNote:GetText(), north.steps[1].note, "the first step says who and where")
+AP:UnloadGuide()
+equal(PlayThrough("WARLOCK"), StepsFor("WARLOCK"), "a Warlock gets the Warlock's letter and tome")
+equal(PlayThrough("WARRIOR"), StepsFor("WARRIOR"), "a Warrior gets the Warrior's letter, and no Warlock steps")
+check(StepsFor("WARLOCK") > StepsFor("WARRIOR"), "the classes' guides differ")
+S.class, S.log, S.completed = "WARRIOR", {}, {}
+AP.db.char.progress = {}
 
 equal(#Mock.blocked, 0, "nothing the client would block was tried")
 

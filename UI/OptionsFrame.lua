@@ -290,10 +290,10 @@ end
 function Pages.Navigation(k)
 	k.page("Navigation")
 	k.section("Waypoints")
-	k.switch("char", "waypoints", "Put the step on the map with the game's own pin and arrow", nil,
-		{ defaultOn = true })
+	k.switch("char", "waypoints", "Put the step on the map with the game's own pin and arrow",
+		function() AP:GuideChanged() end, { defaultOn = true })
 	k.note("Forever's map pins and the arrow at the top of the screen, the ones you place by "
-		.. "ctrl-clicking the map. Pathfinder sets one for each step that says where, once there are guides.")
+		.. "ctrl-clicking the map. Pathfinder sets one for each step that says where, as the step comes up.")
 	k.space(SECTION_GAP)
 end
 
