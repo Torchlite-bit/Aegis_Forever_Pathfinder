@@ -62,6 +62,11 @@ update `docs/project-status.md` in the same pull request.
    (91 checked 2026-10-13 with `/L`; 92 from 0.4.0, with `Guides/Northshire.lua`). `/MIR` never deletes from the installed copy anything that
    matches an exclusion (a `Tools` or `docs` folder, a dot file): if such leftovers appear
    there, list them and ask before sending them to the Recycle Bin.
+   **One installed copy, several sessions:** a `/MIR` from another branch deletes what that
+   branch lacks (on 2026-10-14 a main-based mirror wiped the Northshire guide the owner was
+   testing). Before mirroring, read the installed TOC's `## Version` and compare its file list
+   with yours: if it holds a newer version or files your branch doesn't have, another
+   session's build is being tested, so ask the owner before installing over it.
    Before the first mirror of a session, check the installed copy isn't a folder link
    (`(Get-Item -LiteralPath $dst -Force).LinkType` is empty): mirroring into a link would write
    over this clone.
