@@ -48,7 +48,7 @@ Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the 
 
 **The Pathfinder look, on Forever.** The guide window, the ≡ menu, the guide browser, the options window and the minimap button are the Turtle WoW addon's, panel for panel: same layout, same fonts, same colour themes: Pathfinder Day, Night, Green (the original), Purple, Grey, Tan and Red.
 
-**Default: Blizzard's own look.** One more theme, **Default**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. Pick it under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
+**Default: Blizzard's own look.** One more theme, **Default**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. A new install starts in it; the Pathfinder themes are under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
 
 **No guides yet.** WoW: Forever is new, so the guide window says so and offers to **start collecting data** instead. The engine that follows guides is there and waiting.
 
