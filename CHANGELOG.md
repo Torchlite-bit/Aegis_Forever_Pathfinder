@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.4 — on CurseForge
+
+- **Pathfinder is on CurseForge:** <https://www.curseforge.com/wow/addons/aegis-pathfinder>. The CurseForge
+  app installs it and keeps it up to date. The README and each release's notes
+  now say so. Nothing changes in the game.
+
+---
+
 ## 0.3.3 — quests accepted with DialogueUI
 
 - **Fixed: quests weren't accepted by themselves** when an addon such as

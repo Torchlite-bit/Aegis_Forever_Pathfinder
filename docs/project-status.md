@@ -60,7 +60,10 @@ clone, following `.claude/CLAUDE.md` (#10).
    `/run local b=CreateFrame("Button","APTest",UIParent,"SecureActionButtonTemplate,UIPanelButtonTemplate") b:SetSize(140,30) b:SetPoint("CENTER") b:SetText("Test /reload") b:SetAttribute("type","macro") b:SetAttribute("macrotext","/reload") b:SetAttribute("useOnKeyDown",false) b:RegisterForClicks("AnyUp")`
    and click it. Keep `useOnKeyDown` false: without it, the button follows the
    ActionButtonUseKeyDown setting and, registered for mouse-up only, does nothing.
-2. **CurseForge page:** done (the owner pasted the description from
+2. **CurseForge page:** approved on 2026-10-14, public at
+   <https://www.curseforge.com/wow/addons/aegis-pathfinder>. The Discord releases post and
+   #downloads link it (`release_post.py` and `directory` in `Aegis_Discord_Tools`); the README
+   and the release notes (`Tools/package.py`) do from 0.3.4. Done earlier (the owner pasted the description from
    `docs/curseforge.md`). Optional: mark the uploaded files Beta, and set the
    repository variable `CURSEFORGE_RELEASE_TYPE` = `beta` for later uploads.
 3. **Tester post** for Discord: in the Launch Kit.
