@@ -241,6 +241,12 @@ equal(#Mock.blocked, 0, "and nothing is tried without a click")
 local levelCard = _G.AegisPathfinderLevelUp
 check(levelCard and levelCard:IsShown(), "a level-up shows the card")
 check(levelCard.title:GetText():find("Level 6", 1, true), "naming the level")
+if skin == "blizzard" then
+	local _, _, _, _, titleY = levelCard.title:GetPoint(1)
+	local _, noteTo, _, _, noteY = levelCard.note:GetPoint(1)
+	check(titleY >= -5 and noteTo == levelCard and noteY <= -AP.Theme.metrics.header,
+		"Default: the title sits in the top bar, the note below it")
+end
 Mock.chatLockdown = true
 Mock.Click(levelCard.buttons[1])
 equal(#Mock.sent, 0, "chat lockdown: the click sends nothing")

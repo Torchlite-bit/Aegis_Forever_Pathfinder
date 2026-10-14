@@ -9,6 +9,8 @@
 - **Fixed, in Default:** the theme's description on *Settings → Appearance* ran
   into "Switches" below it, and a dark strip sat above "Pathfinder" in the
   settings list. The description has room for its longest text, and the strip is gone.
+- **Fixed, in Default:** the level-up card's "Level 6!" hung off the bottom of
+  its top bar. It now sits in the bar, like the names of the game's own windows.
 
 ---
 

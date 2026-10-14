@@ -150,12 +150,19 @@ local function BuildCard()
 	Theme:Panel(card, "panel")
 	local m = Theme.metrics
 	card.title = card:CreateFontString(nil, "OVERLAY")
-	Theme:SetFont(card.title, "display", 16)
 	Theme:TextColor(card.title, "accent")
-	card.title:SetPoint("TOP", card, "TOP", 0, -10 - m.top)
 	card.note = Theme:FinePrint(card, 300 - 24 - m.left - m.right)
 	card.note:SetJustifyH("CENTER")
-	card.note:SetPoint("TOP", card.title, "BOTTOM", 0, -4)
+	if Theme:IsBlizzard() then
+		-- In the metal top bar, as the game's own windows have their names; the note below it.
+		Theme:SetFont(card.title, "display", 14)
+		card.title:SetPoint("TOP", card, "TOP", 0, -4)
+		card.note:SetPoint("TOP", card, "TOP", 0, -m.header - 8)
+	else
+		Theme:SetFont(card.title, "display", 16)
+		card.title:SetPoint("TOP", card, "TOP", 0, -10 - m.top)
+		card.note:SetPoint("TOP", card.title, "BOTTOM", 0, -4)
+	end
 	card.close = Theme:CloseChip(card, card)
 	card.close:SetPoint("TOPRIGHT", card, "TOPRIGHT", -4 - m.right, -4 - m.top)
 	card.buttons = {}
