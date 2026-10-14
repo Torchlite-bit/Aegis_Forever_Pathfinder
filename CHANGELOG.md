@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.1 — two quests handed in at once
+
+- **Fixed, in the collected data:** when you hand in two quests less than a
+  second apart, the first one was saved as dropped (abandoned). Quest
+  automation does this at any NPC that takes more than one quest. Both now
+  count as handed in.
+- **Fixed, in the collected data:** the first of those two quests also lost its
+  XP check, and the next quest the NPC offered was linked to the wrong one.
+  The XP is now checked for both. A quest offered after two or more were
+  handed in to the same NPC is no longer linked to any of them, since it can't
+  be told which one it follows.
+
+---
+
 ## 0.4.0 — a first test guide: Northshire
 
 - **New: Northshire Valley (1-6), a short test guide** for Alliance

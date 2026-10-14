@@ -38,13 +38,17 @@ local MAX_POINTS = 40              -- grid cells kept per objective / map point 
 local GRID = 100                   -- coordinates are merged on a 1% grid
 local CHAIN_SECONDS = 10           -- a quest offered this soon after a turn-in, by the same NPC, follows it
 local TURNIN_SECONDS = 3           -- reputation and XP this soon after a turn-in belong to that quest
+local REMOVED_SECONDS = 5          -- a quest leaving the log this soon after its turn-in was not abandoned
 local LOG_THROTTLE = 0.5           -- the quest log is read at most this often
 
 local data                          -- AegisPathfinderDB.collect
 local listeners = {}
 
 -- Turn-in and pickup in progress, between the quest frame opening and the event that closes it.
-local pendingDetail, pendingComplete, lastTurnIn
+local pendingDetail, pendingComplete
+-- The quests handed in over the last few seconds, by quest id, and the latest of them. Two
+-- can come less than a second apart: quest automation hands in all an NPC takes at once.
+local recentTurnIns, lastTurnIn = {}, nil
 -- The quest log's objectives as last read: [questID] = { [index] = numFulfilled }
 local objectiveCache = {}
 local logQueued
@@ -411,16 +415,23 @@ function Collector:QuestDetail(startItemID)
 	MergeOffered(quest, FrameRewards(questID), here.level)
 	Count(quest, "offered")
 
-	-- Offered by the same NPC just after handing one in: the next in a chain.
-	if lastTurnIn and lastTurnIn.questID ~= questID and GetTime() - lastTurnIn.time <= CHAIN_SECONDS
-		and who and lastTurnIn.who and who.id and who.id == lastTurnIn.who.id then
-		local before = Quest(lastTurnIn.questID)
+	-- Offered by the same NPC just after handing one in: the next in a chain. After two or
+	-- more handed in to it, it could follow any of them, so it is linked to none.
+	local prevID, handedIn = nil, 0
+	for id, turnIn in pairs(recentTurnIns) do
+		if id ~= questID and GetTime() - turnIn.time <= CHAIN_SECONDS
+			and who and who.id and turnIn.who and who.id == turnIn.who.id then
+			prevID, handedIn = id, handedIn + 1
+		end
+	end
+	if handedIn == 1 then
+		local before = Quest(prevID)
 		before.chain = before.chain or {}
 		before.chain.next = before.chain.next or {}
 		before.chain.next[questID] = true
 		quest.chain = quest.chain or {}
 		quest.chain.prev = quest.chain.prev or {}
-		quest.chain.prev[lastTurnIn.questID] = true
+		quest.chain.prev[prevID] = true
 	end
 	Note(quest)
 	Log(string.format(L.LOG_QUEST_OFFERED, Title(quest, questID)))
@@ -489,6 +500,13 @@ function Collector:QuestProgress()
 	quest.progressText = Collector.Unnamed(Call(GetProgressText)) or quest.progressText
 end
 
+-- The XP the bar moved by from a turn-in's reading to a later one, across a level-up if there was one.
+local function Gained(turnIn, level, xp)
+	if not (turnIn.xp and turnIn.level and level and xp) then return nil end
+	if level == turnIn.level then return xp - turnIn.xp end
+	if level == turnIn.level + 1 and turnIn.xpMax then return (turnIn.xpMax - turnIn.xp) + xp end
+end
+
 -- The reward frame at the turn-in NPC.
 function Collector:QuestComplete()
 	local questID = Call(GetQuestID)
@@ -502,6 +520,17 @@ function Collector:QuestComplete()
 		questID = questID, who = Talker(), place = here, time = GetTime(),
 		xp = Call(UnitXP, "player"), xpMax = Call(UnitXPMax, "player"), level = here.level,
 	}
+	-- A quest handed in just before, its XP check still to come: the bar as this frame opens
+	-- is its last reading before this quest's XP, so it is checked with that now.
+	local before = lastTurnIn
+	if before and not before.observed then
+		if Gained(before, pendingComplete.level, pendingComplete.xp) == 0 and (before.xpReward or 0) > 0 then
+			-- Its XP isn't on the bar yet, and would show as this quest's: neither is checked.
+			before.observed, pendingComplete.xp = true, nil
+		else
+			self:ObserveXP(before, pendingComplete.level, pendingComplete.xp)
+		end
+	end
 end
 
 -- What the player chose, from the reward frame's choices.
@@ -539,28 +568,30 @@ function Collector:QuestTurnedIn(questID, xpReward, moneyReward)
 	Count(quest, "turnedIn")
 	Note(quest)
 	objectiveCache[questID] = nil
-	lastTurnIn = { questID = questID, time = GetTime(), who = complete and complete.who, level = level,
-		xp = complete and complete.xp, xpMax = complete and complete.xpMax }
-	-- The XP bar is read again once it has moved, to check the client's figure.
-	C_Timer.After(1, function() Collector:ObserveXP(questID) end)
+	local now = GetTime()
+	for id, earlier in pairs(recentTurnIns) do
+		if now - earlier.time > math.max(CHAIN_SECONDS, REMOVED_SECONDS) then recentTurnIns[id] = nil end
+	end
+	local turnIn = { questID = questID, time = now, who = complete and complete.who, level = level,
+		xp = complete and complete.xp, xpMax = complete and complete.xpMax, xpReward = xpReward }
+	recentTurnIns[questID], lastTurnIn = turnIn, turnIn
+	-- The XP bar is read again once it has moved, to check the client's figure: unless another
+	-- quest was handed in meanwhile, as its XP would be on the bar too.
+	C_Timer.After(1, function()
+		if lastTurnIn == turnIn then Collector:ObserveXP(turnIn, Call(UnitLevel, "player"), Call(UnitXP, "player")) end
+	end)
 	Log(string.format(L.LOG_QUEST_TURNED_IN, Title(quest, questID), tostring(xpReward or "?")))
 end
 
---[[ The XP the bar actually moved by, across a level-up if there was one. It
-	checks the turn-in's own figure (rested XP does not apply to quests). ]]
-function Collector:ObserveXP(questID)
-	local turnIn = lastTurnIn
-	if not (turnIn and turnIn.questID == questID and turnIn.xp and turnIn.level) then return end
-	local level, xp = Call(UnitLevel, "player"), Call(UnitXP, "player")
-	if not (level and xp) then return end
-	local gained
-	if level == turnIn.level then
-		gained = xp - turnIn.xp
-	elseif level == turnIn.level + 1 and turnIn.xpMax then
-		gained = (turnIn.xpMax - turnIn.xp) + xp
-	end
+--[[ The XP the bar actually moved by for a turn-in, from the bar's `level` and
+	`xp` read after it, once. It checks the turn-in's own figure (rested XP does
+	not apply to quests). ]]
+function Collector:ObserveXP(turnIn, level, xp)
+	if turnIn.observed then return end
+	turnIn.observed = true
+	local gained = Gained(turnIn, level, xp)
 	if gained and gained >= 0 then
-		local rewards = Quest(questID).rewards
+		local rewards = Quest(turnIn.questID).rewards
 		rewards.xpObserved = rewards.xpObserved or {}
 		rewards.xpObserved[turnIn.level] = Range(rewards.xpObserved[turnIn.level], gained)
 	end
@@ -570,9 +601,10 @@ function Collector:QuestRemoved(questID)
 	questID = Readable(questID)
 	if not questID then return end
 	objectiveCache[questID] = nil
-	-- Removed without a turn-in just before it: abandoned (or failed).
+	-- Removed without its own turn-in just before it: abandoned (or failed).
 	C_Timer.After(1, function()
-		if lastTurnIn and lastTurnIn.questID == questID and GetTime() - lastTurnIn.time < 5 then return end
+		local turnIn = recentTurnIns[questID]
+		if turnIn and GetTime() - turnIn.time < REMOVED_SECONDS then return end
 		local quest = data.quests[questID]
 		if quest then Count(quest, "abandoned") end
 	end)
@@ -914,7 +946,7 @@ function Collector:Clear()
 	local global = AP.db.global
 	global.collect = Fresh()
 	data = global.collect
-	objectiveCache, repCache, levelNoted = {}, {}, {}
+	objectiveCache, repCache, levelNoted, recentTurnIns = {}, {}, {}, {}
 	lastTurnIn, pendingDetail, pendingComplete = nil, nil, nil
 	if self:IsRunning() then
 		data.builds[Stamp().build] = true

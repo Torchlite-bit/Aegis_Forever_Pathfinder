@@ -2,7 +2,7 @@
 ## Title: Aegis: Pathfinder (Forever)
 ## Notes: Leveling guide window for WoW: Forever. A first test guide for Northshire; it collects quest and leveling data to write the rest.|nPart of the Aegis addon suite.
 ## Author: Aegis: Pathfinder Contributors
-## Version: 0.4.0
+## Version: 0.4.1
 ## X-Category: Quest
 ## X-Curse-Project-ID: 1742985
 ## SavedVariables: AegisPathfinderDB
