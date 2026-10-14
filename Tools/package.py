@@ -20,6 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ADDON = "Aegis_Forever_Pathfinder"
 TOC = os.path.join(ROOT, ADDON + ".toc")
 REPOSITORY = "https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever"
+CURSEFORGE = "https://www.curseforge.com/wow/addons/aegis-pathfinder"
 # Kept in the repository, not in the addon: the tools, the docs, the collected data, and
 # built releases. (The same list as .gitattributes's export-ignore.)
 LEFT_OUT = {"Tools", "docs", "data", "dist"}
@@ -77,11 +78,12 @@ def release(out, version, files):
         for path in files:
             package.write(os.path.join(ROOT, path), ADDON + "/" + path)
     notes = changelog_section(version) or "See the CHANGELOG."
-    notes += ("\n\n### Install\nDownload `{0}-v{2}.zip` below (not *Source code*), unzip it, put the `{0}` folder in "
+    notes += ("\n\n### Install\nGet it on [CurseForge]({3}): the CurseForge app keeps it up to date.\n\n"
+              "Or download `{0}-v{2}.zip` below (not *Source code*), unzip it, put the `{0}` folder in "
               "`World of Warcraft/_classic_beta_/Interface/AddOns/`, then restart the game fully.\n\n"
               "[Full changelog]({1}/blob/main/CHANGELOG.md) · "
               "[Send your data]({1}/blob/main/docs/data-submission.md) · [Discord](https://discord.gg/Hr66t25vE7)\n"
-              ).format(ADDON, REPOSITORY, version)
+              ).format(ADDON, REPOSITORY, version, CURSEFORGE)
     with open(os.path.join(out, "notes.md"), "w", encoding="utf-8", newline="\n") as handle:
         handle.write(notes)
     # For the release workflow (.github/workflows/release.yml): the version, as a step output.

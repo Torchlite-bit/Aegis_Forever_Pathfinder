@@ -8,6 +8,7 @@
 now it collects the data to write them.**
 
 [![WoW: Forever](https://img.shields.io/badge/WoW%3A%20Forever-Interface%2016001-c79c2e?style=flat-square&labelColor=555)](#install)
+[![CurseForge](https://img.shields.io/badge/CurseForge-download-F16436?style=flat-square&logo=curseforge&logoColor=white)](https://www.curseforge.com/wow/addons/aegis-pathfinder)
 [![Discord](https://img.shields.io/badge/Discord-join%20us-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/Hr66t25vE7)
 
 > Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs
@@ -125,6 +126,11 @@ What came over from the Turtle addon, and what didn't and why:
 ---
 
 ## Install
+
+**The easy way:** get it on [CurseForge](https://www.curseforge.com/wow/addons/aegis-pathfinder). The CurseForge app
+installs it in the right place and keeps it up to date.
+
+**By hand:**
 
 1. Download **`Aegis_Forever_Pathfinder-v<version>.zip`** from
    [the latest release](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/releases/latest),
