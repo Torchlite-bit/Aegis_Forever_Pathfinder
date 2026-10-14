@@ -219,6 +219,57 @@ equal(quest.rewards.xp[5].last, 1450, "and the first is still there")
 equal(quest.rewards.money.count, 2, "money seen twice")
 S.level, S.xp, S.xpMax = 5, 1550, 2800
 
+-- Two quests handed in to Marshal McBride less than a second apart, as quest automation
+-- does it, each leaving the log as it goes. Up to 0.3.4 only the last turn-in was kept:
+-- the first quest counted as abandoned, its XP went unchecked, and the next quest
+-- McBride offered was linked to the second.
+S.npc = { guid = "Creature-0-1-0-1-197-0000000002", name = "Marshal McBride" }
+S.xp = 1000
+S.frame = { questID = 21, title = "Skirmish at Echo Ridge", xp = 450 }
+Mock.Fire("QUEST_COMPLETE")
+Mock.Fire("QUEST_TURNED_IN", 21, 450, 0)
+Mock.Fire("QUEST_REMOVED", 21, false)
+S.xp = 1450
+Mock.Advance(0.3)
+S.frame = { questID = 91752, title = "The Big Picture", xp = 320 }
+Mock.Fire("QUEST_COMPLETE")
+Mock.Fire("QUEST_TURNED_IN", 91752, 320, 0)
+Mock.Fire("QUEST_REMOVED", 91752, false)
+S.xp = 1770
+S.frame = { questID = 54, title = "Report to Goldshire" }
+Mock.Fire("QUEST_DETAIL", 0)
+Mock.Advance(2)
+for _, id in ipairs({ 21, 91752 }) do
+	equal(data.quests[id].seen.turnedIn, 1, id .. " is turned in")
+	check(not data.quests[id].seen.abandoned, id .. ", handed in just before or after another, is not abandoned")
+end
+equal(data.quests[21].rewards.xpObserved[5].last, 450, "the first quest's XP is checked, up to the second's frame")
+equal(data.quests[91752].rewards.xpObserved[5].last, 320, "and the second's on its own")
+check(not data.quests[54].chain and not data.quests[21].chain and not data.quests[91752].chain,
+	"a quest offered after two turn-ins to the NPC is linked to neither: it could follow either")
+-- A quest leaving the log with no turn-in is still abandoned.
+S.npc, S.frame = nil, nil
+Mock.Fire("QUEST_REMOVED", 54, false)
+Mock.Advance(2)
+equal(data.quests[54].seen.abandoned, 1, "a quest dropped from the log is abandoned")
+-- The first quest's XP not on the bar yet as the second's frame opens: it would show as
+-- the second's, so neither is checked.
+S.npc = { guid = "Creature-0-1-0-1-197-0000000002", name = "Marshal McBride" }
+S.xp = 1000
+S.frame = { questID = 21, title = "Skirmish at Echo Ridge", xp = 450 }
+Mock.Fire("QUEST_COMPLETE")
+Mock.Fire("QUEST_TURNED_IN", 21, 450, 0)
+Mock.Advance(0.3)
+S.frame = { questID = 91752, title = "The Big Picture", xp = 320 }
+Mock.Fire("QUEST_COMPLETE")
+Mock.Fire("QUEST_TURNED_IN", 91752, 320, 0)
+S.xp = 1770
+Mock.Advance(2)
+equal(data.quests[21].rewards.xpObserved[5].count, 1, "a late XP bar checks neither quest: not the first")
+equal(data.quests[91752].rewards.xpObserved[5].count, 1, "nor the second")
+data.quests[21], data.quests[91752], data.quests[54] = nil, nil, nil -- out again, for the counts below
+S.npc, S.frame, S.xp = nil, nil, 1550
+
 -- Quests the map marks as available.
 S.available[1429] = { { questID = 999, questName = "Lost in the Woods", questLineName = "Elwynn", x = 0.5, y = 0.5 } }
 Mock.Fire("QUESTLINE_UPDATE")

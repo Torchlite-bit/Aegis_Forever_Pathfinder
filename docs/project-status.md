@@ -83,8 +83,24 @@ clone, following `.claude/CLAUDE.md` (#10).
 6. **Still to confirm in game** (from the 0.2.0 list): quest auto accept and
    turn-in, vendor auto sell and repair (both off by default; switched on under
    *Settings → Automation*), and the level-up card.
+7. **Data saved before 0.3.5:** quest 21 (*Skirmish at Echo Ridge*) has
+   `seen.abandoned = 1` and no `xpObserved` in `data/merged.json`, though it was
+   handed in: it went in less than a second before 91752 (*The Big Picture*) at
+   Marshal McBride, and only the last turn-in was kept. The same moment linked
+   54 (*Report to Goldshire*, which follows 21) to 91752; 91752's other `next`
+   links (91758, 96627) came from it too and may be wrong. `merged.json` is made by
+   `Tools/ingest.py`: don't edit it by hand; read old `abandoned` counts and chains
+   with this in mind.
 
 ## Learned the hard way (don't relearn these)
+
+- **Quests go in back to back:** quest automation hands in every finished quest an
+  NPC takes, well under a second apart, and only then picks up what it offers. Up
+  to 0.3.4 the collector kept only the last turn-in: the first of two counted as
+  abandoned, lost its XP check, and the NPC's next quest was linked to the last one.
+  0.3.5 keeps the last few seconds' turn-ins by quest id, checks the first quest's
+  XP as the second's reward frame opens, and links no chain when two or more went
+  to that NPC. The offer in progress (`pendingDetail`) is still one slot.
 
 - **Secure buttons and key down:** an addon's `SecureActionButtonTemplate`
   button acts on the key-down half of a click while the ActionButtonUseKeyDown

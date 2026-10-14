@@ -107,7 +107,7 @@ A number seen more than once keeps all of it as a **Range**:
 | `objectives` | list of `{ text, type, required }` | client | `C_QuestLog.GetQuestObjectives`: `text` without its count ("Hogger slain"), `type` (`monster`, `item`, `object`, `event`, …), `required` |
 | `progress` | `{ [objectiveIndex] = Cells }` | observed | Where the player stood each time that objective's count went up |
 | `poi` | `{ objective = Cells, turnin = Cells, available = Cells }` | client | The client's own map points: `C_QuestLog.GetQuestsOnMap` for quests in the log (`objective` while in progress, `turnin` once ready), and `C_QuestLine.GetAvailableQuestLines` (`available`: the "!" pickup pins) |
-| `chain` | `{ prev = { [questID] = true }, next = { [questID] = true } }` | observed | Offered by the same NPC within 10 s of handing in another |
+| `chain` | `{ prev = { [questID] = true }, next = { [questID] = true } }` | observed | Offered by the same NPC within 10 s of handing in another. Not linked when two or more were handed in to that NPC in that time (from 0.3.5) |
 | `rewards` | Rewards | | What it gave |
 | `builds`, `by`, `first`, `last` | | | Stamps |
 
@@ -141,7 +141,7 @@ At most 40 cells per list.
 |---|---|---|---|
 | `xp` | `{ [playerLevel] = Range }` | client | **The XP the turn-in gave**, from `QUEST_TURNED_IN`'s `xpReward`, by the player's level at the time (quest XP falls off as you outlevel a quest) |
 | `xpOffered` | `{ [playerLevel] = number }` | frame | `GetRewardXP()` on the offer and reward frames |
-| `xpObserved` | `{ [playerLevel] = Range }` | observed | How far the XP bar moved, across a level-up if there was one. A check on `xp` |
+| `xpObserved` | `{ [playerLevel] = Range }` | observed | How far the XP bar moved, across a level-up if there was one, read 1 s after the turn-in or as the next reward frame opens, if sooner. A check on `xp` |
 | `money` | Range | client | Copper from `QUEST_TURNED_IN`'s `moneyReward` |
 | `moneyOffered` | number | frame | `GetRewardMoney()` |
 | `choices` | `{ [itemID] = { name, count } }` | frame | Items to choose one of |
