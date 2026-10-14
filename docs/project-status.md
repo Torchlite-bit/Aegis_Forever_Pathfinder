@@ -60,9 +60,9 @@ clone, following `.claude/CLAUDE.md` (#10).
    `/run local b=CreateFrame("Button","APTest",UIParent,"SecureActionButtonTemplate,UIPanelButtonTemplate") b:SetSize(140,30) b:SetPoint("CENTER") b:SetText("Test /reload") b:SetAttribute("type","macro") b:SetAttribute("macrotext","/reload") b:SetAttribute("useOnKeyDown",false) b:RegisterForClicks("AnyUp")`
    and click it. Keep `useOnKeyDown` false: without it, the button follows the
    ActionButtonUseKeyDown setting and, registered for mouse-up only, does nothing.
-2. **CurseForge page:** paste the description from `docs/curseforge.md`
-   (switch the editor to Markdown). Mark the uploaded files Beta if wanted, and set
-   the repository variable `CURSEFORGE_RELEASE_TYPE` = `beta` for later uploads.
+2. **CurseForge page:** done (the owner pasted the description from
+   `docs/curseforge.md`). Optional: mark the uploaded files Beta, and set the
+   repository variable `CURSEFORGE_RELEASE_TYPE` = `beta` for later uploads.
 3. **Tester post** for Discord: in the Launch Kit.
 4. **Discord:** changelogs post themselves into this addon's post in the **releases**
    forum once the `DISCORD_WEBHOOK_URL` secret (the forum's webhook) and the
@@ -89,6 +89,11 @@ clone, following `.claude/CLAUDE.md` (#10).
 - **A new frame is shown:** `Hide()` on a frame just made fires its OnHide.
   Hide it before setting an OnHide that forgets state (0.2.1's first Reload
   question came up blank that way).
+- **Discord posts the bot made are the bot's:** nobody else can edit them, so a
+  change to a releases post, #downloads or #welcome goes through the bot
+  (`Aegis_Discord_Tools`). The carry-over copied old posts with their old channel
+  links; four pointed at archived or deleted channels (#recorder-data, a RallyPower
+  bug forum) and were re-pointed by hand on 2026-10-13.
 - **Names in quest text:** the game writes the player's name into some quest
   text. Saved as is, it went out even under another credit name (0.2.0 to
   0.2.3). `Collector.Unnamed` writes `<name>`; the intake does it too. The

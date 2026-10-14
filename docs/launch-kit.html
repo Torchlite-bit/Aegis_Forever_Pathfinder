@@ -105,7 +105,6 @@ button.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
     </div>
     <ol class="steps">
       <li><b>Changelogs to Discord:</b> give the releases forum a webhook and add its address as the secret <code>DISCORD_WEBHOOK_URL</code> in both Forever repositories (the post ids are already set), then merge <a href="https://github.com/Torchlite-bit/Aegis_Forever_Instance_Journal/pull/14" target="_blank" rel="noopener">the Instance Journal's pull request #14</a>.</li>
-      <li><b>Paste the new description</b> on the CurseForge page (below), and mark the file Beta there if you'd rather.</li>
       <li><b>Post the tester message</b> on Discord (below).</li>
       <li><b>Finish the Discord</b>: the last few steps are at the end.</li>
     </ol>
@@ -153,9 +152,9 @@ The data never names your realm. The one name in it is the one you're credited u
   <section id="curse">
     <h2>CurseForge</h2>
     <p>The description has the old page's detail and badges, kept up to date with the addon, with full links (relative ones break on CurseForge). Uploads are set up the way the Instance Journal's are. Every merge to main publishes a GitHub release, and each new version is uploaded to CurseForge once. The setup is also saved in the repository as <code>docs/curseforge.md</code>.</p>
-    <div class="note"><p><b>Uploads are set up.</b> The <code>CF_API_KEY</code> secret is set and the project id (1742985) is in the TOC, so each new version goes up by itself. v0.2.4 is file 9167948.</p></div>
+    <div class="note"><p><b>Uploads are set up.</b> The <code>CF_API_KEY</code> secret is set and the project id (1742985) is in the TOC, so each new version goes up by itself. v0.3.0 is file 9168527. The page's description is pasted.</p></div>
     <ol class="steps">
-      <li><b>Edit your project:</b> switch the description editor to Markdown, paste the description below over the old one, and the summary into its box.</li>
+      <li><b>Done:</b> the description and summary below are on the project page. When they change, switch the description editor to Markdown and paste them over the old ones.</li>
       <li><b>Optional:</b> on GitHub, <i>Settings → Secrets and variables → Actions → Variables</i>, add <code>CURSEFORGE_RELEASE_TYPE</code> = <code>beta</code> to upload new versions as Beta while it's in testing. Files already up can be marked Beta on CurseForge.</li>
     </ol>
     <div class="paste"><header><span class="count" id="summaryCount"></span><button class="copy" data-copy="summary">Copy summary</button></header><pre id="summary">Leveling guide for WoW: Forever. Collects quest and XP data while you play, to write its guides from. Quest automation and a Blizzard look included.</pre></div>
