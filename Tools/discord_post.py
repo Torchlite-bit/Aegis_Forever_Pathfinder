@@ -31,7 +31,9 @@ import urllib.request
 TITLE = "Aegis: Pathfinder (Forever)"
 USERNAME = "Aegis: Pathfinder"
 REPOSITORY = "https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever"
-COLOUR = 0x2D7A18                 # Pathfinder green
+COLOUR = 0x1E6FD9                 # WoW: Forever blue, as the logo
+# The logo, shown small in the post and as the poster's icon: a lasting address (an attachment's expires).
+LOGO_URL = REPOSITORY.replace("https://github.com/", "https://raw.githubusercontent.com/") + "/main/.github/discord-logo.png"
 DESCRIPTION_MAX = 4000            # Discord allows 4096 in an embed's description
 WEBHOOK = re.compile(r"https://(?:ptb\.|canary\.)?discord(?:app)?\.com/api/(?:v\d+/)?webhooks/\d+/[\w-]+")
 
@@ -54,6 +56,9 @@ def message(version, notes, release_url=None, role_id=None):
         # Nobody is mentioned unless a role is named: a changelog that says "@everyone" stays text.
         "allowed_mentions": {"parse": []},
     }
+    if LOGO_URL:
+        body["embeds"][0]["thumbnail"] = {"url": LOGO_URL}
+        body["avatar_url"] = LOGO_URL
     if role_id:
         body["content"] = "<@&{}>".format(role_id)
         body["allowed_mentions"] = {"parse": [], "roles": [role_id]}

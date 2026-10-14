@@ -64,11 +64,11 @@ clone, following `.claude/CLAUDE.md` (#10).
    `docs/curseforge.md`). Optional: mark the uploaded files Beta, and set the
    repository variable `CURSEFORGE_RELEASE_TYPE` = `beta` for later uploads.
 3. **Tester post** for Discord: in the Launch Kit.
-4. **Discord:** changelogs post themselves into this addon's post in the **releases**
-   forum once the `DISCORD_WEBHOOK_URL` secret (the forum's webhook) and the
+4. **Discord:** changelogs post themselves into this addon's post in the **changelogs**
+   forum (since 2026-10-14; releases keeps the download) once the `DISCORD_WEBHOOK_URL` secret (the forum's webhook) and the
    `DISCORD_THREAD_ID` variable (the post) are set (`Tools/discord_post.py`, #16, #17).
    The Instance Journal does the same in its own post. The thread variables are
-   set (Pathfinder's post: 1559762159624519801); the webhook secret is the owner's.
+   set (Pathfinder's changelog post: 1559782369643470999; the posts show the blue logo, `.github/discord-logo.png`); the webhook secret is the owner's.
    The server was **restructured on 2026-10-13** by the Aegis Tools bot (private
    repo `Aegis_Discord_Tools`, run from the owner's PC): see the Launch Kit's
    Discord section for the layout and what's left (deleting the carry-over's
