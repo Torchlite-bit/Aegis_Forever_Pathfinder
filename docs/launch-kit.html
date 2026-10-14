@@ -86,7 +86,7 @@ button.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Aegis: Pathfinder · WoW: Forever · v0.2.0</div>
+  <div class="eyebrow">Aegis: Pathfinder · WoW: Forever · v0.2.4</div>
   <h1>Pathfinder Forever Launch Kit</h1>
   <p class="lede">Everything for taking Pathfinder (Forever) from your test build to players: what's waiting on you, working locally, the CurseForge page, the tester post, and a plan to calm the Discord down.</p>
 
@@ -98,13 +98,11 @@ button.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
     <h2>Waiting on you</h2>
     <p>Nothing reaches GitHub's main branch, players or CurseForge until you merge it.</p>
     <div class="status">
-      <div class="chip"><span class="pill done">Live</span><b>v0.2.0 on GitHub and CurseForge</b><span>CurseForge file 9166895 (project 1742985), uploaded as a Release. Every merge with a new version uploads by itself.</span></div>
-      <div class="chip"><span class="pill wait">Pull request #9</span><b>0.2.1: Reload that reloads</b><span>Reload now asks through a small dialog whose Reload button is the game's secure /reload button itself. Test, then merge.</span></div>
-      <div class="chip"><span class="pill wait">Next</span><b>Working locally</b><span>The next session runs on your PC, in your own clone, with the handoff in <code>docs/project-status.md</code>.</span></div>
+      <div class="chip"><span class="pill done">Live</span><b>v0.2.4 on GitHub and CurseForge</b><span>CurseForge file 9167948 (project 1742985), uploaded as a Release. Every merge with a new version uploads by itself.</span></div>
+      <div class="chip"><span class="pill done">Done</span><b>Reload that reloads</b><span>0.2.1 to 0.2.3, tested in game: Reload works from all three places, the menu's labels show, and the Default X closes.</span></div>
+      <div class="chip"><span class="pill done">Done</span><b>Your name stays with you</b><span>0.2.4: where a quest says your character's name, the addon saves <code>&lt;name&gt;</code> instead.</span></div>
     </div>
     <ol class="steps">
-      <li><b>Test pull request #9 in game.</b><p>Switch from Default to a Pathfinder theme and press Reload; then the guide's ≡ menu → Reload; then Submit → Save it now. Each should reload at once.</p></li>
-      <li><b>Merge <a href="https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/pull/9" target="_blank" rel="noopener">pull request #9</a>.</b><p>That publishes v0.2.1 on GitHub and uploads it to CurseForge.</p></li>
       <li><b>Paste the new description</b> on the CurseForge page (below), and mark the file Beta there if you'd rather.</li>
       <li><b>Post the tester message</b> on Discord.</li>
     </ol>
@@ -124,7 +122,7 @@ button.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 
   <section id="testers">
     <h2>Tester post for Discord</h2>
-    <p>Ready to post: the v0.2.0 download has every fix. It uses today's channel names; swap them if you restructure first.</p>
+    <p>Ready to post: the v0.2.4 download has every fix. It uses today's channel names; swap them if you restructure first.</p>
     <div class="paste"><header><span class="count" id="testerCount"></span><button class="copy" data-copy="tester">Copy post</button></header><pre id="tester">## 🧭 Aegis: Pathfinder is coming to WoW: Forever, and it needs testers
 
 Pathfinder's leveling guides need Forever's quests, and that's where you come in. This first build has no guides yet: it **records quests while you play** so we can write them.
@@ -132,11 +130,11 @@ Pathfinder's leveling guides need Forever's quests, and that's where you come in
 **What it does now**
 • Records every quest you pick up and hand in: who gives it and where, the objectives, XP, money, items and reputation
 • Records the XP each level needs and how long it takes
-• Accepts and turns in quests by itself (hold Shift to skip one), sells greys and repairs
+• Accepts and turns in quests by itself (hold Shift to skip one), and sells greys and repairs if you switch that on
 • The Pathfinder themes, or Default in Blizzard's own look
 
 **How to help**
-1. Download **Aegis_Forever_Pathfinder-v0.2.0.zip** (not "Source code") from &lt;https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/releases/latest&gt;
+1. Download **Aegis_Forever_Pathfinder-v0.2.4.zip** (not "Source code") from &lt;https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever/releases/latest&gt;
 2. Unzip into `_classic_beta_\Interface\AddOns\` (keep the folder named `Aegis_Forever_Pathfinder`) and restart the game fully
 3. Type `/apg`, click **Start collecting data** and tick **Automatically run**
 4. Play as you normally would
@@ -146,7 +144,7 @@ Everyone who sends data goes in the in-game contributors list.
 
 **Found a bug?** Post in #pathfinder-bug-reports with the Lua error text, what you were doing, and your version (it shows at login).
 
-The data never names your realm. The one name in it is the one you're credited under: your character's, unless you type another in the Submit window.</pre></div>
+The data never names your realm. The one name in it is the one you're credited under: your character's, unless you type another in the Submit window. Where a quest says your name, the addon writes &lt;name&gt; instead.</pre></div>
   </section>
 
   <section id="curse">
