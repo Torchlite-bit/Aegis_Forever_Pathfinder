@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.3 — quests accepted with DialogueUI
+
+- **Fixed: quests weren't accepted by themselves** when an addon such as
+  DialogueUI shows its own quest window. The addon looked for the game's quest
+  window, which those addons keep shut, and gave up. It now follows the quest
+  itself, from when it's offered to when it closes. Handing quests in already
+  worked.
+
+---
+
 ## 0.3.2 — greys sold again, tidier settings
 
 - **Fixed: grey items weren't sold** at a vendor, even with *Sell greys* switched

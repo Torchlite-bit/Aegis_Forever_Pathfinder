@@ -95,6 +95,13 @@ clone, following `.claude/CLAUDE.md` (#10).
   interaction manager (`PLAYER_INTERACTION_MANAGER_FRAME_SHOW`), so at `MERCHANT_SHOW`
   `MerchantFrame` may not be shown yet. 0.3.1 checked the window and never sold a
   grey; 0.3.2 tracks MERCHANT_SHOW/MERCHANT_CLOSED and sells a frame later.
+- **Other addons replace Blizzard's windows:** DialogueUI unregisters `QuestFrame`'s
+  events and shows its own window, so `QuestFrame` never opens. 0.3.2 checked
+  `QuestFrame:IsShown()` before accepting and never accepted; 0.3.3 tracks
+  QUEST_DETAIL/QUEST_FINISHED. Follow events, not Blizzard frames.
+- **Chat with no click (0.3.2, `/apg chattest`):** EMOTE is blocked on Forever, though
+  Zygor's code posts it from the event (Forever's global `SendChatMessage` only wraps
+  `C_ChatInfo.SendChatMessage`). Party and Guild: not tested yet.
 - **Discord posts the bot made are the bot's:** nobody else can edit them, so a
   change to a releases post, #downloads or #welcome goes through the bot
   (`Aegis_Discord_Tools`). The carry-over copied old posts with their old channel

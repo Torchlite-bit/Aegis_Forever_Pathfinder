@@ -51,13 +51,19 @@ end
 
 --[[ Quests ]]
 
+-- Whether an NPC's quest is open, from QUEST_DETAIL to QUEST_FINISHED. Not the
+-- game's QuestFrame: an addon such as DialogueUI shows its own window instead,
+-- and the game's never opens.
+local questOpen = false
+
 function Auto:QuestDetail()
+	questOpen = true
 	if not Wanted() then return end
 	local questID = Call(GetQuestID)
 	if questID and Call(C_QuestLog.IsQuestTrivial, questID) then return end
 	if not LogHasRoom() then return end
 	Later(function()
-		if QuestFrame and not QuestFrame:IsShown() then return end
+		if not questOpen then return end
 		if QuestGetAutoAccept and QuestGetAutoAccept() then
 			if AcknowledgeAutoAcceptQuest then AcknowledgeAutoAcceptQuest() end
 		else
@@ -65,6 +71,8 @@ function Auto:QuestDetail()
 		end
 	end)
 end
+
+function Auto:QuestFinished() questOpen = false end
 
 function Auto:QuestProgress()
 	if not Wanted() then return end
@@ -223,6 +231,7 @@ end
 
 AP:OnLogin(function()
 	AP:On("QUEST_DETAIL", function() Auto:QuestDetail() end)
+	AP:On("QUEST_FINISHED", function() Auto:QuestFinished() end)
 	AP:On("QUEST_PROGRESS", function() Auto:QuestProgress() end)
 	AP:On("QUEST_COMPLETE", function() Auto:QuestComplete() end)
 	AP:On("GOSSIP_SHOW", function() Auto:Gossip() end)
