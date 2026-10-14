@@ -34,13 +34,13 @@ uploaded to CurseForge once (`.github/workflows/release.yml`,
 ```markdown
 # Aegis: Pathfinder — Forever
 
-**The Pathfinder leveling guide, ported to WoW: Forever. No guides yet, so for now it collects the data to write them.**
+**The Pathfinder leveling guide, ported to WoW: Forever. One short test guide so far, for Northshire; it collects the data to write the rest.**
 
 ![WoW: Forever, Interface 16001](https://img.shields.io/badge/WoW%3A%20Forever-Interface%2016001-c79c2e?style=flat-square&labelColor=555) [![Discord: join us](https://img.shields.io/badge/Discord-join%20us-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/Hr66t25vE7) [![GitHub: source and data form](https://img.shields.io/badge/GitHub-source%20%26%20data%20form-24292f?style=flat-square&logo=github&logoColor=white)](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever)
 
 Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the modern engine. This is a port of [Aegis: Pathfinder](https://github.com/Torchlite-bit/Aegis_Pathfinder) for Turtle WoW (1.12), not that addon: the two clients share almost no API. On Turtle WoW? Get *Aegis: Pathfinder* instead.
 
-⚠️ **In development.** No guides yet. What works now: the guide window, the guide browser, the settings, quest and vendor automation, and the **data collector**.
+⚠️ **In development.** One test guide so far: **Northshire Valley (1-6)**. What works now: the guide window, the guide browser, the settings, quest and vendor automation, and the **data collector**.
 
 ---
 
@@ -50,7 +50,7 @@ Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the 
 
 **Default: Blizzard's own look.** One more theme, **Default**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. A new install starts in it; the Pathfinder themes are under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
 
-**No guides yet.** WoW: Forever is new, so the guide window says so and offers to **start collecting data** instead. The engine that follows guides is there and waiting.
+**A first test guide: Northshire Valley (1-6).** For Alliance characters: the human starting area, from Deputy Willem to Goldshire, written from the data players sent in. Open it from the guide browser (**+** on the guide window). Each step ticks itself as you accept, finish and hand in quests, and puts the game's own pin and arrow on the next place. Class quests show only for your class. The other zones will be written the same way, so please keep **collecting data**.
 
 ## The data collector
 

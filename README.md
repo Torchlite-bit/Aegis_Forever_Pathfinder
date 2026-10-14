@@ -4,8 +4,8 @@
 
 # Aegis: Pathfinder — Forever
 
-**The Pathfinder leveling guide, ported to WoW: Forever. No guides yet, so for
-now it collects the data to write them.**
+**The Pathfinder leveling guide, ported to WoW: Forever. One short test guide
+so far, for Northshire; it collects the data to write the rest.**
 
 [![WoW: Forever](https://img.shields.io/badge/WoW%3A%20Forever-Interface%2016001-c79c2e?style=flat-square&labelColor=555)](#install)
 [![CurseForge](https://img.shields.io/badge/CurseForge-download-F16436?style=flat-square&logo=curseforge&logoColor=white)](https://www.curseforge.com/wow/addons/aegis-pathfinder)
@@ -15,8 +15,9 @@ now it collects the data to write them.**
 > the modern engine. This is a port of [Aegis: Pathfinder](https://github.com/Torchlite-bit/Aegis_Pathfinder)
 > for Turtle WoW (1.12), not that addon. The two clients share almost no API.
 
-> ⚠️ **In development.** No guides yet. What works now: the guide window, the
-> guide browser, the settings, and the **data collector**.
+> ⚠️ **In development.** One test guide so far: **Northshire Valley (1-6)**.
+> What works now: the guide window, the guide browser, the settings, quest and
+> vendor automation, and the **data collector**.
 
 ---
 
@@ -35,9 +36,14 @@ drop-downs, gold Friz Quadrata labels, the Options list highlight and section
 rules, and the game's tooltip. Pick it under *Settings → Appearance → Theme*.
 Switching to or from it reloads the interface.
 
-**No guides yet.** WoW: Forever is new, so the guide window says so and offers
-to **start collecting data** instead. The engine that follows guides is there
-and waiting ([docs/guide-api.md](docs/guide-api.md)).
+**A first test guide: Northshire Valley (1-6).** For Alliance characters: the
+human starting area, from Deputy Willem to Goldshire, written from the data
+players sent in. Open it from
+the guide browser (**+** on the guide window). Each step ticks itself as you
+accept, finish and hand in quests, and puts the game's own pin and arrow on the
+next place. Class quests show only for your class. The other zones' guides
+will be written the same way ([docs/guide-api.md](docs/guide-api.md)), so
+please keep **collecting data**.
 
 ### The data collector
 

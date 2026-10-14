@@ -7,9 +7,11 @@ local Theme = AP.Theme
 	left; a category's guides in the middle; and on the right the guide you
 	point at, with the button that opens it.
 
-	There are no Forever guides yet, so every list says so and points at data
-	collection, and Home shows what has been collected instead: the XP each
-	level needs, as the collector has seen it, and the counts so far.
+	Forever has one short test guide so far (Northshire): Home lists your
+	guides (the ones you opened, or else the ones there are), and shows what
+	has been collected beside them: the XP each level needs, as the collector
+	has seen it, and the counts so far. An empty category points at data
+	collection.
 ]]
 
 local DEFAULT_W, DEFAULT_H = 820, 520
@@ -22,6 +24,13 @@ local frame, ui
 local view = { tab = "home", search = "" }
 
 local function Char() return AP.db.char end
+
+-- Open a guide: load it, show the guide window, and show it as current here.
+local function OpenGuide(name)
+	if not AP:LoadGuide(name) then return end
+	if AP.objectiveframe and not AP.objectiveframe:IsShown() then AP.objectiveframe:Show() end
+	AP:RefreshGuideBrowser()
+end
 
 local function Text(parent, role, size, color)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
@@ -156,7 +165,7 @@ local function ListRow(parent, i)
 		AP:RefreshGuideBrowser()
 	end)
 	row:SetScript("OnDoubleClick", function(self)
-		if self.guide then AP:LoadGuide(self.guide.name) end
+		if self.guide then OpenGuide(self.guide.name) end
 	end)
 	return row
 end
@@ -287,7 +296,7 @@ local function Build()
 	emptyButton:SetScript("OnClick", function() AP:ToggleCollectorFrame() end)
 	ui.emptyButton = emptyButton
 
-	-- Home: what has been collected, in place of the guides there are not yet.
+	-- Home: your guides, and what has been collected so far.
 	local home = CreateFrame("Frame", nil, middle)
 	home:SetPoint("TOPLEFT", middle, "TOPLEFT", PAD, -56)
 	home:SetPoint("BOTTOMRIGHT", middle, "BOTTOMRIGHT", -PAD, PAD)
@@ -386,6 +395,11 @@ function AP:RefreshGuideBrowser()
 			if self.guides[name] and #recent < 4 then recent[#recent + 1] = { name, GuideLevels(self.guides[name]) } end
 		end
 		if #recent == 0 then
+			for _, guide in ipairs(self:GetGuides(nil)) do
+				if #recent < 4 then recent[#recent + 1] = { guide.name, GuideLevels(guide) } end
+			end
+		end
+		if #recent == 0 then
 			recent[1] = { L.NO_GUIDES_TITLE .. " -- WoW: Forever is new.", "", "textDim" }
 			recent[2] = { "Turn on data collection to help write them.", "", "textDim" }
 		end
@@ -417,10 +431,10 @@ function AP:RefreshGuideBrowser()
 	local running = self.Collector:IsRunning()
 	if selected then
 		ui.paneTitle:SetText(selected.name)
-		ui.paneText:SetText(string.format("Levels %s. %d steps.", GuideLevels(selected), #selected.steps))
+		ui.paneText:SetText(string.format("Levels %s. %d steps.", GuideLevels(selected), #self:GuideSteps(selected)))
 		ui.paneButton:SetText("Open guide")
 		ui.paneButton:SetActive(false)
-		ui.paneButton:SetScript("OnClick", function() AP:LoadGuide(selected.name) end)
+		ui.paneButton:SetScript("OnClick", function() OpenGuide(selected.name) end)
 	else
 		ui.paneTitle:SetText(L.TITLE)
 		ui.paneText:SetText((running and L.COLLECTOR_ON or L.COLLECTOR_OFF) .. ". " .. self.Collector:StatsText() .. ".")

@@ -5,8 +5,9 @@ Every feature, window, setting, command and saved variable of
 (the 1.12 / Turtle WoW addon), and what this port does with it.
 
 The Forever port is a **shell**: the same windows and look, rebuilt on the
-Forever client's API, with **no guides** yet. In their place, a **data
-collector** records quests and levels so guides can be written from real data.
+Forever client's API, with one short **test guide** so far (Northshire
+Valley, 1-6, from 0.4.0). Beside it, a **data collector** records quests and
+levels so the guides can be written from real data.
 
 **Status key**
 

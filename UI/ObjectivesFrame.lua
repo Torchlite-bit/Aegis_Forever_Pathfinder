@@ -14,14 +14,16 @@ local Theme = AP.Theme
 	  body         the steps -- or, with no guide, what to do instead
 	  footer       the step's quest id, or the collector's state; the count
 
-	There are no guides for Forever yet, so the body's usual state is the empty
-	one: what Pathfinder is waiting for, and the button that starts collecting
-	the data guides will be written from. The ● chip lights while it collects.
+	Forever has one short test guide so far (Northshire), so with no guide open
+	the body says to pick one from the browser (+), and offers the button that
+	starts collecting the data the rest will be written from. The ● chip
+	lights while it collects.
 
 	Rows follow the concept's two models: most steps are a `.zrow` (a dot, an
 	action glyph, the title and the note under it); ACCEPT and TURNIN steps
 	become a full-width `.zband` once current or done, red while outstanding and
-	green once satisfied.
+	green once satisfied -- with the step's note under the band in focus mode.
+	Only the character's own steps are painted and counted (AP:GuideSteps).
 ]]
 
 local G = {
@@ -316,11 +318,22 @@ local function NewRow(i)
 	Theme:TextColor(note, "textDim")
 	row.note = note
 
+	-- The band keeps a row's height at the top; in focus mode its note shows under it.
 	local band = Theme:Band(row, G.ROWHEIGHT)
-	band:SetAllPoints(row)
+	band:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0)
+	band:SetPoint("TOPRIGHT", row, "TOPRIGHT", 0, 0)
 	band:EnableMouse(false)
 	band:Hide()
 	row.band = band
+
+	local bandNote = row:CreateFontString(nil, "OVERLAY")
+	bandNote:SetPoint("TOPLEFT", band, "BOTTOMLEFT", G.ROWPAD, -6)
+	bandNote:SetPoint("RIGHT", row, "RIGHT", -G.ROWPAD, 0)
+	bandNote:SetJustifyH("LEFT")
+	bandNote:SetJustifyV("TOP")
+	Theme:TextColor(bandNote, "textDim")
+	bandNote:Hide()
+	row.bandNote = bandNote
 
 	row:SetScript("OnEnter", function(self)
 		if not self.data then return end
@@ -339,6 +352,7 @@ local function SizeRowFonts(row)
 	row.sized = TextScale()
 	Theme:SetFont(row.title, "body2", math.floor(12 * TextScale() + 0.5))
 	Theme:SetFont(row.note, "body", math.floor(11 * TextScale() + 0.5))
+	Theme:SetFont(row.bandNote, "body", math.floor(11 * TextScale() + 0.5))
 	Theme:SetFont(row.band.label, "body", math.floor(12 * TextScale() + 0.5))
 end
 
@@ -350,7 +364,12 @@ local function PaintRow(row, guide, index, current, focus)
 	local isCurrent = index == current
 	local bandable = (step.action == "ACCEPT" or step.action == "TURNIN") and (done or isCurrent)
 	row.band:SetShown(bandable)
+	row.band:SetHeight(math.floor(G.ROWHEIGHT * TextScale() + 0.5))
 	for _, region in ipairs({ row.check, row.icon, row.title, row.note }) do region:SetShown(not bandable) end
+	-- Who and where for a hand-off: under the band, in focus mode (in the list, on hover).
+	local bandNote = bandable and focus and step.note and step.note ~= ""
+	row.bandNote:SetShown(bandNote)
+	row.bandNote:SetText(bandNote and step.note or "")
 	if bandable then
 		row.band.icon:SetTexture(Theme.actionIconByName[step.action])
 		row.band.label:SetText(step.title or step.action)
@@ -423,6 +442,9 @@ end
 local function PaintEmpty()
 	local empty = ui.empty
 	local running = AP.Collector:IsRunning()
+	local any = AP:HasGuides()
+	empty.title:SetText((any and L.PICK_GUIDE_TITLE or L.NO_GUIDES_TITLE):upper())
+	empty.text:SetText(any and L.PICK_GUIDE_BODY or L.NO_GUIDES_BODY)
 	empty.start:SetText(running and L.STOP_COLLECTING or L.START_COLLECTING)
 	empty.start:SetActive(running)
 	empty.auto:SetOn(AP.Collector:IsAuto())
@@ -443,9 +465,30 @@ local function VisibleRows(available)
 	return math.max(1, math.min(G.MAX_ROWS, math.floor(available / (G.ROWHEIGHT * TextScale()))))
 end
 
-local function PaintSteps(guide, current)
+-- The guide is done: a row saying so, where the step would be.
+local function PaintDone(row, guide)
+	row.step, row.data = nil, nil
+	SizeRowFonts(row)
+	row.band:Hide()
+	row.bandNote:Hide()
+	row.check:Hide()
+	row.icon:Hide()
+	row.title:Show()
+	row.note:Show()
+	row.title:SetText(L.GUIDE_DONE)
+	row.note:SetText(string.format(L.GUIDE_DONE_NOTE, guide.name))
+	row.note:SetWordWrap(true)
+	row.wash:Hide()
+	row.bar:Hide()
+	row:SetAlpha(1)
+	row:Show()
+end
+
+-- `mine`: the indices of the character's own steps (AP:GuideSteps); `current`
+-- the index of the step they are on.
+local function PaintSteps(guide, current, mine)
 	local overview = Char().overviewmode
-	local count = #guide.steps
+	local count = #mine
 	local rowH = math.floor(G.ROWHEIGHT * TextScale() + 0.5)
 	if not overview then
 		-- Focus: the step you are on, its note in full.
@@ -454,13 +497,20 @@ local function PaintSteps(guide, current)
 		row:ClearAllPoints()
 		row:SetPoint("TOPLEFT", ui.body, "TOPLEFT", 0, 0)
 		row:SetPoint("RIGHT", ui.body, "RIGHT", 0, 0)
-		if current > count then
-			row:Hide()
-			return rowH
+		local h
+		if not guide.steps[current] then
+			PaintDone(row, guide)
+			h = math.max(rowH, 31 + (row.note:GetStringHeight() or 0) + 10)
+		else
+			PaintRow(row, guide, current, current, true)
+			if row.bandNote:IsShown() then
+				-- A band, then its note 6px under it.
+				h = rowH + 6 + (row.bandNote:GetStringHeight() or 0) + 10
+			else
+				local noteH = row.note:IsShown() and (row.note:GetStringHeight() or 0) or 0
+				h = math.max(rowH, 31 + noteH + 10)
+			end
 		end
-		PaintRow(row, guide, current, current, true)
-		local noteH = row.note:IsShown() and (row.note:GetStringHeight() or 0) or 0
-		local h = math.max(rowH, 31 + noteH + 10)
 		row:SetHeight(h)
 		ui.scroll:Hide()
 		return h
@@ -475,7 +525,7 @@ local function PaintSteps(guide, current)
 		row:SetPoint("TOPLEFT", ui.body, "TOPLEFT", 0, -(i - 1) * rowH)
 		row:SetPoint("RIGHT", ui.scroll, "LEFT", -4, 0)
 		row:SetHeight(rowH)
-		PaintRow(row, guide, offset + i, current, false)
+		PaintRow(row, guide, mine[offset + i], current, false)
 	end
 	for i = shown + 1, #rows do rows[i]:Hide() end
 	ui.scroll:SetShown(count > shown)
@@ -489,8 +539,13 @@ end
 function AP:RefreshObjectivePanel()
 	if not frame then return end
 	local guide = self:GetCurrentGuide()
-	local current = guide and self:GetCurrentStep() or 0
-	local count = guide and #guide.steps or 0
+	local mine = guide and self:GuideSteps(guide) or {}
+	local current, position = 0, 0
+	if guide then
+		local _
+		current, _, position = self:GetCurrentStep()
+	end
+	local count = #mine
 	local running = self.Collector:IsRunning()
 
 	-- Header chips that show state.
@@ -510,11 +565,11 @@ function AP:RefreshObjectivePanel()
 	-- Nav row and progress.
 	local done = 0
 	if guide then
-		for i = 1, count do
-			if self:IsStepDone(guide.name, i) then done = done + 1 end
+		for _, index in ipairs(mine) do
+			if self:IsStepDone(guide.name, index) then done = done + 1 end
 		end
 	end
-	ui.navStep:SetText(guide and string.format("STEP %d", math.min(current, count)) or "NO GUIDE")
+	ui.navStep:SetText(guide and string.format("STEP %d", math.min(position, count)) or "NO GUIDE")
 	ui.navCount:SetText(guide and string.format("%d / %d", done, count) or "")
 	ui.prev:SetEnabled(guide ~= nil)
 	ui.next:SetEnabled(guide ~= nil)
@@ -525,7 +580,7 @@ function AP:RefreshObjectivePanel()
 	local bodyH
 	if guide then
 		ui.empty:Hide()
-		bodyH = PaintSteps(guide, current)
+		bodyH = PaintSteps(guide, current, mine)
 	else
 		for _, row in ipairs(rows) do row:Hide() end
 		ui.scroll:Hide()
@@ -550,7 +605,8 @@ end
 --- Focus mode (one step) or overview (all of them).
 function AP:ToggleOverviewMode()
 	Char().overviewmode = not Char().overviewmode
-	offset = math.max(0, (self:GetCurrentStep() or 1) - 3)
+	local _, _, position = self:GetCurrentStep()
+	offset = math.max(0, (position or 1) - 3)
 	self:RefreshObjectivePanel()
 end
 
@@ -580,7 +636,7 @@ local function Build()
 	-- Not in UISpecialFrames: Escape clears a target in a fight, and must not close the guide.
 	Theme:RegisterWindow(frame)
 	Theme:RestorePosition(frame, "objframe")
-	ui = {}
+	ui = { rows = rows }
 	frame.ui = ui   -- for the smoke test, and /dump
 
 	-- Header.
@@ -669,14 +725,7 @@ local function Build()
 	local function NavButton(glyph, tipText, delta)
 		local b = Theme:GlyphButton(navrow, glyph, 11, 20)
 		b:SetScript("OnClick", function()
-			local guide = AP:GetCurrentGuide()
-			if not guide then return end
-			local current = AP:GetCurrentStep()
-			if delta > 0 then
-				AP:SetStepDone(current, true)
-			elseif current > 1 then
-				AP:SetStepDone(current - 1, false)
-			end
+			if delta > 0 then AP:StepForward() else AP:StepBack() end
 		end)
 		b:HookScript("OnEnter", function(self) Theme:ShowTip(self, "BOTTOM", tipText) end)
 		b:HookScript("OnLeave", function(self) Theme:HideTip(self) end)

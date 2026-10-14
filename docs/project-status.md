@@ -8,9 +8,10 @@ browser; published copy at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq).
 
 - **The addon:** a port of *Aegis: Pathfinder* (Turtle WoW, 1.12) to
   **WoW: Forever** (client 1.60.1, `## Interface 16001`, Lua 5.1, the modern
-  Mainline engine). The same windows, settings and features, but **no guides
-  yet**: Forever is new, so the addon **collects quest and level data** that
-  the guides will be written from.
+  Mainline engine). The same windows, settings and features. Forever is new,
+  so the addon **collects quest and level data** that the guides are written
+  from; the first, a short **test guide for Northshire Valley (1-6)**, ships
+  in 0.4.0.
 - **Two looks:** the Pathfinder themes (Pathfinder Day, Night, Green, Purple,
   Grey, Tan, Red), and **Default**, the same windows in Blizzard's modern art.
 - **Getting data in:** players press *Submit data* (`/apg submit`) and paste a
@@ -83,8 +84,36 @@ clone, following `.claude/CLAUDE.md` (#10).
 6. **Still to confirm in game** (from the 0.2.0 list): quest auto accept and
    turn-in, vendor auto sell and repair (both off by default; switched on under
    *Settings → Automation*), and the level-up card.
+7. **The Northshire test guide (0.4.0): to confirm in game.** It was written
+   from one Human Warlock's run. Open questions, for a run with another class:
+   - The other classes' letters (Simple 3100 Warrior, Consecrated 3101 Paladin,
+     Encrypted 3102 Rogue, Hallowed 3103 Priest, Glyphic 3104 Mage) and their
+     trainers' places come from the Turtle guide, not Forever's data. A wrong id
+     leaves that class clicking the → twice. Hunters (Tordrin Sternblade is
+     Forever's Hunter trainer here) get no letter in the guide.
+   - Answered by the owner in game (2026-10-14): The Big Picture (91752, Elite)
+     can be done alone at level 5; the Nibbled-On Book (91741) drops from a
+     kobold; the kobold tracks (91772) are green tracks to click, starting just
+     outside the abbey on the road to Goldshire. The guide's notes say so.
+   - Rest and Relaxation (2158) was only seen offered at level 6.
+   - The guide shows to every Alliance character (guides filter by faction only).
 
 ## Learned the hard way (don't relearn these)
+
+- **Guides (0.4.0):** a step for one class or race (`class`/`race`) is left out
+  for everyone else everywhere: current step, list, counts, arrows, `/apg next`
+  and `prev` (`AP:GuideSteps`, `StepForward`, `StepBack`). A current ACCEPT or
+  TURNIN is a band without a ring, so its note shows under the band in focus
+  mode, and its by-hand fallback is the →. The waypoint is set once as a step
+  comes up (setting it on every scan took the arrow from a quest the player
+  tracked) and our own pin is cleared at a step with no place and at the end.
+  Every shipped quest step is checked against `data/merged.json` by the smoke test;
+  a step marked `unverified` only warns, so a data pull request never stops a
+  release. A disagreement on a verified step does fail main's tests (the intake's
+  PR runs no CI), so after merging data, look at main's run.
+- **Who sees a guide:** `HasGuides` counts only the character's faction's guides
+  (`GetGuides(nil)`), so a Horde character isn't told to pick the Alliance-only
+  Northshire guide.
 
 - **Secure buttons and key down:** an addon's `SecureActionButtonTemplate`
   button acts on the key-down half of a click while the ActionButtonUseKeyDown
