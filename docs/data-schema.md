@@ -107,7 +107,7 @@ A number seen more than once keeps all of it as a **Range**:
 | `objectives` | list of `{ text, type, required }` | client | `C_QuestLog.GetQuestObjectives`: `text` without its count ("Hogger slain"), `type` (`monster`, `item`, `object`, `event`, …), `required` |
 | `progress` | `{ [objectiveIndex] = Cells }` | observed | Where the player stood each time that objective's count went up |
 | `poi` | `{ objective = Cells, turnin = Cells, available = Cells }` | client | The client's own map points: `C_QuestLog.GetQuestsOnMap` for quests in the log (`objective` while in progress, `turnin` once ready), and `C_QuestLine.GetAvailableQuestLines` (`available`: the "!" pickup pins) |
-| `chain` | `{ prev = { [questID] = true }, next = { [questID] = true } }` | observed | Offered by the same NPC within 10 s of handing in another. Not linked when two or more were handed in to that NPC in that time (from 0.3.5) |
+| `chain` | `{ prev = { [questID] = true }, next = { [questID] = true } }` | observed | Offered by the same NPC within 10 s of handing in another. Not linked when two or more were handed in to that NPC in that time (from 0.4.1) |
 | `rewards` | Rewards | | What it gave |
 | `builds`, `by`, `first`, `last` | | | Stamps |
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.5 — two quests handed in at once
+## 0.4.1 — two quests handed in at once
 
 - **Fixed, in the collected data:** when you hand in two quests less than a
   second apart, the first one was saved as dropped (abandoned). Quest
@@ -11,6 +11,29 @@
   The XP is now checked for both. A quest offered after two or more were
   handed in to the same NPC is no longer linked to any of them, since it can't
   be told which one it follows.
+
+---
+
+## 0.4.0 — a first test guide: Northshire
+
+- **New: Northshire Valley (1-6), a short test guide** for Alliance
+  characters. The human starting area, from Deputy Willem to Goldshire. It was
+  written from the quest data players sent in. Open it from the guide browser:
+  click **+** on the guide window. Each step ticks itself as you accept, finish and hand in quests, and
+  the game's own pin and arrow point at the next place.
+- **Class quests show only for your class.** A Warlock sees the Warlock's
+  letter and tome, a Warrior the Warrior's letter, and so on. The steps, the
+  count and the arrows all skip the other classes' steps.
+- **Who and where, on screen.** On a quest pick-up or hand-in step, the note
+  saying who to talk to and where now shows under the step.
+- **The guide window** says "Pick a guide" when none is open, and "Guide done"
+  at the end of one. Opening a guide from the browser shows the guide window.
+- **The map pin** is set once for each step, so a quest you track yourself
+  keeps the arrow. Pathfinder takes its own pin away at the end of a guide.
+- **After updating, close the game and start it again.** A /reload is not
+  enough this time: there is a new file.
+- This is a test. Please tell us in the Discord where it goes wrong, and keep
+  data collection on: it is how the next guides get written.
 
 ---
 

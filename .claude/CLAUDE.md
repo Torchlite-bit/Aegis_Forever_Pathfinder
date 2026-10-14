@@ -1,9 +1,10 @@
 # Aegis: Pathfinder (Forever): how we work
 
 A leveling-guide addon for **WoW: Forever** (client 1.60.1, `## Interface 16001`, Lua 5.1,
-the modern Mainline engine). It is the Turtle WoW addon *Aegis: Pathfinder* as a shell: the
-same windows, settings and features, but no guides yet. It collects quest and level data from
-players, credits every contributor, and the guides will be written from that data.
+the modern Mainline engine). It is the Turtle WoW addon *Aegis: Pathfinder* ported: the same
+windows, settings and features, with one short test guide so far (`Guides/Northshire.lua`). It
+collects quest and level data from players, credits every contributor, and the guides are
+written from that data (`docs/guide-api.md`; the smoke test checks them against `data/merged.json`).
 
 **At the start of a session, read `docs/project-status.md`**: what has shipped, what's open,
 and what's next. The Launch Kit (`docs/launch-kit.html`) holds the CurseForge page text, the
@@ -57,10 +58,15 @@ update `docs/project-status.md` in the same pull request.
    if ($LASTEXITCODE -ge 8) { throw "robocopy failed with exit code $LASTEXITCODE" }
    ```
 
-   Exit codes below 8 mean success. This copies the same 91 files `package.py` puts in the zip
-   (checked 2026-10-13 with `/L`). `/MIR` never deletes from the installed copy anything that
+   Exit codes below 8 mean success. This copies the same files `package.py` puts in the zip
+   (91 checked 2026-10-13 with `/L`; 92 from 0.4.0, with `Guides/Northshire.lua`). `/MIR` never deletes from the installed copy anything that
    matches an exclusion (a `Tools` or `docs` folder, a dot file): if such leftovers appear
    there, list them and ask before sending them to the Recycle Bin.
+   **One installed copy, several sessions:** a `/MIR` from another branch deletes what that
+   branch lacks (on 2026-10-14 a main-based mirror wiped the Northshire guide the owner was
+   testing). Before mirroring, read the installed TOC's `## Version` and compare its file list
+   with yours: if it holds a newer version or files your branch doesn't have, another
+   session's build is being tested, so ask the owner before installing over it.
    Before the first mirror of a session, check the installed copy isn't a folder link
    (`(Get-Item -LiteralPath $dst -Force).LinkType` is empty): mirroring into a link would write
    over this clone.

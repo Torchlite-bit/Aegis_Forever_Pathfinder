@@ -8,9 +8,10 @@ browser; published copy at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq).
 
 - **The addon:** a port of *Aegis: Pathfinder* (Turtle WoW, 1.12) to
   **WoW: Forever** (client 1.60.1, `## Interface 16001`, Lua 5.1, the modern
-  Mainline engine). The same windows, settings and features, but **no guides
-  yet**: Forever is new, so the addon **collects quest and level data** that
-  the guides will be written from.
+  Mainline engine). The same windows, settings and features. Forever is new,
+  so the addon **collects quest and level data** that the guides are written
+  from; the first, a short **test guide for Northshire Valley (1-6)**, ships
+  in 0.4.0.
 - **Two looks:** the Pathfinder themes (Pathfinder Day, Night, Green, Purple,
   Grey, Tan, Red), and **Default**, the same windows in Blizzard's modern art.
 - **Getting data in:** players press *Submit data* (`/apg submit`) and paste a
@@ -83,7 +84,20 @@ clone, following `.claude/CLAUDE.md` (#10).
 6. **Still to confirm in game** (from the 0.2.0 list): quest auto accept and
    turn-in, vendor auto sell and repair (both off by default; switched on under
    *Settings → Automation*), and the level-up card.
-7. **Data saved before 0.3.5:** quest 21 (*Skirmish at Echo Ridge*) has
+7. **The Northshire test guide (0.4.0): to confirm in game.** It was written
+   from one Human Warlock's run. Open questions, for a run with another class:
+   - The other classes' letters (Simple 3100 Warrior, Consecrated 3101 Paladin,
+     Encrypted 3102 Rogue, Hallowed 3103 Priest, Glyphic 3104 Mage) and their
+     trainers' places come from the Turtle guide, not Forever's data. A wrong id
+     leaves that class clicking the → twice. Hunters (Tordrin Sternblade is
+     Forever's Hunter trainer here) get no letter in the guide.
+   - Answered by the owner in game (2026-10-14): The Big Picture (91752, Elite)
+     can be done alone at level 5; the Nibbled-On Book (91741) drops from a
+     kobold; the kobold tracks (91772) are green tracks to click, starting just
+     outside the abbey on the road to Goldshire. The guide's notes say so.
+   - Rest and Relaxation (2158) was only seen offered at level 6.
+   - The guide shows to every Alliance character (guides filter by faction only).
+8. **Data saved before 0.4.1:** quest 21 (*Skirmish at Echo Ridge*) has
    `seen.abandoned = 1` and no `xpObserved` in `data/merged.json`, though it was
    handed in: it went in less than a second before 91752 (*The Big Picture*) at
    Marshal McBride, and only the last turn-in was kept. The same moment linked
@@ -96,11 +110,26 @@ clone, following `.claude/CLAUDE.md` (#10).
 
 - **Quests go in back to back:** quest automation hands in every finished quest an
   NPC takes, well under a second apart, and only then picks up what it offers. Up
-  to 0.3.4 the collector kept only the last turn-in: the first of two counted as
+  to 0.4.0 the collector kept only the last turn-in: the first of two counted as
   abandoned, lost its XP check, and the NPC's next quest was linked to the last one.
-  0.3.5 keeps the last few seconds' turn-ins by quest id, checks the first quest's
+  0.4.1 keeps the last few seconds' turn-ins by quest id, checks the first quest's
   XP as the second's reward frame opens, and links no chain when two or more went
   to that NPC. The offer in progress (`pendingDetail`) is still one slot.
+
+- **Guides (0.4.0):** a step for one class or race (`class`/`race`) is left out
+  for everyone else everywhere: current step, list, counts, arrows, `/apg next`
+  and `prev` (`AP:GuideSteps`, `StepForward`, `StepBack`). A current ACCEPT or
+  TURNIN is a band without a ring, so its note shows under the band in focus
+  mode, and its by-hand fallback is the →. The waypoint is set once as a step
+  comes up (setting it on every scan took the arrow from a quest the player
+  tracked) and our own pin is cleared at a step with no place and at the end.
+  Every shipped quest step is checked against `data/merged.json` by the smoke test;
+  a step marked `unverified` only warns, so a data pull request never stops a
+  release. A disagreement on a verified step does fail main's tests (the intake's
+  PR runs no CI), so after merging data, look at main's run.
+- **Who sees a guide:** `HasGuides` counts only the character's faction's guides
+  (`GetGuides(nil)`), so a Horde character isn't told to pick the Alliance-only
+  Northshire guide.
 
 - **Secure buttons and key down:** an addon's `SecureActionButtonTemplate`
   button acts on the key-down half of a click while the ActionButtonUseKeyDown

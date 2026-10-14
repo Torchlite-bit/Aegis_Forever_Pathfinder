@@ -63,6 +63,52 @@ def check_envelope(envelope, credit):
     assert isinstance(data["id"], str) and data["id"], "the collection has an id"
 
 
+DATA = os.path.join(ROOT, "data", "merged.json")
+NEAR = 0.03   # how far a step's place may be from where the data saw the NPC (0-1 map units)
+
+
+def check_guides(ns):
+    """The shipped guides against the collected data: each quest step's id and title are
+    in data/merged.json, and an ACCEPT or TURNIN stands where the data saw that quest
+    picked up or handed in. A step marked `unverified = true` (written from another
+    source, e.g. the other classes' letters from the Turtle guide) may name a quest the
+    data hasn't seen, and when the data disagrees with it that is a warning, not a
+    failure, so new data never stops a release. Returns (problems, warnings, matched,
+    unseen): matched counts the steps the data confirms, unseen the unverified steps
+    whose quest the data hasn't seen yet."""
+    with open(DATA, encoding="utf-8") as handle:
+        quests = json.load(handle)["quests"]
+    problems, warnings, matched, unseen = [], [], 0, 0
+    for name in ns.guidelist.values():
+        for index, step in ns.guides[name].steps.items():
+            qid = step.qid
+            if qid is None:
+                continue
+            where = "%s, step %d (%s %s)" % (name, index, step.action, step.title)
+            report = warnings if step.unverified else problems
+            quest = quests.get(str(int(qid)))
+            if quest is None:
+                if step.unverified:
+                    unseen += 1
+                else:
+                    problems.append(where + ": quest %d isn't in the collected data" % qid)
+                continue
+            found = len(report)
+            if quest.get("title") and quest["title"] != step.title:
+                report.append(where + ": the data calls quest %d %r" % (qid, quest["title"]))
+            places = {"ACCEPT": quest.get("pickups"), "TURNIN": quest.get("turnins")}.get(step.action)
+            if places and step.map is not None:
+                near = [p for p in places.values() if p.get("mapID") == step.map and p.get("x") is not None
+                        and abs(p["x"] - step.x) <= NEAR and abs(p["y"] - step.y) <= NEAR]
+                if not near:
+                    report.append(where + ": not where the data saw it (%s)" % ", ".join(
+                        "%s %.3f,%.3f" % (p.get("name") or p.get("kind"), p.get("x") or 0, p.get("y") or 0)
+                        for p in places.values()))
+            if len(report) == found:
+                matched += 1
+    return problems, warnings, matched, unseen
+
+
 def run(skin):
     lua = lupa.LuaRuntime(unpack_returned_tuples=True)
     lua.execute("date = os.date; time = os.time; debugstack = function() return debug.traceback() end")
@@ -105,6 +151,13 @@ def run(skin):
             continue
         load(read(os.path.join(ROOT, relative)), relative, ADDON, ns, written)
     ElementTree.parse(os.path.join(ROOT, "Bindings.xml"))
+    # Before the scenario registers its own test guide: only the shipped ones.
+    problems, warnings, matched, unseen = check_guides(ns)
+    for warning in warnings:
+        print("WARNING (%s skin): an unverified guide step disagrees with the data: %s" % (skin, warning))
+    if problems:
+        print("FAILED (%s skin): the guides disagree with the collected data:\n  %s" % (skin, "\n  ".join(problems)))
+        return False
 
     scenario = lua.eval("""function(source, ns, skin)
         local chunk = assert(loadstring(source, "@smoke_scenario.lua"))
@@ -148,8 +201,9 @@ def run(skin):
         for text in [export] + ([code] if code else []):
             found = ingest.decode("```\n" + text + "\n```")
             assert len(found) == 1, "ingest finds one submission, not %d" % len(found)
-    print("%s skin: loaded %d files; %s; text %.1f KB%s, decoded%s" % (
-        skin, len(files), result, len(export) / 1024,
+    print("%s skin: loaded %d files; %d guide steps match the collected data (%d not seen in it yet); %s; "
+          "text %.1f KB%s, decoded%s" % (
+        skin, len(files), matched, unseen, result, len(export) / 1024,
         "; share code %.1f KB (the mock doesn't compress)" % (len(code) / 1024) if code
         else "; no share code (no C_EncodingUtil)",
         " and read by Tools/ingest.py" if ingest else ""))
