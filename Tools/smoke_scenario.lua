@@ -573,10 +573,19 @@ if skin == "pathfinder" then
 	check(Chat("accepted and turned in by themselves"), "and an old character is told it was turned on")
 end
 S.frame = { questID = 500, title = "Auto", text = "", objective = "" }
+-- With DialogueUI the game's quest window never opens: its own does. 0.3.2 asked the
+-- game's window and accepted nothing.
+QuestFrame:Hide()
+Mock.accepted = nil
 Mock.Fire("QUEST_DETAIL", 0)
-QuestFrame:Show()
 Mock.Advance(0.5)
-check(Mock.accepted, "an offered quest is accepted by itself")
+check(Mock.accepted, "an offered quest is accepted by itself, though the game's quest window stays shut")
+-- Closed before the moment passes: nothing is accepted.
+Mock.accepted = nil
+Mock.Fire("QUEST_DETAIL", 0)
+Mock.Fire("QUEST_FINISHED")
+Mock.Advance(0.5)
+check(not Mock.accepted, "a quest closed at once is not accepted")
 S.frame = { questID = 500, title = "Auto", choices = { { id = 1, name = "A" }, { id = 2, name = "B" } } }
 Mock.rewardTaken = nil
 Mock.Fire("QUEST_COMPLETE")
