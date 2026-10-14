@@ -40,7 +40,8 @@ World of Warcraft/<client folder>/WTF/Account/<your account>/SavedVariables/Aegi
 
 The file holds only this addon's settings and collected data. It never names
 your character's realm, and characters are recorded as race, class and
-faction. The one name in what you send is your credit name.
+faction. The one name in what you send is your credit name. Where a quest
+says your character's name, the addon writes `<name>` instead.
 
 ### If something went wrong
 

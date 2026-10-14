@@ -91,7 +91,7 @@ A number seen more than once keeps all of it as a **Range**:
 | Field | Type | Source | Meaning |
 |---|---|---|---|
 | `title` | string | frame / client | `GetTitleText()`, else `C_QuestLog.GetTitleForQuestID` |
-| `description` | string | frame | `GetQuestText()` on the offer |
+| `description` | string | frame | `GetQuestText()` on the offer. In every quest text the player's name, which the game writes into some of them, is `<name>`: the collector replaces it (0.2.4 on; saved text is cleaned at login and before sending), and the intake replaces the credit name and its first word for older clients |
 | `objectiveText` | string | frame | `GetObjectiveText()` on the offer |
 | `progressText` | string | frame | `GetProgressText()`: what the NPC says before you hand in |
 | `completionText` | string | frame | `GetRewardText()` on the reward frame |

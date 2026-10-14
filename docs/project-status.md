@@ -38,6 +38,7 @@ browser; published copy at https://claude.ai/artifact/YLXpspLGznx9qMU5cFzMhq).
 | #9 | **0.2.1**: every Reload asks through one dialog whose Reload button is the secure /reload button. Tested in game on 2026-10-13: it reloads from all three places |
 | #11 | **0.2.2**: the Reload dialog's first question is no longer blank; Clear data and Reload no longer hide each other; going back to the running skin withdraws its reload request. Tested in game |
 | #12 | **0.2.3**: text drawn in our fonts is set again after login and as the ≡ menu opens (labels were blank after a skin switch); `/apg mouse` names what has the mouse; window stacking keeps each frame above its parent (the Default X took clicks on only a few pixels) |
+| #13 | **0.2.4**: the player's name, which the game writes into some quest text, is saved as `<name>` (and cleaned from saved data at login and before sending); the intake strips the credit name and its first word; the stored data was cleaned |
 
 **Released:** v0.2.1 on GitHub, and on CurseForge as file 9167387 (project
 1742985, game version id 17053, found by itself; uploaded as a *Release*, since
@@ -76,6 +77,14 @@ clone, following `.claude/CLAUDE.md` (#10).
 - **A new frame is shown:** `Hide()` on a frame just made fires its OnHide.
   Hide it before setting an OnHide that forgets state (0.2.1's first Reload
   question came up blank that way).
+- **Names in quest text:** the game writes the player's name into some quest
+  text. Saved as is, it went out even under another credit name (0.2.0 to
+  0.2.3). `Collector.Unnamed` writes `<name>`; the intake does it too. The
+  `data-submissions` branch's history still holds the first submission's raw
+  text (it named the player only as their own credit name).
+- **Class quests:** this client has no API that says a quest is for one class
+  (`GetQuestTagInfo` gave none; `GetQuestClassification` has no class kind).
+  Tell them apart from the data: the classes that saw them, the giver, the rewards.
 - **Our fonts load late** the first time a game session uses them (after a
   switch from Default): some labels built then came up blank until the next
   reload. `Theme:SetFont` keeps our font strings, and `Theme:RefreshFontStrings`

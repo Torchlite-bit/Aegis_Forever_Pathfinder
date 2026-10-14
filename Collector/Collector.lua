@@ -52,6 +52,55 @@ local logQueued
 local repCache = {}
 
 ------------------------------------------------------------------------------------------
+-- The player's name in quest text
+------------------------------------------------------------------------------------------
+
+--[[ The game writes the player's name into some quest text ("You there!
+	Genesys, right?"). It stays at home: the text keeps NAME_MARK in its place,
+	and the one name that goes out is the credit name. Only a whole name is
+	replaced, never one inside a longer word. ]]
+Collector.NAME_MARK = "<name>"
+local TEXT_FIELDS = { "title", "description", "objectiveText", "progressText", "completionText" }
+
+--- `text` with `name` (default: this character's) replaced by NAME_MARK.
+function Collector.Unnamed(text, name)
+	if type(text) ~= "string" or text == "" then return text end
+	name = name or Call(UnitName, "player")
+	if type(name) ~= "string" or #name < 2 then return text end
+	local pattern = "()" .. name:gsub("%W", "%%%0") .. "()"
+	local out, from = {}, 1
+	for first, after in text:gmatch(pattern) do
+		local before, next = text:sub(first - 1, first - 1), text:sub(after, after)
+		-- Whole names only: no ASCII letter, and no byte of a longer UTF-8 letter, on either side.
+		if not before:find("[%a\128-\255]") and not next:find("[%a\128-\255]") then
+			out[#out + 1] = text:sub(from, first - 1)
+			out[#out + 1] = Collector.NAME_MARK
+			from = after
+		end
+	end
+	if from == 1 then return text end
+	out[#out + 1] = text:sub(from)
+	return table.concat(out)
+end
+
+--- Takes this character's name out of every quest text already saved. Returns
+--- how many texts changed.
+function Collector:ForgetName(name)
+	local changed = 0
+	for _, quest in pairs(data and data.quests or {}) do
+		for _, field in ipairs(TEXT_FIELDS) do
+			local text = quest[field]
+			local clean = Collector.Unnamed(text, name)
+			if clean ~= text then
+				quest[field] = clean
+				changed = changed + 1
+			end
+		end
+	end
+	return changed
+end
+
+------------------------------------------------------------------------------------------
 -- State
 ------------------------------------------------------------------------------------------
 
@@ -96,6 +145,15 @@ function Collector:Init()
 		data[key] = data[key] or {}
 	end
 end
+
+-- Quest text saved before 0.2.4 can hold this character's name: it comes out once
+-- the game knows who is playing, before anything can be sent (the file goes out too).
+AP:On("PLAYER_ENTERING_WORLD", function()
+	local name = Call(UnitName, "player")
+	if data and type(name) == "string" and name ~= "" and name ~= (UNKNOWNOBJECT or "Unknown") then
+		Collector:ForgetName(name)
+	end
+end)
 
 function Collector:GetData()
 	return data
@@ -340,9 +398,9 @@ function Collector:QuestDetail(startItemID)
 	local questID = Call(GetQuestID)
 	if not questID or questID == 0 then return end
 	local quest = Quest(questID)
-	quest.title = Call(GetTitleText) or quest.title
-	quest.description = Call(GetQuestText) or quest.description
-	quest.objectiveText = Call(GetObjectiveText) or quest.objectiveText
+	quest.title = Collector.Unnamed(Call(GetTitleText)) or quest.title
+	quest.description = Collector.Unnamed(Call(GetQuestText)) or quest.description
+	quest.objectiveText = Collector.Unnamed(Call(GetObjectiveText)) or quest.objectiveText
 	startItemID = Readable(startItemID)
 	local who = Talker()
 	if startItemID and startItemID ~= 0 then
@@ -428,7 +486,7 @@ function Collector:QuestProgress()
 	local questID = Call(GetQuestID)
 	if not questID or questID == 0 then return end
 	local quest = Quest(questID)
-	quest.progressText = Call(GetProgressText) or quest.progressText
+	quest.progressText = Collector.Unnamed(Call(GetProgressText)) or quest.progressText
 end
 
 -- The reward frame at the turn-in NPC.
@@ -436,8 +494,8 @@ function Collector:QuestComplete()
 	local questID = Call(GetQuestID)
 	if not questID or questID == 0 then return end
 	local quest = Quest(questID)
-	quest.title = Call(GetTitleText) or quest.title
-	quest.completionText = Call(GetRewardText) or quest.completionText
+	quest.title = Collector.Unnamed(Call(GetTitleText)) or quest.title
+	quest.completionText = Collector.Unnamed(Call(GetRewardText)) or quest.completionText
 	local here = Here()
 	MergeOffered(quest, FrameRewards(questID), here.level)
 	pendingComplete = {

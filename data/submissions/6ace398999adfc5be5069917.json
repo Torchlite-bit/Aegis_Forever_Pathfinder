@@ -146,7 +146,7 @@
      }
     },
     "completionText": "I don't like hearing of all these kobolds in our mine.  No good can come of this.  Here, take this as payment, and when you're ready, speak to me again.  I would like you to go back to the mines one more time...",
-    "description": "Genesys, my scouts tell me that the kobold infestation is larger than we had thought.  A group of kobold workers has camped near the Echo Ridge Mine to the north.\n\nGo to the mine and remove them.  We know there are at least 10.  Kill them, see if there are more, then report back to me.",
+    "description": "<name>, my scouts tell me that the kobold infestation is larger than we had thought.  A group of kobold workers has camped near the Echo Ridge Mine to the north.\n\nGo to the mine and remove them.  We know there are at least 10.  Kill them, see if there are more, then report back to me.",
     "first": 1791920440,
     "frequency": 0,
     "last": 1791921667,
@@ -279,7 +279,7 @@
      "Human:WARLOCK:Alliance": 3
     },
     "completionText": "Excellent... I was never able to gain access to this text, it was held in a protected wing of the library that would have looked suspicious for me to be loitering around.\n\nWell, you did a good job in getting this, and I'm convinced that you can probably handle your own imp, so there's no reason for me not to show you how to summon one.",
-    "description": "You there! Genesys, right?\n\nI hope you're sure about becoming a warlock, because if you can't hold your own, you're likely to get pulled under.\n\nI'm to teach you, but I need to make sure you're strong enough first.\n\nThere was a novice studying at the Abbey who ran off to join the Defias Brotherhood. Why do I care? Well, he stole some important books.\n\nOne of those happens to be a book I've wanted for myself, the Powers of the Void. Steal it for me, they have it hidden at their tent in the Vineyards.",
+    "description": "You there! <name>, right?\n\nI hope you're sure about becoming a warlock, because if you can't hold your own, you're likely to get pulled under.\n\nI'm to teach you, but I need to make sure you're strong enough first.\n\nThere was a novice studying at the Abbey who ran off to join the Defias Brotherhood. Why do I care? Well, he stole some important books.\n\nOne of those happens to be a book I've wanted for myself, the Powers of the Void. Steal it for me, they have it hidden at their tent in the Vineyards.",
     "first": 1791919832,
     "frequency": 0,
     "last": 1791921232,
@@ -574,7 +574,7 @@
       "15": true
      }
     },
-    "description": "Your previous investigations are proof that the Echo Ridge Mine needs purging.  Return to the mine and help clear it of kobolds.\n\nWaste no time, Genesys.  The longer the kobolds are left unmolested in the mine, the deeper a foothold they gain in Northshire.",
+    "description": "Your previous investigations are proof that the Echo Ridge Mine needs purging.  Return to the mine and help clear it of kobolds.\n\nWaste no time, <name>.  The longer the kobolds are left unmolested in the mine, the deeper a foothold they gain in Northshire.",
     "first": 1791921667,
     "frequency": 0,
     "last": 1791921671,
@@ -787,7 +787,7 @@
      }
     },
     "completionText": "As you grow in power, you will be tempted--you must always remember to control yourself. I will not lie--corruption can come to any practitioner of the arcane; especially one who deals with creatures from the Twisting Nether. Be patient, and be prudent... but do not let that repress your ambition.\n\nAs you grow more powerful, return to me and I will teach you more about our ways.",
-    "description": "I was asked to bring this to your attention as soon as you returned from the kobold camps, Genesys. It appears to be a letter sealed with the insignia of Drusilla, one of our local trainers. I wouldn't hesitate to read it before you go about any other business here in the Abbey.",
+    "description": "I was asked to bring this to your attention as soon as you returned from the kobold camps, <name>. It appears to be a letter sealed with the insignia of Drusilla, one of our local trainers. I wouldn't hesitate to read it before you go about any other business here in the Abbey.",
     "first": 1791920437,
     "frequency": 0,
     "last": 1791920477,
@@ -829,7 +829,7 @@
       "1429:50:43": 5
      }
     },
-    "progressText": "Ah, so you've arrived, and not a moment too soon, Genesys. Some of the guards were over here a moment ago and were giving me curious looks... pathetic mundanes.",
+    "progressText": "Ah, so you've arrived, and not a moment too soon, <name>. Some of the guards were over here a moment ago and were giving me curious looks... pathetic mundanes.",
     "rewards": {
      "money": {
       "count": 1,
@@ -965,7 +965,7 @@
       "1429:52:39": 1
      }
     },
-    "progressText": "Hey Genesys.  I'm getting hungry...did you get that tough wolf meat?",
+    "progressText": "Hey <name>.  I'm getting hungry...did you get that tough wolf meat?",
     "rewards": {
      "choices": {
       "6070": {
@@ -1074,7 +1074,7 @@
      }
     },
     "completionText": "Oh, Deputy Willem told you to speak with me?  He's a brave man and always willing to help, but his duties keep him stuck at Northshire Abbey and I'm afraid the problem I have today is beyond him.\n\nPerhaps you can help me?",
-    "description": "You've shown yourself a dependable warlock, Genesys.  Dependable, and not afraid to get your hands dirty, eh?\n\nI have a friend, Milly Osworth, who's in some trouble.  She's over with her wagon on the other side of the abbey, near the stable.  I'm sure she could use a pair of hands like yours.",
+    "description": "You've shown yourself a dependable warlock, <name>.  Dependable, and not afraid to get your hands dirty, eh?\n\nI have a friend, Milly Osworth, who's in some trouble.  She's over with her wagon on the other side of the abbey, near the stable.  I'm sure she could use a pair of hands like yours.",
     "first": 1791921283,
     "frequency": 0,
     "last": 1791921336,
@@ -1397,7 +1397,7 @@
       "18": true
      }
     },
-    "description": "Garrick Padfoot - a cutthroat who's plagued our farmers and merchants for weeks - was seen at a shack near the vineyards, which lies east of the Abbey and across the bridge.  Bring me the villain's head, and earn his bounty!\n\nBut be wary, Genesys.  Garrick has gathered a gang of thugs around him.  He will not be an easy man to reach.",
+    "description": "Garrick Padfoot - a cutthroat who's plagued our farmers and merchants for weeks - was seen at a shack near the vineyards, which lies east of the Abbey and across the bridge.  Bring me the villain's head, and earn his bounty!\n\nBut be wary, <name>.  Garrick has gathered a gang of thugs around him.  He will not be an easy man to reach.",
     "first": 1791921284,
     "frequency": 0,
     "last": 1791921285,
@@ -1482,7 +1482,7 @@
      }
     },
     "completionText": "Well done, citizen.  Those kobolds are thieves and cowards, but in large numbers they pose a threat to us.  And the humans of Stormwind do not need another threat.\n\nFor defeating them, you have my gratitude.",
-    "description": "Your first task is one of cleansing, Genesys.  A clan of kobolds have infested the woods to the north.  Go there and fight the kobold vermin you find.  Reduce their numbers so that we may one day drive them from Northshire.",
+    "description": "Your first task is one of cleansing, <name>.  A clan of kobolds have infested the woods to the north.  Go there and fight the kobold vermin you find.  Reduce their numbers so that we may one day drive them from Northshire.",
     "first": 1791919752,
     "frequency": 0,
     "last": 1791920437,
@@ -1617,7 +1617,7 @@
       "7": true
      }
     },
-    "completionText": "Ah, good.  Another volunteer.  We're getting a lot of you these days.\n\nI hope it's enough.\n\nThe human lands are threatened from without, and so many of our forces have been marshaled abroad.  This, in turn, leaves room for corrupt and lawless groups to thrive within our borders.\n\nIt is a many-fronted battle we wage, Genesys.  Gird yourself for a long campaign.",
+    "completionText": "Ah, good.  Another volunteer.  We're getting a lot of you these days.\n\nI hope it's enough.\n\nThe human lands are threatened from without, and so many of our forces have been marshaled abroad.  This, in turn, leaves room for corrupt and lawless groups to thrive within our borders.\n\nIt is a many-fronted battle we wage, <name>.  Gird yourself for a long campaign.",
     "description": "I hope you strapped your belt on tight, young warlock, because there is work to do here in Northshire.\n\nAnd I don't mean farming.\n\nThe Stormwind guards are hard pressed to keep the peace here, with so many of us in distant lands and so many threats pressing close.  And so we're enlisting the aid of anyone willing to defend their home.  And their alliance.\n\nIf you're here to answer the call, then speak with my superior, Marshal McBride.  He's inside the abbey behind me.",
     "first": 1791919739,
     "frequency": 0,
@@ -1901,7 +1901,7 @@
       "1429:52:37": 1
      }
     },
-    "progressText": "Have you rescued my books yet, Genesys?!",
+    "progressText": "Have you rescued my books yet, <name>?!",
     "rewards": {
      "choices": {
       "247840": {

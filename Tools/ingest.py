@@ -854,6 +854,44 @@ def _newest_stamp(data):
     return max((stamp for stamp in stamps if stamp), default=None)
 
 
+NAME_MARK = "<name>"
+# Words a credit name may start with that are no one's name: they stay in quest text.
+_NOT_NAMES = {"the", "and", "you", "your", "our", "for", "with", "not", "but", "from", "his", "her",
+              "lord", "lady", "sir", "king", "queen", "mister", "miss", "player", "anonymous"}
+
+
+def names_to_hide(contributor):
+    """The names that come out of quest text: the credit name, and its first
+    word. Left empty, the credit name is the character's name; typed, it most
+    often starts with it ("Genesys Firstborn")."""
+    name = clean_name(contributor)
+    if not name:
+        return []
+    names = [name]
+    first = name.split(" ")[0]
+    if first != name and len(first) >= 3 and first[0].isupper() and first.lower() not in _NOT_NAMES:
+        names.append(first)
+    return names
+
+
+def unname(text, names):
+    """`text` with each of `names` replaced by NAME_MARK, whole words only. Clients
+    from 0.2.4 do this themselves with the character's own name."""
+    if not isinstance(text, str):
+        return text
+    for name in sorted(names, key=len, reverse=True):
+        text = re.sub(r"(?<!\w)" + re.escape(name) + r"(?!\w)", NAME_MARK, text)
+    return text
+
+
+def unname_quests(data, names):
+    for quest in (data.get("quests") or {}).values():
+        for field in QUEST_TEXTS:
+            if field in quest:
+                quest[field] = unname(quest[field], names)
+    return data
+
+
 def sanitize(envelope):
     """The envelope with only what docs/data-schema.md knows, cleaned. Raises
     IngestError when it isn't Pathfinder data at all."""
@@ -862,6 +900,8 @@ def sanitize(envelope):
     if envelope.get("addon") not in (None, ADDON):
         raise IngestError("this is data from another addon.")
     data = _collection(envelope.get("data"))
+    # The game writes the player's name into some quest text: it never goes into the repository.
+    unname_quests(data, names_to_hide(envelope.get("contributor")))
     version, build = envelope.get("addonVersion"), envelope.get("build")
     return {
         "format": _integer(envelope.get("format"), 1, 100),
