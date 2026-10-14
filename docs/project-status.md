@@ -73,6 +73,8 @@ clone, following `.claude/CLAUDE.md` (#10).
    repo `Aegis_Discord_Tools`, run from the owner's PC): see the Launch Kit's
    Discord section for the layout and what's left (deleting the carry-over's
    copies, Administrator off, empty categories, Community and Onboarding).
+   Since 2026-10-14 the archive is hidden, #testing is in it, and anyone can test:
+   bugs go to help-and-bugs and data to share-and-submit, tagged Pathfinder (Forever).
 5. **Decided (0.3.0):** a new install starts on Default; an earlier install keeps
    the theme it saved.
 6. **Still to confirm in game** (from the 0.2.0 list): quest auto accept and
