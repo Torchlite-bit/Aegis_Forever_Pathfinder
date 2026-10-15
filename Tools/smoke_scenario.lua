@@ -977,9 +977,16 @@ check(Mock.waypoint == nil, "its pin is taken away")
 check(not arrow:IsShown(), "and the arrow goes")
 AP:UnloadGuide()
 check(guide.ui.empty:IsShown(), "no guide, the empty state again")
+check(not AP:RegisterGuide({ name = "Bad", faction = "horde", steps = { { action = "NOTE", title = "x" } } }),
+	"a faction not written Alliance, Horde or Both is refused")
 S.faction = "Horde"
 AP:RefreshObjectivePanel()
 equal(guide.ui.empty.title:GetText(), "PICK A GUIDE", "a Horde character has the Horde's library-book guides")
+local hordeBooks = {}
+for _, g in ipairs(AP:GetGuides("collections")) do hordeBooks[#hordeBooks + 1] = g.name end
+table.sort(hordeBooks)
+equal(table.concat(hordeBooks, " | "), "Library Books: Eastern Kingdoms (Horde) | Library Books: Kalimdor (Horde)",
+	"Collections shows the Horde its two routes")
 for _, g in ipairs(AP:GetGuides(nil)) do
 	check(g.faction == "Horde" or g.faction == "Both", "and sees no Alliance guide: " .. g.name)
 end
@@ -1148,11 +1155,14 @@ do
 	local tg = AP.guides["Travel Test (1-2)"]
 	local arrow = AP.navarrow
 	S.x, S.y, S.facing = 0.5, 0.6, 0
-	AP.db.char.progress = {}
-	Mock.taxiUndiscovered = true
+	AP.db.char.progress, AP.db.char.knownTaxi = {}, nil
+	Mock.taxiKnown = nil
 	AP:LoadGuide(tg.name)
 	Mock.Advance(1)
 	equal((AP:GetCurrentStep()), 1, "200 yards off, the trip isn't done")
+	S.y = 0.525
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 1, "nor 50 yards off")
 	check(AP:TicksItself(tg.steps[1]) and AP:TicksItself(tg.steps[2]) and AP:TicksItself(tg.steps[3])
 		and not AP:TicksItself(tg.steps[5]), "trips, pick-ups and flight points tick themselves; a note doesn't")
 	S.y = 0.505
@@ -1168,17 +1178,55 @@ do
 	equal((AP:GetCurrentStep()), 3, "the book in your bags ticks it")
 	Mock.bagSlot2 = nil
 	Mock.Advance(1)
-	equal((AP:GetCurrentStep()), 3, "a flight point not learned yet waits")
-	Mock.taxiUndiscovered = nil
+	equal((AP:GetCurrentStep()), 3, "a flight point not learned yet waits (every node reads as discovered here)")
+	Mock.taxiKnown = { 7 }
 	Mock.Fire("TAXIMAP_OPENED")
 	Mock.Advance(1)
-	equal((AP:GetCurrentStep()), 4, "once learned, it ticks")
+	equal((AP:GetCurrentStep()), 3, "a flight master listing others doesn't tick it")
+	Mock.taxiKnown = { 7, 2 }
+	Mock.Fire("TAXIMAP_OPENED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 4, "once a flight master lists it, it ticks")
+	check(AP.db.char.knownTaxi[2] and AP.db.char.knownTaxi[7], "and the known flight points are saved")
 	S.x, S.y = 0.31, 0.31
 	Mock.Advance(1)
 	equal((AP:GetCurrentStep()), 5, "landing by the flight master ticks the flight")
+	AP:StepBack()
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 4, "stepped back to the flight, standing there, it stays unticked")
+	S.x, S.y = 0.6, 0.6
+	Mock.Advance(1)
+	S.x, S.y = 0.31, 0.31
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 5, "gone and back, it ticks again")
+	AP:UnloadGuide()
+	-- A trip you got past another way ticks once you've done the step after it -- not at load.
+	ok = AP:RegisterGuide({ name = "Trip Test (1-2)", category = "leveling", faction = "Alliance",
+		minLevel = 1, maxLevel = 2, steps = {
+			{ action = "RUN", title = "Far off", map = 1429, x = 0.1, y = 0.1 },
+			{ action = "HEARTH", title = "Hearth" },
+			{ action = "LOOT", title = "Far Tome", item = "Far Tome", map = 1429, x = 0.9, y = 0.9 },
+			{ action = "NOTE", title = "The end" },
+		} })
+	check(ok, "a guide of trips registers")
+	S.x, S.y = 0.5, 0.5
+	AP.db.char.progress = {}
+	Mock.bagSlot2 = { itemID = 990011, name = "Far Tome" }
+	AP:LoadGuide("Trip Test (1-2)")
+	equal((AP:GetCurrentStep()), 1, "a book held at load doesn't tick the trips before it")
+	AP:UnloadGuide()
+	Mock.bagSlot2 = nil
+	AP.db.char.progress = {}
+	AP:LoadGuide("Trip Test (1-2)")
+	Mock.bagSlot2 = { itemID = 990012, name = "Far Tome" }
+	Mock.Fire("BAG_UPDATE_DELAYED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 4, "looted as you play, the run and the hearth before it tick too")
+	Mock.bagSlot2 = nil
 	AP:UnloadGuide()
 	S.x, S.y = 0.4, 0.6
-	AP.db.char.progress = {}
+	AP.db.char.progress, AP.db.char.knownTaxi, AP.db.char.untickedTrip = {}, nil, nil
+	Mock.taxiKnown = nil
 end
 
 ------------------------------------------------------------------------------------------

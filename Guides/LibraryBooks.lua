@@ -2,9 +2,11 @@ local _, AP = ...
 
 --[[ Library Books: the books for Friend of the Library, four routes -- each
 	faction, each continent. Each book is a LOOT step that ticks once the book
-	is in your bags; flight points tick once learned; flights, runs, boats and
-	the hearth tick as you arrive. Each route starts and ends in the faction's
-	librarian city (Garion Wendell in Stormwind, Owen Thadd in Undercity).
+	is in your bags; flight points tick once learned (a flight master's map,
+	opened, says which you know); flights, runs and boats tick as you arrive,
+	and every trip (the hearth too) once you've done the step after it. Each
+	route starts and ends in the faction's librarian city (Garion Wendell in
+	Stormwind, Owen Thadd in Undercity).
 
 	The book spots are the owner's, checked in game. The flight masters are
 	Forever's own, saved from the client with /apg flights (2026-10-14); the
@@ -34,6 +36,8 @@ Register({
 		  note = "26 books across the Eastern Kingdoms, about three hours on foot. Many spots are far above level 30, and each step names its danger." },
 		{ action = "SETHEARTH", title = "Set your hearth in Stormwind",
 		  note = "Talk to the innkeeper at the inn in Stormwind's Trade District and make it your home. You hearth back here twice on this route." },
+		{ action = "GETFLIGHTPOINT", title = "Stormwind flight point", node = 2, map = 1429, x = 0.3045, y = 0.3859,
+		  note = "Learn Stormwind's flight point if you haven't. It's your way home if your hearth isn't ready." },
 		{ action = "GETFLIGHTPOINT", title = "Sentinel Hill flight point", node = 4, map = 1436, x = 0.5657, y = 0.5267,
 		  note = "Leave Stormwind by the main gate and go south to Goldshire. Follow the road west into Westfall and south to Sentinel Hill." },
 		{ action = "LOOT", title = "Rumi of Gnomeregan: The Collected Works", item = "Rumi of Gnomeregan: The Collected Works", map = 1436, x = 0.527, y = 0.538,
@@ -81,7 +85,7 @@ Register({
 		{ action = "GETFLIGHTPOINT", title = "Thorium Point flight point", node = 74, map = 1427, x = 0.3789, y = 0.3043,
 		  note = "Run north to Thorium Point and talk to the flight master." },
 		{ action = "FLY", title = "Fly to Ironforge", map = 1426, x = 0.6005, y = 0.2877,
-		  note = "Fly from Thorium Point to Ironforge." },
+		  note = "Fly from Thorium Point to Ironforge. If Ironforge isn't on the flight map, fly to Stormwind and take the Deeprun Tram from the Dwarven District." },
 		{ action = "LOOT", title = "Archmage Antonidas: The Unabridged Autobiography", item = "Archmage Antonidas: The Unabridged Autobiography", map = 1455, x = 0.763, y = 0.108,
 		  note = "In the Hall of Explorers, on the table in the middle of the hall." },
 		{ action = "RUN", title = "Run to the Badlands", map = 1418, x = 0.56, y = 0.45, unverified = true,
@@ -170,7 +174,7 @@ Register({
 		{ action = "LOOT", title = "Everyday Etiquette", item = "Everyday Etiquette", map = 1447, x = 0.207, y = 0.62,
 		  note = "Run north-east to the Haldarr Encampment. The book is on a crate beside the hut. Danger: the satyrs here are high level, and Valormok, a Horde camp, is just north." },
 		{ action = "RUN", title = "Run to the Barrens", map = 1413, x = 0.485, y = 0.06, unverified = true,
-		  note = "Go back west along the road, then take the road south out of Ashenvale into the Barrens. Keep clear of Splintertree Post, and watch for Horde guards on the road." },
+		  note = "Go back west along the road, then take the road south out of Ashenvale into the Barrens. Danger: the road passes Mor'shan Rampart, a Horde fort, where Ashenvale meets the Barrens." },
 		{ action = "LOOT", title = "Arcanic Systems Manual", item = "Arcanic Systems Manual", map = 1413, x = 0.563, y = 0.088,
 		  note = "Head east to Sludge Fen and climb the oil rig. The book is on a chair in the control room at the top." },
 		{ action = "LOOT", title = "The Lessons of Ta'zo", item = "The Lessons of Ta'zo", map = 1454, x = 0.387, y = 0.784,
@@ -179,8 +183,8 @@ Register({
 		  note = "Leave Orgrimmar and run south through the Barrens to Ratchet, the goblin port on the coast. Keep clear of Far Watch Post, a Horde camp by the river." },
 		{ action = "LOOT", title = "Baxtan: On Destructive Magics", item = "Baxtan: On Destructive Magics", map = 1413, x = 0.627, y = 0.363,
 		  note = "The book is next to Gazlowe, in Ratchet's engineering building." },
-		{ action = "LOOT", title = "Secrets of the Dreamers", item = "Secrets of the Dreamers", map = 1413, x = 0.528, y = 0.547,
-		  note = "Run south-west from Ratchet to the Cavern of Mists, the caves that lead into Wailing Caverns. The book is by the dungeon's entrance, just outside it." },
+		{ action = "LOOT", title = "Secrets of the Dreamers", item = "Secrets of the Dreamers", map = 1413, x = 0.492, y = 0.33, unverified = true,
+		  note = "Run west from Ratchet to the Cavern of Mists, the caves into the Wailing Caverns, south-west of the Crossroads, a Horde town. The book is by the dungeon's entrance, just outside it." },
 		{ action = "LOOT", title = "Fury of the Land", item = "Fury of the Land", map = 1442, x = 0.744, y = 0.857,
 		  note = "Run north-west across the Barrens to Grimtotem Post in Stonetalon, keeping clear of the Crossroads, a Horde town. The book is on a barrel inside one of the tents. Danger: the tauren here attack on sight." },
 		{ action = "GETFLIGHTPOINT", title = "Nijel's Point flight point", node = 37, map = 1443, x = 0.6467, y = 0.1044,
@@ -226,6 +230,8 @@ Register({
 	steps = {
 		{ action = "SETHEARTH", title = "Set your hearth in Undercity",
 		  note = "Talk to the innkeeper in Undercity's Trade Quarter and make this inn your home. You hearth back here twice on this route." },
+		{ action = "GETFLIGHTPOINT", title = "Undercity flight point", node = 11, map = 1420, x = 0.612, y = 0.7532,
+		  note = "The bat handler is just outside Undercity. Learn the flight point if you haven't: you fly back here later." },
 		{ action = "LOOT", title = "Ataeric: On Arcane Curiosities", item = "Ataeric: On Arcane Curiosities", map = 1421, x = 0.434, y = 0.412,
 		  note = "Leave Undercity and take the road south-west into Silverpine Forest. Inside the tomb at the Sepulcher." },
 		{ action = "GETFLIGHTPOINT", title = "The Sepulcher flight point", node = 10, map = 1421, x = 0.4556, y = 0.4242,
@@ -389,12 +395,12 @@ Register({
 		  note = "Run back north the way you came, to the flight master." },
 		{ action = "FLY", title = "Fly to the Crossroads", map = 1413, x = 0.515, y = 0.3041,
 		  note = "Fly to the Crossroads, in the Barrens." },
+		{ action = "LOOT", title = "Secrets of the Dreamers", item = "Secrets of the Dreamers", map = 1413, x = 0.492, y = 0.33, unverified = true,
+		  note = "Run to the Cavern of Mists, the caves into the Wailing Caverns, south-west of the Crossroads. The book is by the dungeon's door, outside it. Watch for the beasts and druids in the cave." },
 		{ action = "LOOT", title = "Baxtan: On Destructive Magics", item = "Baxtan: On Destructive Magics", map = 1413, x = 0.627, y = 0.363,
-		  note = "Follow the road east to Ratchet, on the coast. It's in the engineering building, next to the goblin in charge." },
+		  note = "Run east to Ratchet, on the coast. It's in the engineering building, next to the goblin in charge." },
 		{ action = "GETFLIGHTPOINT", title = "Ratchet flight point", node = 80, map = 1413, x = 0.6312, y = 0.3711,
 		  note = "The flight master is a few steps away." },
-		{ action = "LOOT", title = "Secrets of the Dreamers", item = "Secrets of the Dreamers", map = 1413, x = 0.528, y = 0.547,
-		  note = "Run south-west to the Cavern of Mists, the cave that leads to the Wailing Caverns: it's by the dungeon's door, outside it. Watch for the beasts and druids in the cave." },
 		{ action = "GETFLIGHTPOINT", title = "Brackenwall Village flight point", node = 55, map = 1445, x = 0.3557, y = 0.3183,
 		  note = "Head south into Dustwallow Marsh, to Brackenwall Village, the Horde town in its north-west. Danger: Dustwallow is high level, so stay on the road." },
 		{ action = "LOOT", title = "RwlRwlRwlRwl!", item = "RwlRwlRwlRwl!", map = 1445, x = 0.57, y = 0.21,

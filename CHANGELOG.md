@@ -8,8 +8,9 @@
   learns flight points on the way, flies and uses your hearthstone, and ends at
   your librarian (Garion Wendell in Stormwind, Owen Thadd in Undercity).
 - **Each book ticks by itself** once it's in your bags. Flight points tick once
-  you've learned them, and flights, runs, boats and your hearth tick when you get
-  there.
+  you've learned them (open a flight master's map once). Flights, runs and boats
+  tick when you get there; any trip, your hearth too, ticks once you've done the
+  step after it.
 - Many books are in places far above level 30. Each step says where it's
   dangerous: enemy towns, strong monsters, guards.
 - The Feralas book is left out until its new spot is known.

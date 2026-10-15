@@ -1,0 +1,573 @@
+{
+ "about": "Forever's flight masters, saved from the client with /apg flights (2026-10-14): id, name, faction, and the spot on their own zone. Tools/smoke_test.py checks the guides' flight steps against it.",
+ "nodes": [
+  {
+   "id": 28,
+   "name": "Astranaar, Ashenvale",
+   "faction": "Alliance",
+   "mapID": 1440,
+   "x": 0.345,
+   "y": 0.4802
+  },
+  {
+   "id": 26,
+   "name": "Auberdine, Darkshore",
+   "faction": "Alliance",
+   "mapID": 1439,
+   "x": 0.364,
+   "y": 0.4562
+  },
+  {
+   "id": 48,
+   "name": "Bloodvenom Post, Felwood",
+   "faction": "Horde",
+   "mapID": 1448,
+   "x": 0.3442,
+   "y": 0.5387
+  },
+  {
+   "id": 55,
+   "name": "Brackenwall Village, Dustwallow Marsh",
+   "faction": "Horde",
+   "mapID": 1445,
+   "x": 0.3557,
+   "y": 0.3183
+  },
+  {
+   "id": 42,
+   "name": "Camp Mojache, Feralas",
+   "faction": "Horde",
+   "mapID": 1444,
+   "x": 0.7543,
+   "y": 0.4431
+  },
+  {
+   "id": 77,
+   "name": "Camp Taurajo, The Barrens",
+   "faction": "Horde",
+   "mapID": 1413,
+   "x": 0.4446,
+   "y": 0.591
+  },
+  {
+   "id": 72,
+   "name": "Cenarion Hold, Silithus",
+   "faction": "Horde",
+   "mapID": 1451,
+   "x": 0.4883,
+   "y": 0.3672
+  },
+  {
+   "id": 73,
+   "name": "Cenarion Hold, Silithus",
+   "faction": "Alliance",
+   "mapID": 1451,
+   "x": 0.5068,
+   "y": 0.3459
+  },
+  {
+   "id": 25,
+   "name": "Crossroads, The Barrens",
+   "faction": "Horde",
+   "mapID": 1413,
+   "x": 0.515,
+   "y": 0.3041
+  },
+  {
+   "id": 52,
+   "name": "Everlook, Winterspring",
+   "faction": "Alliance",
+   "mapID": 1452,
+   "x": 0.6233,
+   "y": 0.3664
+  },
+  {
+   "id": 53,
+   "name": "Everlook, Winterspring",
+   "faction": "Horde",
+   "mapID": 1452,
+   "x": 0.6049,
+   "y": 0.3634
+  },
+  {
+   "id": 41,
+   "name": "Feathermoon, Feralas",
+   "faction": "Alliance",
+   "mapID": 1444,
+   "x": 0.3026,
+   "y": 0.4332
+  },
+  {
+   "id": 30,
+   "name": "Freewind Post, Thousand Needles",
+   "faction": "Horde",
+   "mapID": 1441,
+   "x": 0.4502,
+   "y": 0.4913
+  },
+  {
+   "id": 39,
+   "name": "Gadgetzan, Tanaris",
+   "faction": "Alliance",
+   "mapID": 1446,
+   "x": 0.5095,
+   "y": 0.2933
+  },
+  {
+   "id": 40,
+   "name": "Gadgetzan, Tanaris",
+   "faction": "Horde",
+   "mapID": 1446,
+   "x": 0.5162,
+   "y": 0.2552
+  },
+  {
+   "id": 79,
+   "name": "Marshal's Refuge, Un'Goro Crater",
+   "faction": "Neutral",
+   "mapID": 1449,
+   "x": 0.453,
+   "y": 0.0597
+  },
+  {
+   "id": 49,
+   "name": "Moonglade",
+   "faction": "Alliance",
+   "mapID": 1450,
+   "x": 0.4791,
+   "y": 0.6711
+  },
+  {
+   "id": 69,
+   "name": "Moonglade",
+   "faction": "Horde",
+   "mapID": 1450,
+   "x": 0.3215,
+   "y": 0.6633
+  },
+  {
+   "id": 62,
+   "name": "Nighthaven, Moonglade",
+   "faction": "Alliance",
+   "mapID": 1450,
+   "x": 0.4428,
+   "y": 0.4534
+  },
+  {
+   "id": 63,
+   "name": "Nighthaven, Moonglade",
+   "faction": "Horde",
+   "mapID": 1450,
+   "x": 0.4431,
+   "y": 0.4572
+  },
+  {
+   "id": 37,
+   "name": "Nijel's Point, Desolace",
+   "faction": "Alliance",
+   "mapID": 1443,
+   "x": 0.6467,
+   "y": 0.1044
+  },
+  {
+   "id": 23,
+   "name": "Orgrimmar, Durotar",
+   "faction": "Horde",
+   "mapID": 1411,
+   "x": 0.4451,
+   "y": 0.0371
+  },
+  {
+   "id": 80,
+   "name": "Ratchet, The Barrens",
+   "faction": "Neutral",
+   "mapID": 1413,
+   "x": 0.6312,
+   "y": 0.3711
+  },
+  {
+   "id": 27,
+   "name": "Rut'theran Village, Teldrassil",
+   "faction": "Alliance",
+   "mapID": 1438,
+   "x": 0.584,
+   "y": 0.9393
+  },
+  {
+   "id": 38,
+   "name": "Shadowprey Village, Desolace",
+   "faction": "Horde",
+   "mapID": 1443,
+   "x": 0.2156,
+   "y": 0.7404
+  },
+  {
+   "id": 61,
+   "name": "Splintertree Post, Ashenvale",
+   "faction": "Horde",
+   "mapID": 1440,
+   "x": 0.7326,
+   "y": 0.6167
+  },
+  {
+   "id": 33,
+   "name": "Stonetalon Peak, Stonetalon Mountains",
+   "faction": "Alliance",
+   "mapID": 1442,
+   "x": 0.3654,
+   "y": 0.0723
+  },
+  {
+   "id": 559,
+   "name": "Summit of Eternity, Mount Hyjal",
+   "faction": "Neutral",
+   "mapID": 2482,
+   "x": 0.6864,
+   "y": 0.4411
+  },
+  {
+   "id": 29,
+   "name": "Sun Rock Retreat, Stonetalon Mountains",
+   "faction": "Horde",
+   "mapID": 1442,
+   "x": 0.4516,
+   "y": 0.5989
+  },
+  {
+   "id": 3242,
+   "name": "Tainted Foothills, Mount Hyjal",
+   "faction": "Neutral",
+   "mapID": 2482,
+   "x": 0.551,
+   "y": 0.8255
+  },
+  {
+   "id": 65,
+   "name": "Talonbranch Glade, Felwood",
+   "faction": "Alliance",
+   "mapID": 1448,
+   "x": 0.6246,
+   "y": 0.2419
+  },
+  {
+   "id": 64,
+   "name": "Talrendis Point, Azshara",
+   "faction": "Alliance",
+   "mapID": 1447,
+   "x": 0.119,
+   "y": 0.7748
+  },
+  {
+   "id": 31,
+   "name": "Thalanaar, Feralas",
+   "faction": "Alliance",
+   "mapID": 1444,
+   "x": 0.8946,
+   "y": 0.4587
+  },
+  {
+   "id": 32,
+   "name": "Theramore, Dustwallow Marsh",
+   "faction": "Alliance",
+   "mapID": 1445,
+   "x": 0.6746,
+   "y": 0.512
+  },
+  {
+   "id": 22,
+   "name": "Thunder Bluff, Mulgore",
+   "faction": "Horde",
+   "mapID": 1412,
+   "x": 0.398,
+   "y": 0.3569
+  },
+  {
+   "id": 44,
+   "name": "Valormok, Azshara",
+   "faction": "Horde",
+   "mapID": 1447,
+   "x": 0.2195,
+   "y": 0.4969
+  },
+  {
+   "id": 58,
+   "name": "Zoram'gar Outpost, Ashenvale",
+   "faction": "Horde",
+   "mapID": 1440,
+   "x": 0.1219,
+   "y": 0.3377
+  },
+  {
+   "id": 43,
+   "name": "Aerie Peak, The Hinterlands",
+   "faction": "Alliance",
+   "mapID": 1425,
+   "x": 0.1111,
+   "y": 0.4609
+  },
+  {
+   "id": 18,
+   "name": "Booty Bay, Stranglethorn",
+   "faction": "Horde",
+   "mapID": 1434,
+   "x": 0.2682,
+   "y": 0.77
+  },
+  {
+   "id": 19,
+   "name": "Booty Bay, Stranglethorn",
+   "faction": "Alliance",
+   "mapID": 1434,
+   "x": 0.2753,
+   "y": 0.7767
+  },
+  {
+   "id": 66,
+   "name": "Chillwind Camp, Western Plaguelands",
+   "faction": "Alliance",
+   "mapID": 1422,
+   "x": 0.4295,
+   "y": 0.8495
+  },
+  {
+   "id": 87,
+   "name": "Crown Guard Tower, Eastern Plaguelands",
+   "faction": "Neutral",
+   "mapID": 1423,
+   "x": 0.3259,
+   "y": 0.6398
+  },
+  {
+   "id": 12,
+   "name": "Darkshire, Duskwood",
+   "faction": "Alliance",
+   "mapID": 1431,
+   "x": 0.7759,
+   "y": 0.4438
+  },
+  {
+   "id": 86,
+   "name": "Eastwall Tower, Eastern Plaguelands",
+   "faction": "Neutral",
+   "mapID": 1423,
+   "x": 0.578,
+   "y": 0.416
+  },
+  {
+   "id": 3276,
+   "name": "Farholde Keep, Riverglades",
+   "faction": "Alliance",
+   "mapID": 2548,
+   "x": 0.6059,
+   "y": 0.8157
+  },
+  {
+   "id": 70,
+   "name": "Flame Crest, Burning Steppes",
+   "faction": "Horde",
+   "mapID": 1428,
+   "x": 0.6558,
+   "y": 0.2422
+  },
+  {
+   "id": 20,
+   "name": "Grom'gol, Stranglethorn",
+   "faction": "Horde",
+   "mapID": 1434,
+   "x": 0.3251,
+   "y": 0.2928
+  },
+  {
+   "id": 17,
+   "name": "Hammerfall, Arathi",
+   "faction": "Horde",
+   "mapID": 1417,
+   "x": 0.7306,
+   "y": 0.3262
+  },
+  {
+   "id": 6,
+   "name": "Ironforge, Dun Morogh",
+   "faction": "Alliance",
+   "mapID": 1426,
+   "x": 0.6005,
+   "y": 0.2877
+  },
+  {
+   "id": 21,
+   "name": "Kargath, Badlands",
+   "faction": "Horde",
+   "mapID": 1418,
+   "x": 0.0406,
+   "y": 0.4489
+  },
+  {
+   "id": 5,
+   "name": "Lakeshire, Redridge",
+   "faction": "Alliance",
+   "mapID": 1433,
+   "x": 0.2534,
+   "y": 0.5899
+  },
+  {
+   "id": 67,
+   "name": "Light's Hope Chapel, Eastern Plaguelands",
+   "faction": "Alliance",
+   "mapID": 1423,
+   "x": 0.717,
+   "y": 0.4956
+  },
+  {
+   "id": 68,
+   "name": "Light's Hope Chapel, Eastern Plaguelands",
+   "faction": "Horde",
+   "mapID": 1423,
+   "x": 0.7045,
+   "y": 0.4759
+  },
+  {
+   "id": 7,
+   "name": "Menethil Harbor, Wetlands",
+   "faction": "Alliance",
+   "mapID": 1437,
+   "x": 0.0952,
+   "y": 0.5966
+  },
+  {
+   "id": 71,
+   "name": "Morgan's Vigil, Burning Steppes",
+   "faction": "Alliance",
+   "mapID": 1428,
+   "x": 0.8438,
+   "y": 0.683
+  },
+  {
+   "id": 45,
+   "name": "Nethergarde Keep, Blasted Lands",
+   "faction": "Alliance",
+   "mapID": 1419,
+   "x": 0.6549,
+   "y": 0.2443
+  },
+  {
+   "id": 85,
+   "name": "Northpass Tower, Eastern Plaguelands",
+   "faction": "Neutral",
+   "mapID": 1423,
+   "x": 0.4716,
+   "y": 0.2031
+  },
+  {
+   "id": 84,
+   "name": "Plaguewood Tower, Eastern Plaguelands",
+   "faction": "Neutral",
+   "mapID": 1423,
+   "x": 0.1845,
+   "y": 0.2417
+  },
+  {
+   "id": 16,
+   "name": "Refuge Pointe, Arathi",
+   "faction": "Alliance",
+   "mapID": 1417,
+   "x": 0.4579,
+   "y": 0.4613
+  },
+  {
+   "id": 76,
+   "name": "Revantusk Village, The Hinterlands",
+   "faction": "Horde",
+   "mapID": 1425,
+   "x": 0.817,
+   "y": 0.8189
+  },
+  {
+   "id": 3203,
+   "name": "Rog'mar, Riverglades",
+   "faction": "Horde",
+   "mapID": 2548,
+   "x": 0.5961,
+   "y": 0.4506
+  },
+  {
+   "id": 4,
+   "name": "Sentinel Hill, Westfall",
+   "faction": "Alliance",
+   "mapID": 1436,
+   "x": 0.5657,
+   "y": 0.5267
+  },
+  {
+   "id": 14,
+   "name": "Southshore, Hillsbrad",
+   "faction": "Alliance",
+   "mapID": 1424,
+   "x": 0.4944,
+   "y": 0.521
+  },
+  {
+   "id": 56,
+   "name": "Stonard, Swamp of Sorrows",
+   "faction": "Horde",
+   "mapID": 1435,
+   "x": 0.4605,
+   "y": 0.5468
+  },
+  {
+   "id": 2,
+   "name": "Stormwind, Elwynn",
+   "faction": "Alliance",
+   "mapID": 1429,
+   "x": 0.3045,
+   "y": 0.3859
+  },
+  {
+   "id": 13,
+   "name": "Tarren Mill, Hillsbrad",
+   "faction": "Horde",
+   "mapID": 1424,
+   "x": 0.6021,
+   "y": 0.1875
+  },
+  {
+   "id": 10,
+   "name": "The Sepulcher, Silverpine Forest",
+   "faction": "Horde",
+   "mapID": 1421,
+   "x": 0.4556,
+   "y": 0.4242
+  },
+  {
+   "id": 8,
+   "name": "Thelsamar, Loch Modan",
+   "faction": "Alliance",
+   "mapID": 1432,
+   "x": 0.3394,
+   "y": 0.5079
+  },
+  {
+   "id": 74,
+   "name": "Thorium Point, Searing Gorge",
+   "faction": "Alliance",
+   "mapID": 1427,
+   "x": 0.3789,
+   "y": 0.3043
+  },
+  {
+   "id": 75,
+   "name": "Thorium Point, Searing Gorge",
+   "faction": "Horde",
+   "mapID": 1427,
+   "x": 0.3483,
+   "y": 0.3058
+  },
+  {
+   "id": 11,
+   "name": "Undercity, Tirisfal",
+   "faction": "Horde",
+   "mapID": 1420,
+   "x": 0.612,
+   "y": 0.7532
+  }
+ ]
+}

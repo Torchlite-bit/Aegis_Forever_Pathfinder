@@ -110,6 +110,56 @@ def check_guides(ns):
 
 
 BOOKS = os.path.join(TOOLS, "library_books.json")
+FLIGHT_MASTERS = os.path.join(TOOLS, "flight_masters.json")
+TRIPS = ("RUN", "FLY", "BOAT", "HEARTH", "MAP")
+
+
+def check_shipped(ns):
+    """Every shipped guide's steps, before the scenario adds its own: a title; map/x/y all or
+    none, on a 0..1 map; a node on a flight point; no character name in a note. The book
+    routes: each holds its continent's books once each (one Rumi), and every flight point and
+    flight stands on a flight master of the guide's faction or a neutral one."""
+    with open(FLIGHT_MASTERS, encoding="utf-8") as handle:
+        masters = {n["id"]: n for n in json.load(handle)["nodes"]}
+    with open(BOOKS, encoding="utf-8") as handle:
+        data = json.load(handle)
+    continents = {side: {b["book"] for b in data[side]} for side in ("eastern_kingdoms", "kalimdor")}
+    problems = []
+    for name in ns.guidelist.values():
+        guide = ns.guides[name]
+        faction = guide.faction
+        books = []
+        for index, step in guide.steps.items():
+            where = "%s, step %d" % (name, index)
+            if not step.title:
+                problems.append(where + ": no title")
+            placed = [step.map is not None, step.x is not None, step.y is not None]
+            if any(placed) and not all(placed):
+                problems.append(where + ": only part of a place")
+            if all(placed) and not (0 < step.x < 1 and 0 < step.y < 1):
+                problems.append(where + ": a place off the map (%s, %s)" % (step.x, step.y))
+            if step.note and "<name>" in step.note:
+                problems.append(where + ": names someone")
+            if step.action == "GETFLIGHTPOINT":
+                node = masters.get(step.node)
+                if not node:
+                    problems.append(where + ": a flight point with no known node (%s)" % step.node)
+                elif node["faction"] not in (faction, "Neutral") or node["mapID"] != step.map \
+                        or abs(node["x"] - step.x) > 0.002 or abs(node["y"] - step.y) > 0.002:
+                    problems.append(where + ": not %s's flight master for the %s" % (node["name"], faction))
+            if step.action == "FLY" and step.map is not None:
+                if not any(n["mapID"] == step.map and abs(n["x"] - step.x) <= 0.002 and abs(n["y"] - step.y) <= 0.002
+                           and n["faction"] in (faction, "Neutral") for n in masters.values()):
+                    problems.append(where + ": a flight to no %s flight master" % faction)
+            if step.action == "LOOT" and step.item:
+                books.append(step.item)
+        if guide.category == "collections" and name.startswith("Library Books"):
+            side = "eastern_kingdoms" if "Eastern Kingdoms" in name else "kalimdor"
+            want = continents[side]
+            if len(books) != len(set(books)) or set(books) != want:
+                problems.append("%s: the books aren't its continent's, once each (missing %s, extra %s)" % (
+                    name, sorted(want - set(books)), sorted(set(books) - want)))
+    return problems
 
 
 def check_books(ns):
@@ -136,6 +186,9 @@ def check_books(ns):
             if step.map is None:
                 if not any(b["zone"] == "Blackrock Mountain" for b in known):
                     problems.append(where + ": no spot on the map")
+                continue
+            if any(b["zone"] == "Blackrock Mountain" for b in known):
+                problems.append(where + ": Blackrock Mountain's map has no id: no spot can be right")
                 continue
             if not any(b.get("mapID") == step.map and abs(b["zx"] - step.x) <= 0.002 and abs(b["zy"] - step.y) <= 0.002
                        for b in known):
@@ -187,6 +240,7 @@ def run(skin):
     ElementTree.parse(os.path.join(ROOT, "Bindings.xml"))
     # Before the scenario registers its own test guide: only the shipped ones.
     bookProblems, bookSteps = check_books(ns)
+    bookProblems = bookProblems + check_shipped(ns)
     if bookProblems:
         print("FAILED (%s skin): the book guides disagree with the book list:\n  %s" % (skin, "\n  ".join(bookProblems)))
         return False

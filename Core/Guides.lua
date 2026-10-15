@@ -40,9 +40,13 @@ local Compat = AP.Compat
 
 	Pick-ups and travel: a LOOT step with item = "<name>" ticks once an item of
 	that name is in the bags (a library book). A RUN, FLY, BOAT, HEARTH or MAP
-	step ticks once you are within TRAVEL_ARRIVE yards of its place. A
-	GETFLIGHTPOINT step with node = <taxi node id> ticks once the client says
-	you know that flight point.
+	step ticks once you are within TRAVEL_ARRIVE yards of its place, or once
+	you've done the step of yours right after it (you got there another way;
+	a hearth has no place). A GETFLIGHTPOINT step with node = <taxi node id>
+	ticks once you know that flight point: the flight points a flight master
+	lists are saved per character (char.knownTaxi) as its map opens. (This
+	client calls every node "discovered", the other faction's too, so that
+	flag tells nothing.)
 
 	Kill areas: once you are within ARRIVE yards of the place of a block with a
 	COMPLETE, KILL or GRIND step, the pin and Pathfinder's arrow stop marking it
@@ -101,6 +105,9 @@ end
 function AP:RegisterGuide(def)
 	if type(def) ~= "table" or type(def.name) ~= "string" or type(def.steps) ~= "table" then
 		return false, "a guide needs a name and a list of steps"
+	end
+	if def.faction ~= nil and def.faction ~= "Alliance" and def.faction ~= "Horde" and def.faction ~= "Both" then
+		return false, string.format("%s: faction must be Alliance, Horde or Both, not %s", def.name, tostring(def.faction))
 	end
 	for index, step in ipairs(def.steps) do
 		if not VALID_ACTION[step.action] then
@@ -172,7 +179,7 @@ function AP:LoadGuide(name)
 	table.insert(recent, 1, name)
 	while #recent > 8 do table.remove(recent) end
 	self.db.char.recentguides = recent
-	self:ScanGuide()
+	self:ScanGuide(true)
 	return true
 end
 
@@ -200,6 +207,12 @@ end
 function AP:SetStepDone(index, done, guideName)
 	guideName = guideName or self.db.char.currentguide
 	if not guideName then return end
+	-- A trip unticked by hand (the left arrow, its ring) isn't ticked again while you stand there.
+	local guide = self.guides[guideName]
+	local step = guide and guide.steps[index]
+	if not done and step and AP.IsTrip(step) then
+		self.db.char.untickedTrip = { guide = guideName, index = index }
+	end
 	local progress = Progress()
 	progress[guideName] = progress[guideName] or {}
 	progress[guideName][index] = done and true or nil
@@ -306,9 +319,12 @@ local function HoldsQuestItem(questID)
 	return false
 end
 
--- Whether an item named `name` is in the bags.
-local function HoldsItemNamed(name)
-	if not (C_Container and C_Container.GetContainerItemInfo) then return false end
+-- The names of every item in the bags, read once per scan (and only when a step asks).
+local heldNames
+local function HeldNames()
+	if heldNames then return heldNames end
+	heldNames = {}
+	if not (C_Container and C_Container.GetContainerItemInfo) then return heldNames end
 	for bag = 0, (NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4) do
 		for slot = 1, Compat.Call(C_Container.GetContainerNumSlots, bag) or 0 do
 			local ok, info = pcall(C_Container.GetContainerItemInfo, bag, slot)
@@ -318,25 +334,35 @@ local function HoldsItemNamed(name)
 					local link = Compat.Readable(info.hyperlink)
 					held = type(link) == "string" and link:match("%[(.-)%]") or nil
 				end
-				if held == name then return true end
+				if held then heldNames[held] = true end
 			end
 		end
 	end
-	return false
+	return heldNames
 end
 
--- Whether the client says you know flight point `node` on `map`.
-local function KnowsFlightPoint(map, node)
-	if not (C_TaxiMap and C_TaxiMap.GetTaxiNodesForMap and map) then return false end
-	local ok, nodes = pcall(C_TaxiMap.GetTaxiNodesForMap, map)
-	if not (ok and type(nodes) == "table") then return false end
+--- Save the flight points this flight master lists: the ones this character knows.
+function AP:RecordKnownFlightPoints()
+	if not (C_TaxiMap and C_TaxiMap.GetAllTaxiNodes and GetTaxiMapID) then return end
+	local mapID = Compat.Call(GetTaxiMapID)
+	if not mapID then return end
+	local ok, nodes = pcall(C_TaxiMap.GetAllTaxiNodes, mapID)
+	if not (ok and type(nodes) == "table") then return end
+	local known = self.db.char.knownTaxi or {}
 	for _, info in ipairs(nodes) do
-		if Compat.Readable(info.nodeID) == node then return Compat.Readable(info.isUndiscovered) == false end
+		local id = Compat.Readable(info.nodeID)
+		if id then known[id] = true end
 	end
-	return false
+	self.db.char.knownTaxi = known
+end
+
+local function KnowsFlightPoint(node)
+	local known = AP.db and AP.db.char.knownTaxi
+	return known ~= nil and known[node] == true
 end
 
 local TRAVEL = { RUN = true, FLY = true, BOAT = true, HEARTH = true, MAP = true }
+function AP.IsTrip(step) return TRAVEL[step.action] == true end
 
 --- Whether a step ticks without a click: a quest step with its quest, a pick-up
 --- with its item, a flight point with its node, a trip with its place.
@@ -348,8 +374,8 @@ function AP:TicksItself(step)
 end
 
 local function Satisfied(step)
-	if step.item and HoldsItemNamed(step.item) then return true end
-	if step.action == "GETFLIGHTPOINT" and step.node and KnowsFlightPoint(step.map, step.node) then return true end
+	if step.item and HeldNames()[step.item] then return true end
+	if step.action == "GETFLIGHTPOINT" and step.node and KnowsFlightPoint(step.node) then return true end
 	local qid = step.qid
 	if not qid or not C_QuestLog then return false end
 	if Compat.Call(C_QuestLog.IsQuestFlaggedCompleted, qid) then return true end
@@ -362,15 +388,29 @@ local function Satisfied(step)
 	return false
 end
 
---- Tick every step the client already says is done.
-function AP:ScanGuide()
+--- Tick every step the client already says is done. As you play (not `atLoad`), a step
+--- done now also ticks the trips just before it: you got there.
+function AP:ScanGuide(atLoad)
 	local guide = self:GetCurrentGuide()
 	if guide then
 		local progress = Progress()
-		progress[guide.name] = progress[guide.name] or {}
-		for _, index in ipairs(self:GuideSteps(guide)) do
-			if Satisfied(guide.steps[index]) then progress[guide.name][index] = true end
+		local done = progress[guide.name] or {}
+		progress[guide.name] = done
+		heldNames = nil
+		local mine = self:GuideSteps(guide)
+		for position, index in ipairs(mine) do
+			if not done[index] and Satisfied(guide.steps[index]) then
+				done[index] = true
+				if not atLoad then
+					local back = position - 1
+					while back >= 1 and not done[mine[back]] and TRAVEL[guide.steps[mine[back]].action] do
+						done[mine[back]] = true
+						back = back - 1
+					end
+				end
+			end
 		end
+		heldNames = nil
 	end
 	self:GuideChanged()
 end
@@ -461,7 +501,12 @@ function AP:WatchArrival()
 		local function Arrived(fromTimer)
 			if gen ~= watch then return end
 			local dx, dy, sized = self:OffsetTo(trip)
-			if dx and sized and math.sqrt(dx * dx + dy * dy) <= TRAVEL_ARRIVE then
+			local there = dx and sized and math.sqrt(dx * dx + dy * dy) <= TRAVEL_ARRIVE
+			local unticked = char.untickedTrip
+			if unticked and unticked.guide == guide.name and unticked.index == index then
+				-- Stepped back to it by hand: not ticked again until you've left the place.
+				if not there then char.untickedTrip = nil end
+			elseif there then
 				return self:SetStepDone(index, true)
 			end
 			C_Timer.After(1, function() Arrived(true) end)
@@ -561,6 +606,9 @@ AP:OnLogin(function()
 	end
 	AP:On("QUEST_LOG_UPDATE", QueueScan)
 	AP:On("BAG_UPDATE_DELAYED", QueueScan)
-	AP:On("TAXIMAP_OPENED", QueueScan)
-	if AP:GetCurrentGuide() then AP:ScanGuide() end
+	AP:On("TAXIMAP_OPENED", function()
+		AP:RecordKnownFlightPoints()
+		QueueScan()
+	end)
+	if AP:GetCurrentGuide() then AP:ScanGuide(true) end
 end)

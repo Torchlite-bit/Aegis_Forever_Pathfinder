@@ -34,13 +34,13 @@ uploaded to CurseForge once (`.github/workflows/release.yml`,
 ```markdown
 # Aegis: Pathfinder — Forever
 
-**The Pathfinder leveling guide, ported to WoW: Forever. One short test guide so far, for Northshire; it collects the data to write the rest.**
+**The Pathfinder leveling guide, ported to WoW: Forever. So far: routes for the library books, and a short test guide for Northshire. It collects the data to write the rest.**
 
 ![WoW: Forever, Interface 16001](https://img.shields.io/badge/WoW%3A%20Forever-Interface%2016001-c79c2e?style=flat-square&labelColor=555) [![Discord: join us](https://img.shields.io/badge/Discord-join%20us-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/Hr66t25vE7) [![GitHub: source and data form](https://img.shields.io/badge/GitHub-source%20%26%20data%20form-24292f?style=flat-square&logo=github&logoColor=white)](https://github.com/Torchlite-bit/Aegis_Pathfinder_Forever)
 
 Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the modern engine. This is a port of [Aegis: Pathfinder](https://github.com/Torchlite-bit/Aegis_Pathfinder) for Turtle WoW (1.12), not that addon: the two clients share almost no API. On Turtle WoW? Get *Aegis: Pathfinder* instead.
 
-⚠️ **In development.** One test guide so far: **Northshire Valley (1-6)**. What works now: the guide window, the guide browser, the settings, quest and vendor automation, and the **data collector**.
+⚠️ **In development.** So far: the **library-book routes** (under Collections) and a test guide, **Northshire Valley (1-6)**. What works now: the guide window, the guide browser, the settings, quest and vendor automation, and the **data collector**.
 
 ---
 

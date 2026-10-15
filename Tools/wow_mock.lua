@@ -585,10 +585,17 @@ C_Map = {
 	end,
 	ClearUserWaypoint = function() Mock.waypoint = nil end,
 }
+-- The flight master's own list (open): the nodes this character knows, Mock.taxiKnown = { ids }.
+function GetTaxiMapID() return S().mapID end
 C_TaxiMap = {
+	GetAllTaxiNodes = function()
+		local out = {}
+		for _, id in ipairs(Mock.taxiKnown or {}) do out[#out + 1] = { nodeID = id, name = "Node " .. id, state = 1 } end
+		return out
+	end,
 	GetTaxiNodesForMap = function(mapID)
 		if mapID ~= 1429 then return {} end
-		return { { nodeID = 2, name = "Stormwind, Elwynn", faction = 2, isUndiscovered = Mock.taxiUndiscovered == true,
+		return { { nodeID = 2, name = "Stormwind, Elwynn", faction = 2, isUndiscovered = false,
 			position = setmetatable({ x = 0.66, y = 0.62 }, Vector) } }
 	end,
 }
