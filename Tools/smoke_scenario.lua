@@ -469,6 +469,12 @@ for _, row in ipairs(browser.ui.categories) do
 		check(not browser.ui.empty:IsShown(), "Leveling isn't empty")
 		equal(browser.ui.rows[1].guide and browser.ui.rows[1].guide.name, "Northshire Valley (1-6)",
 			"it lists the Northshire test guide")
+	elseif row.key == "collections" then
+		local names = {}
+		for _, r in ipairs(browser.ui.rows) do if r:IsShown() and r.guide then names[#names + 1] = r.guide.name end end
+		table.sort(names)
+		equal(table.concat(names, " | "), "Library Books: Eastern Kingdoms (Alliance) | Library Books: Kalimdor (Alliance)",
+			"Collections lists the Alliance's library-book guides, not the Horde's")
 	else
 		check(browser.ui.empty:IsShown(), "an empty category says so")
 	end
@@ -973,7 +979,13 @@ AP:UnloadGuide()
 check(guide.ui.empty:IsShown(), "no guide, the empty state again")
 S.faction = "Horde"
 AP:RefreshObjectivePanel()
-equal(guide.ui.empty.title:GetText(), "NO GUIDES YET", "a Horde character, with no guide for them, isn't told to pick one")
+equal(guide.ui.empty.title:GetText(), "PICK A GUIDE", "a Horde character has the Horde's library-book guides")
+for _, g in ipairs(AP:GetGuides(nil)) do
+	check(g.faction == "Horde" or g.faction == "Both", "and sees no Alliance guide: " .. g.name)
+end
+S.faction = "Neutral"
+AP:RefreshObjectivePanel()
+equal(guide.ui.empty.title:GetText(), "NO GUIDES YET", "a character with no guide for them isn't told to pick one")
 S.faction = "Alliance"
 AP:RefreshObjectivePanel()
 
@@ -1167,6 +1179,48 @@ do
 	AP:UnloadGuide()
 	S.x, S.y = 0.4, 0.6
 	AP.db.char.progress = {}
+end
+
+------------------------------------------------------------------------------------------
+-- The library-book guides, played through: every book ticks once it's in the bags
+------------------------------------------------------------------------------------------
+
+do
+	local names = { "Library Books: Eastern Kingdoms (Alliance)", "Library Books: Kalimdor (Alliance)",
+		"Library Books: Eastern Kingdoms (Horde)", "Library Books: Kalimdor (Horde)" }
+	local totals = {}
+	for _, name in ipairs(names) do
+		local g = AP.guides[name]
+		check(g and g.category == "collections", name .. " registers, under Collections")
+		local books, stuck = 0, nil
+		AP.db.char.progress, AP.db.char.arrived = {}, nil
+		S.x = nil                                -- no position: trips wait to be ticked here, as by hand
+		AP:LoadGuide(name)
+		for _, index in ipairs(AP:GuideSteps(g)) do
+			local current, step = AP:GetCurrentStep()
+			if current ~= index then
+				stuck = string.format("%s: step %d came when %d was due", name, current or -1, index)
+				break
+			end
+			if step.action == "LOOT" then
+				books = books + 1
+				Mock.bagSlot2 = { itemID = 980000 + index, name = step.item }
+				Mock.Fire("BAG_UPDATE_DELAYED")
+				Mock.Advance(1)
+				Mock.bagSlot2 = nil
+				if (AP:GetCurrentStep()) == index then stuck = name .. ": the book " .. step.item .. " didn't tick" break end
+			else
+				AP:StepForward()
+			end
+		end
+		check(not stuck, stuck or (name .. ": every step in order, each book ticking from the bags"))
+		check(select(2, AP:GetCurrentStep()) == nil, name .. ": the guide ends")
+		totals[#totals + 1] = books
+		AP:UnloadGuide()
+	end
+	equal(table.concat(totals, ","), "26,13,26,13", "26 books in the Eastern Kingdoms and 13 in Kalimdor, for each faction")
+	S.x, S.y = 0.4, 0.6
+	AP.db.char.progress, AP.db.char.arrived = {}, nil
 end
 
 ------------------------------------------------------------------------------------------

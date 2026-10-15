@@ -109,6 +109,40 @@ def check_guides(ns):
     return problems, warnings, matched, unseen
 
 
+BOOKS = os.path.join(TOOLS, "library_books.json")
+
+
+def check_books(ns):
+    """The library-book guides against the book list (Tools/library_books.json): each LOOT
+    step names a known book and stands within 0.002 of one of its spots (Blackrock
+    Mountain's two have no spot). Returns the problems and how many book steps were checked."""
+    with open(BOOKS, encoding="utf-8") as handle:
+        data = json.load(handle)
+    spots = {}
+    for side in ("eastern_kingdoms", "kalimdor"):
+        for book in data[side]:
+            spots.setdefault(book["book"], []).append(book)
+    problems, checked = [], 0
+    for name in ns.guidelist.values():
+        for index, step in ns.guides[name].steps.items():
+            if step.action != "LOOT" or step.item is None:
+                continue
+            checked += 1
+            where = "%s, step %d (%s)" % (name, index, step.item)
+            known = spots.get(step.item)
+            if not known:
+                problems.append(where + ": not a book in the list")
+                continue
+            if step.map is None:
+                if not any(b["zone"] == "Blackrock Mountain" for b in known):
+                    problems.append(where + ": no spot on the map")
+                continue
+            if not any(b.get("mapID") == step.map and abs(b["zx"] - step.x) <= 0.002 and abs(b["zy"] - step.y) <= 0.002
+                       for b in known):
+                problems.append(where + ": not at the book's spot")
+    return problems, checked
+
+
 def run(skin):
     lua = lupa.LuaRuntime(unpack_returned_tuples=True)
     lua.execute("date = os.date; time = os.time; debugstack = function() return debug.traceback() end")
@@ -152,6 +186,10 @@ def run(skin):
         load(read(os.path.join(ROOT, relative)), relative, ADDON, ns, written)
     ElementTree.parse(os.path.join(ROOT, "Bindings.xml"))
     # Before the scenario registers its own test guide: only the shipped ones.
+    bookProblems, bookSteps = check_books(ns)
+    if bookProblems:
+        print("FAILED (%s skin): the book guides disagree with the book list:\n  %s" % (skin, "\n  ".join(bookProblems)))
+        return False
     problems, warnings, matched, unseen = check_guides(ns)
     for warning in warnings:
         print("WARNING (%s skin): an unverified guide step disagrees with the data: %s" % (skin, warning))
@@ -201,9 +239,9 @@ def run(skin):
         for text in [export] + ([code] if code else []):
             found = ingest.decode("```\n" + text + "\n```")
             assert len(found) == 1, "ingest finds one submission, not %d" % len(found)
-    print("%s skin: loaded %d files; %d guide steps match the collected data (%d not seen in it yet); %s; "
-          "text %.1f KB%s, decoded%s" % (
-        skin, len(files), matched, unseen, result, len(export) / 1024,
+    print("%s skin: loaded %d files; %d guide steps match the collected data (%d not seen in it yet), %d book "
+          "steps the book list; %s; text %.1f KB%s, decoded%s" % (
+        skin, len(files), matched, unseen, bookSteps, result, len(export) / 1024,
         "; share code %.1f KB (the mock doesn't compress)" % (len(code) / 1024) if code
         else "; no share code (no C_EncodingUtil)",
         " and read by Tools/ingest.py" if ingest else ""))

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.6.0 — library books
+
+- **New: routes for the library books**, under a new **Collections** category in
+  the guide browser. Four guides: Eastern Kingdoms and Kalimdor, for the Alliance
+  and for the Horde. Each picks up every book in the fastest order we found,
+  learns flight points on the way, flies and uses your hearthstone, and ends at
+  your librarian (Garion Wendell in Stormwind, Owen Thadd in Undercity).
+- **Each book ticks by itself** once it's in your bags. Flight points tick once
+  you've learned them, and flights, runs, boats and your hearth tick when you get
+  there.
+- Many books are in places far above level 30. Each step says where it's
+  dangerous: enemy towns, strong monsters, guards.
+- The Feralas book is left out until its new spot is known.
+- `/apg flights` saves the game's flight masters and maps, for writing routes.
+- **After updating, close the game and start it again.** A /reload is not
+  enough this time: there is a new file.
+
+---
+
 ## 0.5.0 — Pathfinder's arrow, and quests done together
 
 - **New: Pathfinder's arrow**, like the Turtle WoW addon's. An arrow on your

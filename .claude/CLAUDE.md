@@ -59,7 +59,8 @@ update `docs/project-status.md` in the same pull request.
    ```
 
    Exit codes below 8 mean success. This copies the same files `package.py` puts in the zip
-   (91 checked 2026-10-13 with `/L`; 92 from 0.4.0, with `Guides/Northshire.lua`; 93 from 0.5.0, with `UI/NavArrow.lua`). `/MIR` never deletes from the installed copy anything that
+   (91 checked 2026-10-13 with `/L`; 92 from 0.4.0, with `Guides/Northshire.lua`; 93 from 0.5.0, with `UI/NavArrow.lua`;
+   94 from 0.6.0, with `Guides/LibraryBooks.lua`). `/MIR` never deletes from the installed copy anything that
    matches an exclusion (a `Tools` or `docs` folder, a dot file): if such leftovers appear
    there, list them and ask before sending them to the Recycle Bin.
    **One installed copy, several sessions:** a `/MIR` from another branch deletes what that
