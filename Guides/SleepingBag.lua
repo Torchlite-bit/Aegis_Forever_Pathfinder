@@ -15,10 +15,13 @@ local _, AP = ...
 	against. The collected data hasn't seen these quests yet, so the quest steps are
 	`unverified`. The flight masters are Forever's own (/apg flights); the boats and
 	zeppelins the Instance Journal's. Each route was planned by two planners, judged,
-	checked against the data and fixed.
+	checked against the data, reviewed and fixed.
 
-	Assumed known at the start: only the faction's capital flight points; any other
-	is learned on the way, before the route flies to it.
+	Flight points: each route learns its starting capital's first, and any other on
+	the way, before it flies there. Where knowing one already saves time, or not
+	knowing one (Ironforge, Orgrimmar) would strand you, the note says what to do.
+	A hearth step's note covers a hearth set somewhere else, for players who join
+	partway through.
 ]]
 
 local function Register(def)
@@ -42,13 +45,13 @@ Register({
 		{ action = "GETFLIGHTPOINT", title = "Sentinel Hill flight point", node = 4, map = 1436, x = 0.5657, y = 0.5267,
 		  note = "Run east to Sentinel Hill, the town on the hill, and talk to the flight master." },
 		{ action = "FLY", title = "Fly to Ironforge", map = 1426, x = 0.6005, y = 0.2877,
-		  note = "Fly from Sentinel Hill to Ironforge, by way of Stormwind. If Ironforge isn't on the flight map, fly to Stormwind and take the Deeprun Tram from the Dwarven District." },
+		  note = "Fly from Sentinel Hill to Ironforge, by way of Stormwind. If Ironforge isn't on the flight map, fly to Stormwind and take the Deeprun Tram from the Dwarven District. If you know Thelsamar's flight point, fly there instead." },
 		{ action = "GETFLIGHTPOINT", title = "Thelsamar flight point", node = 8, map = 1432, x = 0.3394, y = 0.5079,
 		  note = "Leave Ironforge by the front gate and follow the road east through Dun Morogh and the tunnel into Loch Modan. Thelsamar is north-east of the tunnel: talk to its flight master." },
 		{ action = "SETHEARTH", title = "Set your hearth in Thelsamar",
 		  note = "Talk to the innkeeper at the Stoutlager Inn, a short walk north-east of the flight master, and make it your home. You hearth back here from Stonetalon, so don't use your hearthstone before then." },
 		{ action = "RUN", title = "Run to Algaz Station", map = 1432, x = 0.2467, y = 0.1825, unverified = true,
-		  note = "Take the road north-west out of Thelsamar to Algaz Station, at the pass into the Wetlands." },
+		  note = "Take the road north-west out of Thelsamar to Algaz Station, at the pass into the Wetlands. If you know Menethil Harbor's flight point, fly there from Thelsamar instead." },
 		{ action = "GETFLIGHTPOINT", title = "Menethil Harbor flight point", node = 7, map = 1437, x = 0.0952, y = 0.5966,
 		  note = "Go north through the Dun Algaz pass into the Wetlands and follow the road to Menethil Harbor, on the west coast. Danger: monsters near the road are up to level 30, and Grim Batol, the mountain east of the pass, is far higher. Stay on the road." },
 		{ action = "BOAT", title = "Take the boat to Theramore", map = 1445, x = 0.7151, y = 0.5634,
@@ -80,7 +83,7 @@ Register({
 		{ action = "ACCEPT", qid = 79974, title = "Wet Job", map = 1442, x = 0.396, y = 0.499, unverified = true,
 		  note = "Click the Mound of Dirt again." },
 		{ action = "HEARTH", title = "Hearth to Thelsamar",
-		  note = "Use your hearthstone to go back to the Thelsamar inn, in Loch Modan. Set somewhere else in the Eastern Kingdoms? Hearth there and fly to Thelsamar. If it isn't ready, wait for it here, away from the monsters: going back by boat takes over half an hour." },
+		  note = "Use your hearthstone to go back to the Thelsamar inn, in Loch Modan. Set somewhere else? In the Eastern Kingdoms, hearth there and fly or run to Thelsamar. In Kalimdor, hearth there and take the boat from Auberdine to Menethil Harbor. If it isn't ready, wait for it here, away from the monsters: going back by boat takes over half an hour." },
 		{ action = "TURNIN", qid = 79974, title = "Wet Job", map = 1432, x = 0.494, y = 0.129, unverified = true,
 		  note = "Go north from the inn to the Stonewrought Dam, at the top of the loch. Jump onto the big carved heads on the dam that face the Wetlands, and click the Carved Figurine, an eagle. Watch your step." },
 		{ action = "ACCEPT", qid = 79975, title = "Eagle's Fist", map = 1432, x = 0.494, y = 0.129, unverified = true,
@@ -88,13 +91,13 @@ Register({
 		{ action = "RUN", title = "Run to Thelsamar", map = 1432, x = 0.3394, y = 0.5079,
 		  note = "Go back south to Thelsamar's flight master." },
 		{ action = "FLY", title = "Fly to Menethil Harbor", map = 1437, x = 0.0952, y = 0.5966,
-		  note = "Fly from Thelsamar to Menethil Harbor, in the Wetlands." },
+		  note = "Fly from Thelsamar to Menethil Harbor, in the Wetlands. If you know Southshore's flight point, fly there instead and skip the boat. If Menethil isn't on your flight map, run there: north through the Dun Algaz pass, then west along the road." },
 		{ action = "BOAT", title = "Take the boat to Southshore", map = 1424, x = 0.5057, y = 0.6967,
 		  note = "Boats to Southshore and to Auberdine both leave from Menethil's north pier. Take the one to Southshore, in Hillsbrad Foothills." },
 		{ action = "GETFLIGHTPOINT", title = "Southshore flight point", node = 14, map = 1424, x = 0.4944, y = 0.521,
 		  note = "Walk up from the dock into Southshore and talk to the flight master. It's your flight home at the end." },
 		{ action = "RUN", title = "Run to the cart at Thoradin's Wall", map = 1424, x = 0.873, y = 0.496,
-		  note = "Take the road east out of Southshore toward the Arathi Highlands, to a cart by Thoradin's Wall, the great stone wall on the border. Danger: Durnholde Keep, just north of the road near the wall, is full of Syndicate men far above level 14. Keep to the south side of the road and keep moving." },
+		  note = "Take the road east out of Southshore toward the Arathi Highlands. Danger: Durnholde Keep, north of the road, is full of Syndicate far above level 14, so keep to the south side. Just before the wall, leave the road and follow the arrow north along the wall to a cart standing against it. Stay by the wall and keep moving." },
 		{ action = "TURNIN", qid = 79975, title = "Eagle's Fist", map = 1417, x = 0.224, y = 0.242, unverified = true,
 		  note = "Climb onto the cart and up into the wall. Go through the room inside and look out to the right: the Messenger Bag hangs there. Click it." },
 		{ action = "ACCEPT", qid = 79976, title = "This Must Be The Place", map = 1417, x = 0.224, y = 0.242, unverified = true,
@@ -115,6 +118,8 @@ Register({
 	steps = {
 		{ action = "NOTE", title = "Cozy Sleeping Bag",
 		  note = "Six quests give experience, five Student Fodder (food that heals you) and, at the end, the Cozy Sleeping Bag. You need level 14, and the route takes close to 2 hours on foot. It crosses to the Eastern Kingdoms twice and goes through Alliance land, so read the warnings." },
+		{ action = "GETFLIGHTPOINT", title = "Orgrimmar flight point", node = 23, map = 1411, x = 0.4451, y = 0.0371,
+		  note = "Learn Orgrimmar's flight point if you haven't. You fly back here twice." },
 		{ action = "GETFLIGHTPOINT", title = "Crossroads flight point", node = 25, map = 1413, x = 0.515, y = 0.3041,
 		  note = "Leave Orgrimmar by the west gate and head south through the Barrens to the Crossroads, a Horde town. Learn the flight point. If you know it already, fly here instead." },
 		{ action = "SETHEARTH", title = "Set your hearth in the Crossroads",
@@ -126,7 +131,7 @@ Register({
 		{ action = "RUN", title = "Run to Camp Taurajo", map = 1413, x = 0.4446, y = 0.591,
 		  note = "Go back north up the road to the flight master at Camp Taurajo." },
 		{ action = "FLY", title = "Fly to Orgrimmar", map = 1411, x = 0.4451, y = 0.0371,
-		  note = "Take the flight to Orgrimmar." },
+		  note = "Take the flight to Orgrimmar. If Orgrimmar isn't on your flight map, fly to the Crossroads and run north-east to the zeppelin towers outside Orgrimmar." },
 		{ action = "RUN", title = "Run to the zeppelin tower", map = 1411, x = 0.506, y = 0.126,
 		  note = "Leave Orgrimmar by the main gate. The zeppelin towers stand just outside: take the zeppelin to Grom'gol, not the one to Undercity." },
 		{ action = "BOAT", title = "Take the zeppelin to Grom'gol", map = 1434, x = 0.314, y = 0.302,
@@ -144,13 +149,13 @@ Register({
 		{ action = "ACCEPT", qid = 79192, title = "Stepping Stones", map = 1436, x = 0.374, y = 0.509, unverified = true,
 		  note = "Click the same remains or plank again. This quest sends you back to Kalimdor, to Stonetalon Mountains." },
 		{ action = "HEARTH", title = "Hearth to the Crossroads",
-		  note = "Step away from monsters and use your hearthstone. Set somewhere else in Kalimdor? Hearth there and fly to the Crossroads. If it isn't ready, run back to Grom'gol, take the zeppelin to Orgrimmar and fly to the Crossroads." },
+		  note = "Step away from monsters and use your hearthstone. Set somewhere else? Use it anyway, then fly to the Crossroads; from the Eastern Kingdoms, take the zeppelin to Orgrimmar first. If it isn't ready, run back to Grom'gol and take the zeppelin to Orgrimmar." },
 		{ action = "GETFLIGHTPOINT", title = "Sun Rock Retreat flight point", node = 29, map = 1442, x = 0.4516, y = 0.5989,
 		  note = "Take the road west from the Crossroads into Stonetalon Mountains and climb the Webwinder Path north-west to Sun Rock Retreat, a Horde town. Danger: the Grimtotem tauren camped by the path attack you. If you know this flight point already, fly here instead." },
 		{ action = "RUN", title = "Run to the camp path", map = 1442, x = 0.509, y = 0.523,
-		  note = "The path to the camp starts just north-east of Sun Rock Retreat. Follow it as it winds west." },
+		  note = "If you're still at the Crossroads and know Sun Rock Retreat's flight point, fly there. The path to the camp starts just north-east of Sun Rock Retreat. Follow it as it winds west." },
 		{ action = "TURNIN", qid = 79192, title = "Stepping Stones", map = 1442, x = 0.407, y = 0.524, unverified = true,
-		  note = "At the end of the path is an abandoned camp. Click the Pocket Litter on top of a box. Danger: the harpies and elementals in these hills are above your level, so fight them one at a time." },
+		  note = "At the end of the path is an abandoned camp. Click the Pocket Litter on top of a box. Danger: the harpies and fire spirits in these hills are level 20 and up. Don't fight them: go around them and keep moving." },
 		{ action = "ACCEPT", qid = 79980, title = "Scramble", map = 1442, x = 0.407, y = 0.524, unverified = true,
 		  note = "Click the Pocket Litter again. Optional: the camp's firepit gives Rekindle, using the wood and flint you just got. Some players can't click the fire; then skip it." },
 		{ action = "TURNIN", qid = 79980, title = "Scramble", map = 1442, x = 0.396, y = 0.499, unverified = true,
@@ -160,11 +165,11 @@ Register({
 		{ action = "RUN", title = "Run to Sun Rock Retreat", map = 1442, x = 0.4516, y = 0.5989,
 		  note = "Go back along the path to the flight master at Sun Rock Retreat." },
 		{ action = "FLY", title = "Fly to Orgrimmar", map = 1411, x = 0.4451, y = 0.0371,
-		  note = "Take the flight to Orgrimmar." },
+		  note = "Take the flight to Orgrimmar. If Orgrimmar isn't on your flight map, fly to the Crossroads and run north-east to the zeppelin towers outside Orgrimmar." },
 		{ action = "RUN", title = "Run to the zeppelin tower", map = 1411, x = 0.509, y = 0.139,
 		  note = "Leave Orgrimmar by the main gate to the zeppelin towers. This time take the zeppelin to Undercity." },
 		{ action = "BOAT", title = "Take the zeppelin to Undercity", map = 1420, x = 0.607, y = 0.588,
-		  note = "It lands at the tower outside Undercity, in Tirisfal Glades." },
+		  note = "It lands at the tower outside Undercity, in Tirisfal Glades. If you know Tarren Mill's flight point, fly there from Undercity's flight master instead." },
 		{ action = "GETFLIGHTPOINT", title = "The Sepulcher flight point", node = 10, map = 1421, x = 0.4556, y = 0.4242,
 		  note = "Take the road south-west into Silverpine Forest to the Sepulcher, a Horde camp by the road. Learn the flight point on your way." },
 		{ action = "RUN", title = "Run to Hillsbrad Foothills", map = 1424, x = 0.13, y = 0.46, unverified = true,

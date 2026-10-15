@@ -14,6 +14,8 @@
 - **Already partway through the chain?** Open the guide: it starts where you are.
 - Fixed: handing in a quest now also ticks the run or flight just before it.
   The guide no longer waits on a trip you've already made.
+- Fixed: a flight point you already know, further on in a route, no longer
+  skips the runs and flights before it when you open a flight master's map.
 - **After updating, close the game and start it again.** A /reload is not
   enough this time: there is a new file.
 

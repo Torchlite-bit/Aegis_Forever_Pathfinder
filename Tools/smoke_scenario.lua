@@ -1305,11 +1305,23 @@ do
 	AP.db.char.progress, S.log = { ["Chain Test (1-2)"] = { [4] = true } }, {}
 	AP:LoadGuide("Chain Test (1-2)")
 	equal((AP:GetCurrentStep()), 5, "a quest step ticked by hand counts too: the steps before it are behind you")
+	AP.db.char.progress = {}
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 1, "a chain not started opens at its first step")
+	AP:SetStepDone(4, true)
+	equal((AP:GetCurrentStep()), 5, "a quest step ticked by hand counts at once, not only at the next load")
 	S.log, S.completed = { { questID = 990002, title = "Second Link", level = 1, objectives = {} } }, { [990001] = true }
 	AP.db.char.progress = {}
-	AP.db.char.untickedTrip = { guide = "Chain Test (1-2)", index = 3 }
 	AP:LoadGuide("Chain Test (1-2)")
-	equal((AP:GetCurrentStep()), 3, "but a trip you unticked by hand stays unticked")
+	S.x, S.y = 0.1, 0.1                       -- at the run's place
+	AP:SetStepDone(3, false)
+	equal((AP:GetCurrentStep()), 3, "stepping back to a run by hand, at its place, shows it")
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 3, "and a reload there doesn't tick it again")
+	S.x = nil
+	Mock.Advance(2)
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 6, "once you've left its place, the chain ticks it again")
 	AP.db.char.untickedTrip = nil
 	S.log, S.completed = {}, {}
 	AP.db.char.progress = {}
@@ -1331,6 +1343,41 @@ do
 	S.x, S.y = 0.4, 0.6
 	S.log, S.completed = {}, {}
 	AP.db.char.progress, AP.db.char.arrived = {}, nil
+end
+
+------------------------------------------------------------------------------------------
+-- A flight point ticks the trips before it only at its own flight master
+------------------------------------------------------------------------------------------
+
+do
+	check(AP:RegisterGuide({ name = "Flight Test (1-2)", category = "leveling", faction = "Alliance",
+		minLevel = 1, maxLevel = 2, steps = {
+			{ action = "NOTE", title = "Start here" },
+			{ action = "GETFLIGHTPOINT", title = "Near flight point", node = 4, map = 1429, x = 0.45, y = 0.6 },
+			{ action = "RUN", title = "A long run", map = 1429, x = 0.1, y = 0.1 },
+			{ action = "GETFLIGHTPOINT", title = "Far flight point", node = 2, map = 1429, x = 0.2, y = 0.2 },
+			{ action = "NOTE", title = "The end" },
+		} }), "a guide of flight points registers")
+	S.x = nil
+	AP.db.char.progress, AP.db.char.knownTaxi, AP.db.char.untickedTrip = {}, nil, nil
+	AP:LoadGuide("Flight Test (1-2)")
+	AP:StepForward()
+	Mock.taxiKnown, Mock.taxiHere = { 4, 2 }, 4
+	Mock.Fire("TAXIMAP_OPENED")
+	Mock.Advance(1)
+	check(AP:IsStepDone("Flight Test (1-2)", 2) and AP:IsStepDone("Flight Test (1-2)", 4),
+		"opening a flight master's map ticks every flight point it lists")
+	equal((AP:GetCurrentStep()), 3, "but a far one you already knew doesn't tick the run before it")
+	AP.db.char.progress, AP.db.char.knownTaxi = { ["Flight Test (1-2)"] = { [1] = true, [2] = true } }, nil
+	AP:LoadGuide("Flight Test (1-2)")
+	Mock.taxiKnown, Mock.taxiHere = { 4, 2 }, 2
+	Mock.Fire("TAXIMAP_OPENED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 5, "learned at its own flight master, a flight point ticks the run before it")
+	AP:UnloadGuide()
+	Mock.taxiKnown, Mock.taxiHere = nil, nil
+	S.x, S.y = 0.4, 0.6
+	AP.db.char.progress, AP.db.char.knownTaxi, AP.db.char.arrived = {}, nil, nil
 end
 
 ------------------------------------------------------------------------------------------
