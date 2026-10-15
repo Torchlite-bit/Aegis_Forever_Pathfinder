@@ -557,7 +557,16 @@ C_Map = {
 		end
 		if S().x then return setmetatable({ x = S().x, y = S().y }, Vector) end
 	end,
-	GetMapInfo = function(mapID) return { name = "Map " .. mapID, parentMapID = S().parents[mapID] or 0 } end,
+	GetMapInfo = function(mapID)
+		local types = { [947] = 1, [1415] = 2, [1414] = 2 }
+		return { mapID = mapID, name = "Map " .. mapID, mapType = types[mapID] or 3,
+			parentMapID = S().parents[mapID] or (mapID == 1429 and 1415) or (mapID == 1415 and 947) or 0 }
+	end,
+	GetMapChildrenInfo = function(mapID)
+		if mapID ~= 947 then return nil end
+		return { { mapID = 1415, name = "Eastern Kingdoms", mapType = 2, parentMapID = 947 },
+			{ mapID = 1429, name = "Elwynn Forest", mapType = 3, parentMapID = 1415 } }
+	end,
 	GetMapRectOnMap = function(mapID, topMapID)
 		local r = S().rects[mapID .. ">" .. topMapID]
 		if r then return r[1], r[2], r[3], r[4] end
@@ -575,6 +584,20 @@ C_Map = {
 		if point then return { uiMapID = point.uiMapID, position = setmetatable({ x = point.x, y = point.y }, Vector) } end
 	end,
 	ClearUserWaypoint = function() Mock.waypoint = nil end,
+}
+-- The flight master's own list (open): the nodes this character knows, Mock.taxiKnown = { ids }.
+function GetTaxiMapID() return S().mapID end
+C_TaxiMap = {
+	GetAllTaxiNodes = function()
+		local out = {}
+		for _, id in ipairs(Mock.taxiKnown or {}) do out[#out + 1] = { nodeID = id, name = "Node " .. id, state = 1 } end
+		return out
+	end,
+	GetTaxiNodesForMap = function(mapID)
+		if mapID ~= 1429 then return {} end
+		return { { nodeID = 2, name = "Stormwind, Elwynn", faction = 2, isUndiscovered = false,
+			position = setmetatable({ x = 0.66, y = 0.62 }, Vector) } }
+	end,
 }
 UiMapPoint = { CreateFromCoordinates = function(mapID, x, y) return { uiMapID = mapID, x = x, y = y } end }
 C_SuperTrack = { SetSuperTrackedUserWaypoint = function(on) Mock.superTracked = on end }

@@ -483,11 +483,10 @@ local function PaintRow(row, guide, index, current, focus, inBlock, compact)
 		row.band:SetDone(done)
 	else
 		row.check:SetChecked(done)
-		row.check:SetAutoEligible(step.qid ~= nil and (step.action == "ACCEPT" or step.action == "TURNIN"
-			or step.action == "COMPLETE"))
+		row.check:SetAutoEligible(AP:TicksItself(step))
 		Theme:SetActionIcon(row.icon, ({ ACCEPT = "A", TURNIN = "T", COMPLETE = "C", RUN = "R", KILL = "K", USE = "U",
 			NOTE = "N", HEARTH = "H", SETHEARTH = "h", FLY = "F", GETFLIGHTPOINT = "f", BUY = "B", BOAT = "b",
-			GRIND = "G", TRAIN = "t", DIE = "D", PET = "P", MAP = "R" })[step.action])
+			GRIND = "G", TRAIN = "t", DIE = "D", PET = "P", MAP = "R", LOOT = "L" })[step.action])
 		row.title:SetText(step.title or step.action)
 		local note = step.note or ""
 		if not focus and step.action == "COMPLETE" and (isCurrent or inBlock) then
@@ -711,8 +710,7 @@ function AP:RefreshObjectivePanel()
 	if guide then
 		ui.tab:Show()
 		ui.tab.label:SetText(guide.name)
-		ui.tab.badge:SetKind(guide.category == "dungeons" and "dg" or guide.category == "class" and "cl"
-			or guide.category == "professions" and "pf" or "xp", nil)
+		ui.tab.badge:SetKind(self:BadgeKind(guide.category), nil)
 	else
 		ui.tab:Hide()
 	end

@@ -469,6 +469,12 @@ for _, row in ipairs(browser.ui.categories) do
 		check(not browser.ui.empty:IsShown(), "Leveling isn't empty")
 		equal(browser.ui.rows[1].guide and browser.ui.rows[1].guide.name, "Northshire Valley (1-6)",
 			"it lists the Northshire test guide")
+	elseif row.key == "collections" then
+		local names = {}
+		for _, r in ipairs(browser.ui.rows) do if r:IsShown() and r.guide then names[#names + 1] = r.guide.name end end
+		table.sort(names)
+		equal(table.concat(names, " | "), "Library Books: Eastern Kingdoms (Alliance) | Library Books: Kalimdor (Alliance)",
+			"Collections lists the Alliance's library-book guides, not the Horde's")
 	else
 		check(browser.ui.empty:IsShown(), "an empty category says so")
 	end
@@ -582,6 +588,13 @@ if skin == "pathfinder" then
 	check(Chat("Rest the mouse"), "/apg mouse explains itself")
 	Mock.Advance(3.5)
 	check(Chat("has the mouse there") or Chat("level"), "and then says what has the mouse")
+	-- /apg flights saves the maps and flight masters, for writing routes.
+	SlashCmdList.AEGISPATHFINDER("flights")
+	local atlas = AegisPathfinderDB.atlas
+	check(atlas and atlas.maps[1429] and atlas.maps[1429].name == "Elwynn Forest", "/apg flights saves the maps")
+	check(atlas.flights[1429] and atlas.flights[1429][1].name == "Stormwind, Elwynn" and atlas.flights[1429][1].x == 0.66,
+		"and the flight masters on them")
+	check(Chat("Saved 3 maps and 1 flight masters %(from map 947%)"), "and says so, the world map found from where you stand")
 	-- /apg chattest tries chat with no click; the mock blocks it, as the client did.
 	local blockedBefore = #Mock.blocked
 	Mock.restrictions[5] = 2                   -- the client's Chat restriction on
@@ -964,9 +977,22 @@ check(Mock.waypoint == nil, "its pin is taken away")
 check(not arrow:IsShown(), "and the arrow goes")
 AP:UnloadGuide()
 check(guide.ui.empty:IsShown(), "no guide, the empty state again")
+check(not AP:RegisterGuide({ name = "Bad", faction = "horde", steps = { { action = "NOTE", title = "x" } } }),
+	"a faction not written Alliance, Horde or Both is refused")
 S.faction = "Horde"
 AP:RefreshObjectivePanel()
-equal(guide.ui.empty.title:GetText(), "NO GUIDES YET", "a Horde character, with no guide for them, isn't told to pick one")
+equal(guide.ui.empty.title:GetText(), "PICK A GUIDE", "a Horde character has the Horde's library-book guides")
+local hordeBooks = {}
+for _, g in ipairs(AP:GetGuides("collections")) do hordeBooks[#hordeBooks + 1] = g.name end
+table.sort(hordeBooks)
+equal(table.concat(hordeBooks, " | "), "Library Books: Eastern Kingdoms (Horde) | Library Books: Kalimdor (Horde)",
+	"Collections shows the Horde its two routes")
+for _, g in ipairs(AP:GetGuides(nil)) do
+	check(g.faction == "Horde" or g.faction == "Both", "and sees no Alliance guide: " .. g.name)
+end
+S.faction = "Neutral"
+AP:RefreshObjectivePanel()
+equal(guide.ui.empty.title:GetText(), "NO GUIDES YET", "a character with no guide for them isn't told to pick one")
 S.faction = "Alliance"
 AP:RefreshObjectivePanel()
 
@@ -1109,6 +1135,139 @@ do
 	equal(AP.db.char.arrived, nil, "with no position, never arrived")
 	AP:UnloadGuide()
 	S.log, S.completed, S.x, S.y = {}, {}, 0.4, 0.6
+	AP.db.char.progress, AP.db.char.arrived = {}, nil
+end
+
+------------------------------------------------------------------------------------------
+-- Pick-ups and travel: an item in the bags, a trip's end, a flight point learned
+------------------------------------------------------------------------------------------
+
+do
+	local ok, why = AP:RegisterGuide({ name = "Travel Test (1-2)", category = "leveling", faction = "Alliance",
+		minLevel = 1, maxLevel = 2, steps = {
+			{ action = "RUN", title = "The road", map = 1429, x = 0.5, y = 0.5 },
+			{ action = "LOOT", title = "Test Tome", item = "Test Tome", map = 1429, x = 0.6, y = 0.5 },
+			{ action = "GETFLIGHTPOINT", title = "Stormwind", node = 2, map = 1429, x = 0.66, y = 0.62 },
+			{ action = "FLY", title = "Fly back", map = 1429, x = 0.3, y = 0.3 },
+			{ action = "NOTE", title = "The end" },
+		} })
+	check(ok, "a guide with pick-ups and trips registers: " .. tostring(why))
+	local tg = AP.guides["Travel Test (1-2)"]
+	local arrow = AP.navarrow
+	S.x, S.y, S.facing = 0.5, 0.6, 0
+	AP.db.char.progress, AP.db.char.knownTaxi = {}, nil
+	Mock.taxiKnown = nil
+	AP:LoadGuide(tg.name)
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 1, "200 yards off, the trip isn't done")
+	S.y = 0.525
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 1, "nor 50 yards off")
+	check(AP:TicksItself(tg.steps[1]) and AP:TicksItself(tg.steps[2]) and AP:TicksItself(tg.steps[3])
+		and not AP:TicksItself(tg.steps[5]), "trips, pick-ups and flight points tick themselves; a note doesn't")
+	S.y = 0.505
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 2, "there, it ticks by itself")
+	S.x, S.y = 0.6, 0.6
+	Mock.Update(0.2)
+	equal(arrow.instruction:GetText(), "Go and pick it up", "the arrow says to pick it up")
+	check(not AP:InArrivedArea(tg.steps[2]), "a pick-up isn't a kill area: it stays marked")
+	Mock.bagSlot2 = { itemID = 990010, name = "Test Tome" }
+	Mock.Fire("BAG_UPDATE_DELAYED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 3, "the book in your bags ticks it")
+	Mock.bagSlot2 = nil
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 3, "a flight point not learned yet waits (every node reads as discovered here)")
+	Mock.taxiKnown = { 7 }
+	Mock.Fire("TAXIMAP_OPENED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 3, "a flight master listing others doesn't tick it")
+	Mock.taxiKnown = { 7, 2 }
+	Mock.Fire("TAXIMAP_OPENED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 4, "once a flight master lists it, it ticks")
+	check(AP.db.char.knownTaxi[2] and AP.db.char.knownTaxi[7], "and the known flight points are saved")
+	S.x, S.y = 0.31, 0.31
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 5, "landing by the flight master ticks the flight")
+	AP:StepBack()
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 4, "stepped back to the flight, standing there, it stays unticked")
+	S.x, S.y = 0.6, 0.6
+	Mock.Advance(1)
+	S.x, S.y = 0.31, 0.31
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 5, "gone and back, it ticks again")
+	AP:UnloadGuide()
+	-- A trip you got past another way ticks once you've done the step after it -- not at load.
+	ok = AP:RegisterGuide({ name = "Trip Test (1-2)", category = "leveling", faction = "Alliance",
+		minLevel = 1, maxLevel = 2, steps = {
+			{ action = "RUN", title = "Far off", map = 1429, x = 0.1, y = 0.1 },
+			{ action = "HEARTH", title = "Hearth" },
+			{ action = "LOOT", title = "Far Tome", item = "Far Tome", map = 1429, x = 0.9, y = 0.9 },
+			{ action = "NOTE", title = "The end" },
+		} })
+	check(ok, "a guide of trips registers")
+	S.x, S.y = 0.5, 0.5
+	AP.db.char.progress = {}
+	Mock.bagSlot2 = { itemID = 990011, name = "Far Tome" }
+	AP:LoadGuide("Trip Test (1-2)")
+	equal((AP:GetCurrentStep()), 1, "a book held at load doesn't tick the trips before it")
+	AP:UnloadGuide()
+	Mock.bagSlot2 = nil
+	AP.db.char.progress = {}
+	AP:LoadGuide("Trip Test (1-2)")
+	Mock.bagSlot2 = { itemID = 990012, name = "Far Tome" }
+	Mock.Fire("BAG_UPDATE_DELAYED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 4, "looted as you play, the run and the hearth before it tick too")
+	Mock.bagSlot2 = nil
+	AP:UnloadGuide()
+	S.x, S.y = 0.4, 0.6
+	AP.db.char.progress, AP.db.char.knownTaxi, AP.db.char.untickedTrip = {}, nil, nil
+	Mock.taxiKnown = nil
+end
+
+------------------------------------------------------------------------------------------
+-- The library-book guides, played through: every book ticks once it's in the bags
+------------------------------------------------------------------------------------------
+
+do
+	local names = { "Library Books: Eastern Kingdoms (Alliance)", "Library Books: Kalimdor (Alliance)",
+		"Library Books: Eastern Kingdoms (Horde)", "Library Books: Kalimdor (Horde)" }
+	local totals = {}
+	for _, name in ipairs(names) do
+		local g = AP.guides[name]
+		check(g and g.category == "collections", name .. " registers, under Collections")
+		local books, stuck = 0, nil
+		AP.db.char.progress, AP.db.char.arrived = {}, nil
+		S.x = nil                                -- no position: trips wait to be ticked here, as by hand
+		AP:LoadGuide(name)
+		for _, index in ipairs(AP:GuideSteps(g)) do
+			local current, step = AP:GetCurrentStep()
+			if current ~= index then
+				stuck = string.format("%s: step %d came when %d was due", name, current or -1, index)
+				break
+			end
+			if step.action == "LOOT" then
+				books = books + 1
+				Mock.bagSlot2 = { itemID = 980000 + index, name = step.item }
+				Mock.Fire("BAG_UPDATE_DELAYED")
+				Mock.Advance(1)
+				Mock.bagSlot2 = nil
+				if (AP:GetCurrentStep()) == index then stuck = name .. ": the book " .. step.item .. " didn't tick" break end
+			else
+				AP:StepForward()
+			end
+		end
+		check(not stuck, stuck or (name .. ": every step in order, each book ticking from the bags"))
+		check(select(2, AP:GetCurrentStep()) == nil, name .. ": the guide ends")
+		totals[#totals + 1] = books
+		AP:UnloadGuide()
+	end
+	equal(table.concat(totals, ","), "26,13,26,13", "26 books in the Eastern Kingdoms and 13 in Kalimdor, for each faction")
+	S.x, S.y = 0.4, 0.6
 	AP.db.char.progress, AP.db.char.arrived = {}, nil
 end
 

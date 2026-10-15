@@ -127,6 +127,14 @@ clone, following `.claude/CLAUDE.md` (#10).
   endings tell it apart from a mirror of this clone, which has CRLF). A test build
   installed before a release lands is gone after it. Check the installed TOC's
   `## Version` before asking the owner to test; reinstall if it changed.
+- **Travel guides (0.6.0, library books):** Forever's flight masters come from the client
+  (`/apg flights` -> `AegisPathfinderDB.atlas`: every map's name, size in yards and rect on
+  its continent, and `C_TaxiMap.GetTaxiNodesForMap` for each, which lists every node of the
+  continent, both factions, placed relative to that map). Its world map isn't 947: the
+  command climbs from the player's map. Blackrock Mountain's map isn't in the tree: steps
+  there have no place. Routes were planned from that data (two planners per route, a judge,
+  a checker, a fixer); Tools/library_books.json is the book list the smoke test checks the
+  LOOT steps against. A route assumes only the faction's capital flight points are known.
 - **Steps done together (0.5.0):** `together = true` joins a step to the one
   before it; blocks are worked out over the whole guide, then filtered by class.
   `fromitem = true` ticks an ACCEPT once its quest item is in the bags. Kill areas

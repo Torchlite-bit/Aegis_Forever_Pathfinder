@@ -11,7 +11,7 @@ under `Guides\`). It calls `AegisPathfinder:RegisterGuide` once:
 ```lua
 AegisPathfinder:RegisterGuide({
     name = "Elwynn Forest (1-10)",   -- unique; shown on the tab and in the browser
-    category = "leveling",           -- leveling | dungeons | class | professions
+    category = "leveling",           -- leveling | dungeons | class | professions | collections
     faction = "Alliance",            -- Alliance | Horde | Both
     minLevel = 1, maxLevel = 10,
     next = "Westfall (10-20)",       -- offered when this one ends
@@ -35,7 +35,7 @@ otherwise just missing. The smoke test checks every shipped guide registers.
 
 | Field | Meaning |
 |---|---|
-| `action` | One of the 1.12 addon's: `ACCEPT`, `COMPLETE`, `TURNIN`, `RUN`, `MAP`, `KILL`, `GRIND`, `USE`, `BUY`, `NOTE`, `HEARTH`, `SETHEARTH`, `FLY`, `GETFLIGHTPOINT`, `BOAT`, `TRAIN`, `DIE`, `PET` |
+| `action` | One of the 1.12 addon's: `ACCEPT`, `COMPLETE`, `TURNIN`, `RUN`, `MAP`, `KILL`, `GRIND`, `USE`, `BUY`, `NOTE`, `HEARTH`, `SETHEARTH`, `FLY`, `GETFLIGHTPOINT`, `BOAT`, `TRAIN`, `DIE`, `PET`; and `LOOT` (pick something up: with `item`) |
 | `qid` | The quest id. `ACCEPT`, `COMPLETE` and `TURNIN` steps with one tick themselves |
 | `title` | What the step row shows |
 | `note` | The line under it, in full in focus mode (under the band, for a current ACCEPT or TURNIN); on hover in the list |
@@ -44,6 +44,8 @@ otherwise just missing. The smoke test checks every shipped guide registers.
 | `unverified` | Optional. `true` on a step not confirmed by the collected data yet (written from another source, like the other classes' letters from the Turtle guide). The smoke test only warns when the data disagrees with it |
 | `together` | Optional. `true`: done with the step before it, in the same area. A run of them is one block: in focus mode every step of it shows, each ticking itself (not on step 1) |
 | `fromitem` | Optional, on an ACCEPT. `true`: the quest starts from a looted item. The step ticks once a bag item that starts this quest is held (`C_Container.GetContainerItemQuestInfo`), so the item's name or id needn't be known. Quest automation opens such an item by itself |
+| `item` | Optional. The step ticks once an item of this exact name is in the bags (a LOOT step: a library book) |
+| `node` | GETFLIGHTPOINT: the flight master's id (`/apg flights` saves them all). The step ticks once the client says you know it |
 | `race` | Optional. Only these races see the step: `UnitRace`'s second return (`Human`, `Dwarf`, `NightElf`, `Gnome`, `Orc`, `Scourge`, `Tauren`, `Troll`). With both, both must match |
 
 A step for another class or race is left out for that character everywhere: the
@@ -56,6 +58,12 @@ How steps tick:
 - `ACCEPT`: when the quest is in the log (`QUEST_ACCEPTED`, `C_QuestLog.IsOnQuest`)
 - `COMPLETE`: when `C_QuestLog.ReadyForTurnIn` or `IsComplete`
 - `TURNIN`: on `QUEST_TURNED_IN`, or `C_QuestLog.IsQuestFlaggedCompleted`
+- `LOOT` (with `item`): once an item of that name is in the bags
+- `GETFLIGHTPOINT` (with `node`): once you know that flight point. Forever's client calls every node
+  "discovered", so the flight points a flight master's map lists are saved per character as it opens
+- `RUN`, `FLY`, `BOAT`, `HEARTH`, `MAP`: once you're within 40 yards of its place, or once the step of
+  yours right after it is done as you play (not at load). Stepping back to a trip by hand doesn't tick it
+  again until you've left its place
 - anything else: by hand (the step's ring, the → on the nav row, `/apg next`).
   A current ACCEPT or TURNIN shows as a band without a ring: its fallback is the →.
   (In a block of steps done together there are no bands: every step has its ring.)

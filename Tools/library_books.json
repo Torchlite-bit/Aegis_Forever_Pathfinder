@@ -1,0 +1,465 @@
+{
+ "about": "The library books' spots, checked in game by the owner (2026-10). mapID and zx, zy (0..1) are the spot on the zone map; Blackrock Mountain's two use that mountain's own map, which the client gives no id (x, y are on it, in percent). Tools/smoke_test.py checks every LOOT step of the guides against this list.",
+ "turnin": {
+  "Alliance": {
+   "npc": "Garion Wendell",
+   "zone": "Stormwind City",
+   "where": "Mage Quarter"
+  },
+  "Horde": {
+   "npc": "Owen Thadd",
+   "zone": "Undercity",
+   "where": "Magic Quarter"
+  }
+ },
+ "rules": [
+  "Each book is its own hand-in quest at your faction's librarian; carry the book for its quest to show.",
+  "Rewards: 10 books Friend of the Library (level 1), 20 books Greater Friend (level 20), 25 books Greater Friend (level 30). Counts add up across them.",
+  "Rumi of Gnomeregan: The Collected Works has two spots: Thelsamar (Loch Modan) and Sentinel Hill (Westfall). Horde may not be able to reach the Thelsamar copy. One copy is enough.",
+  "Feralas (The Liminal and the Arcane) is left out: its Forever spot isn't known."
+ ],
+ "eastern_kingdoms": [
+  {
+   "book": "Archmage Theocritus' Research Journal",
+   "zone": "Elwynn Forest",
+   "x": 65.4,
+   "y": 70.1,
+   "place": "Tower of Azora",
+   "detail": "on a table about halfway up the tower",
+   "mapID": 1429,
+   "zx": 0.654,
+   "zy": 0.701
+  },
+  {
+   "book": "Rumi of Gnomeregan: The Collected Works",
+   "zone": "Loch Modan",
+   "x": 35.6,
+   "y": 48.9,
+   "place": "Thelsamar",
+   "detail": "upstairs in the inn",
+   "alt": "Westfall copy",
+   "horde": "may be out of reach for Horde",
+   "mapID": 1432,
+   "zx": 0.356,
+   "zy": 0.489
+  },
+  {
+   "book": "Rumi of Gnomeregan: The Collected Works",
+   "zone": "Westfall",
+   "x": 52.7,
+   "y": 53.8,
+   "place": "Sentinel Hill",
+   "detail": "in the inn, on the table behind the innkeeper",
+   "alt": "Loch Modan copy",
+   "mapID": 1436,
+   "zx": 0.527,
+   "zy": 0.538
+  },
+  {
+   "book": "Archmage Antonidas: The Unabridged Autobiography",
+   "zone": "Ironforge",
+   "x": 76.3,
+   "y": 10.8,
+   "place": "Hall of Explorers",
+   "detail": "on the table in the middle of the hall",
+   "mapID": 1455,
+   "zx": 0.763,
+   "zy": 0.108
+  },
+  {
+   "book": "Runes of the Sorcerer-Kings",
+   "zone": "Loch Modan",
+   "x": 77.5,
+   "y": 14.1,
+   "place": "Mo'Grosh Stronghold",
+   "detail": "in the ogres' cave",
+   "mapID": 1432,
+   "zx": 0.775,
+   "zy": 0.141
+  },
+  {
+   "book": "Bewitchments and Glamours",
+   "zone": "Westfall",
+   "x": 45.4,
+   "y": 70.5,
+   "place": "Moonbrook",
+   "detail": "on a bookshelf in the first house on the left as you come in",
+   "mapID": 1436,
+   "zx": 0.454,
+   "zy": 0.705
+  },
+  {
+   "book": "The Apothecary's Metaphysical Primer",
+   "zone": "Tirisfal Glades",
+   "x": 59.5,
+   "y": 52.3,
+   "place": "Brill",
+   "detail": "in the alchemy shop, on the shelf by Apothecary Johaan",
+   "mapID": 1420,
+   "zx": 0.595,
+   "zy": 0.523
+  },
+  {
+   "book": "Ataeric: On Arcane Curiosities",
+   "zone": "Silverpine Forest",
+   "x": 43.4,
+   "y": 41.2,
+   "place": "The Sepulcher",
+   "detail": "inside the tomb, near Sebastian Meloche",
+   "mapID": 1421,
+   "zx": 0.434,
+   "zy": 0.412
+  },
+  {
+   "book": "The Dalaran Digest, Vol. 23",
+   "zone": "Silverpine Forest",
+   "x": 63.5,
+   "y": 63.1,
+   "place": "Amber Mill",
+   "detail": "on a bookshelf in the north-east corner of the main hall",
+   "mapID": 1421,
+   "zx": 0.635,
+   "zy": 0.631
+  },
+  {
+   "book": "Crimes Against Anatomy",
+   "zone": "Duskwood",
+   "x": 16.7,
+   "y": 28.5,
+   "place": "Dawning Wood Catacombs",
+   "detail": "go in through Raven Hill Crypt",
+   "mapID": 1431,
+   "zx": 0.167,
+   "zy": 0.285
+  },
+  {
+   "book": "Goaz Scrolls",
+   "zone": "Wetlands",
+   "x": 33.6,
+   "y": 47.9,
+   "place": "Whelgar's Excavation Site",
+   "detail": "in an urn on the lowest level",
+   "mapID": 1437,
+   "zx": 0.336,
+   "zy": 0.479
+  },
+  {
+   "book": "A Web of Lies: Debunking Myths and Legends",
+   "zone": "Arathi Highlands",
+   "x": 73.0,
+   "y": 65.0,
+   "place": "Witherbark Village",
+   "detail": "outside a tent by the hut",
+   "mapID": 1417,
+   "zx": 0.73,
+   "zy": 0.65
+  },
+  {
+   "book": "Defensive Magics 101",
+   "zone": "Alterac Mountains",
+   "x": 48.5,
+   "y": 57.6,
+   "place": "Gallows Corner",
+   "detail": "inside the first tower of the ogre fort",
+   "mapID": 1416,
+   "zx": 0.485,
+   "zy": 0.576
+  },
+  {
+   "book": "Basilisks: Should Petrification be Feared?",
+   "zone": "Stranglethorn Vale",
+   "x": 41.5,
+   "y": 50.8,
+   "place": "Crystalvein Mine",
+   "detail": "on a wooden platform to the right of the cave mouth",
+   "mapID": 1434,
+   "zx": 0.415,
+   "zy": 0.508
+  },
+  {
+   "book": "A Luddite's Guide to Caring for Your Demonic Pet",
+   "zone": "Swamp of Sorrows",
+   "x": 61.0,
+   "y": 22.0,
+   "place": "Fallow Sanctuary",
+   "detail": "in a cage: click it through the bars. If it won't click, the Lost Ones around there drop a Rusted Cage Key",
+   "mapID": 1435,
+   "zx": 0.61,
+   "zy": 0.22
+  },
+  {
+   "book": "Mummies: A Guide to the Unsavory Undead",
+   "zone": "Badlands",
+   "x": 57.0,
+   "y": 39.0,
+   "place": "the crypt on the mountain",
+   "detail": "the path up starts at about 56, 45",
+   "mapID": 1418,
+   "zx": 0.57,
+   "zy": 0.39
+  },
+  {
+   "book": "A Mind of Metal",
+   "zone": "Searing Gorge",
+   "x": 37.8,
+   "y": 49.6,
+   "place": "a tent",
+   "detail": "on a table under the tent",
+   "mapID": 1427,
+   "zx": 0.378,
+   "zy": 0.496
+  },
+  {
+   "book": "Venomous Journeys",
+   "zone": "The Hinterlands",
+   "x": 36.0,
+   "y": 72.7,
+   "place": "Shadra'Alor",
+   "detail": "behind a brown wall by the easternmost temple",
+   "mapID": 1425,
+   "zx": 0.36,
+   "zy": 0.727
+  },
+  {
+   "book": "Stonewrought Design",
+   "zone": "Blackrock Mountain",
+   "x": 48.6,
+   "y": 64.2,
+   "place": "the Center Vault",
+   "detail": "on the large platform in the middle",
+   "map_note": "coordinates on the Blackrock Mountain map"
+  },
+  {
+   "book": "Magma or Lava?",
+   "zone": "Blackrock Mountain",
+   "x": 48.4,
+   "y": 63.6,
+   "place": "before Blackrock Depths' entrance",
+   "detail": "on a platform, outside the dungeon",
+   "map_note": "coordinates on the Blackrock Mountain map"
+  },
+  {
+   "book": "Conjurer's Codex",
+   "zone": "Blasted Lands",
+   "x": 55.3,
+   "y": 32.2,
+   "place": "Blasted Lands",
+   "detail": "",
+   "mapID": 1419,
+   "zx": 0.553,
+   "zy": 0.322
+  },
+  {
+   "book": "Sanguine Sorcery",
+   "zone": "Swamp of Sorrows",
+   "x": 70.0,
+   "y": 51.0,
+   "place": "the top of the Temple of Atal'Hakkar",
+   "detail": "standing on the temple your coordinates read about 56.3, 76.2",
+   "mapID": 1435,
+   "zx": 0.7,
+   "zy": 0.51
+  },
+  {
+   "book": "The Knight and the Lady",
+   "zone": "Eastern Plaguelands",
+   "x": 47.3,
+   "y": 42.3,
+   "place": "Eastern Plaguelands",
+   "detail": "",
+   "mapID": 1423,
+   "zx": 0.473,
+   "zy": 0.423
+  },
+  {
+   "book": "Scourge: Undead Menace or Misunderstood?",
+   "zone": "Eastern Plaguelands",
+   "x": 26.5,
+   "y": 15.0,
+   "place": "before the bridge to Stratholme",
+   "detail": "on a table to the right, outside the dungeon. Two Crypt Walkers stand close by",
+   "mapID": 1423,
+   "zx": 0.265,
+   "zy": 0.15
+  },
+  {
+   "book": "A Study of the Light",
+   "zone": "Eastern Plaguelands",
+   "x": 71.8,
+   "y": 48.2,
+   "place": "Light's Hope Chapel",
+   "detail": "inside the chapel",
+   "mapID": 1423,
+   "zx": 0.718,
+   "zy": 0.482
+  },
+  {
+   "book": "Undead Potatoes",
+   "zone": "Western Plaguelands",
+   "x": 38.3,
+   "y": 54.6,
+   "place": "Felstone Field",
+   "detail": "upstairs in Janice Felstone's farmhouse",
+   "mapID": 1422,
+   "zx": 0.383,
+   "zy": 0.546
+  },
+  {
+   "book": "Necromancy 101",
+   "zone": "Western Plaguelands",
+   "x": 69.4,
+   "y": 72.8,
+   "place": "Caer Darrow",
+   "detail": "on a table at the very top of the Scholomance building, outside the dungeon",
+   "mapID": 1422,
+   "zx": 0.694,
+   "zy": 0.728
+  }
+ ],
+ "kalimdor": [
+  {
+   "book": "Nar'thalas Almanac, Vol. 74",
+   "zone": "Darkshore",
+   "x": 59.6,
+   "y": 22.2,
+   "place": "Ruins of Mathystra",
+   "detail": "down the stairs, on the third landing",
+   "mapID": 1439,
+   "zx": 0.596,
+   "zy": 0.222
+  },
+  {
+   "book": "The Lessons of Ta'zo",
+   "zone": "Orgrimmar",
+   "x": 38.7,
+   "y": 78.4,
+   "place": "Valley of Spirits",
+   "detail": "at the large tablet by the Darkbriar Lodge sign",
+   "mapID": 1454,
+   "zx": 0.387,
+   "zy": 0.784
+  },
+  {
+   "book": "Arcanic Systems Manual",
+   "zone": "The Barrens",
+   "x": 56.3,
+   "y": 8.8,
+   "place": "Sludge Fen",
+   "detail": "on a chair in the control room at the top of the oil rig",
+   "mapID": 1413,
+   "zx": 0.563,
+   "zy": 0.088
+  },
+  {
+   "book": "Secrets of the Dreamers",
+   "zone": "The Barrens",
+   "x": 49.2,
+   "y": 33.0,
+   "place": "Cavern of Mists",
+   "detail": "in the caves leading to Wailing Caverns, by the dungeon's entrance but outside it",
+   "mapID": 1413,
+   "zx": 0.492,
+   "zy": 0.33,
+   "spot_note": "converted from 52.8, 54.7 on the Kalimdor map; check in game"
+  },
+  {
+   "book": "Baxtan: On Destructive Magics",
+   "zone": "The Barrens",
+   "x": 62.7,
+   "y": 36.3,
+   "place": "Ratchet",
+   "detail": "next to Gazlowe in the engineering building",
+   "mapID": 1413,
+   "zx": 0.627,
+   "zy": 0.363
+  },
+  {
+   "book": "Fury of the Land",
+   "zone": "Stonetalon Mountains",
+   "x": 74.4,
+   "y": 85.7,
+   "place": "Grimtotem Post",
+   "detail": "on a barrel inside one of the tents",
+   "mapID": 1442,
+   "zx": 0.744,
+   "zy": 0.857
+  },
+  {
+   "book": "RwlRwlRwlRwl!",
+   "zone": "Dustwallow Marsh",
+   "x": 57.0,
+   "y": 21.0,
+   "place": "Witch Hill",
+   "detail": "on the ground at the east edge of the murloc camp",
+   "mapID": 1445,
+   "zx": 0.57,
+   "zy": 0.21
+  },
+  {
+   "book": "Demons and You",
+   "zone": "Desolace",
+   "x": 55.0,
+   "y": 28.0,
+   "place": "Thunder Axe Fortress",
+   "detail": "inside the large building, on a bench against the wall",
+   "mapID": 1443,
+   "zx": 0.55,
+   "zy": 0.28
+  },
+  {
+   "book": "Geomancy: The Stone-Cold Truth",
+   "zone": "Thousand Needles",
+   "x": 34.0,
+   "y": 40.0,
+   "place": "Darkcloud Pinnacle",
+   "detail": "inside the largest hut; the path up starts at about 31, 37",
+   "mapID": 1441,
+   "zx": 0.34,
+   "zy": 0.4
+  },
+  {
+   "book": "Legends of the Tidesages",
+   "zone": "Tanaris",
+   "x": 72.6,
+   "y": 47.8,
+   "place": "the pirate camp",
+   "detail": "on a bookshelf in the middle building",
+   "mapID": 1446,
+   "zx": 0.726,
+   "zy": 0.478
+  },
+  {
+   "book": "Everyday Etiquette",
+   "zone": "Azshara",
+   "x": 20.7,
+   "y": 62.0,
+   "place": "Haldarr Encampment",
+   "detail": "on a crate beside the hut",
+   "mapID": 1447,
+   "zx": 0.207,
+   "zy": 0.62
+  },
+  {
+   "book": "Ka-Boom!",
+   "zone": "Winterspring",
+   "x": 60.7,
+   "y": 37.7,
+   "place": "Everlook",
+   "detail": "in the alchemy building, on a shelf behind the Alchemy Supplies vendor",
+   "mapID": 1452,
+   "zx": 0.607,
+   "zy": 0.377
+  },
+  {
+   "book": "Northern Kalimdor - A Comprehensive Guide",
+   "zone": "Felwood",
+   "x": 65.2,
+   "y": 3.2,
+   "place": "Timbermaw Hold",
+   "detail": "next to the bridge above the reputation vendor",
+   "mapID": 1448,
+   "zx": 0.652,
+   "zy": 0.032
+  }
+ ]
+}

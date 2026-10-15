@@ -234,6 +234,7 @@ Theme.actionIcon = {
 	t = MEDIA .. "icons\\train",
 	D = MEDIA .. "icons\\die",
 	P = MEDIA .. "icons\\pet",
+	L = MEDIA .. "icons\\complete",
 }
 
 Theme.actionIconByName = {
@@ -243,6 +244,7 @@ Theme.actionIconByName = {
 	GETFLIGHTPOINT = Theme.actionIcon.f, BUY = Theme.actionIcon.B, BOAT = Theme.actionIcon.b,
 	KILL = Theme.actionIcon.K, GRIND = Theme.actionIcon.G, USE = Theme.actionIcon.U,
 	TRAIN = Theme.actionIcon.t, DIE = Theme.actionIcon.D, PET = Theme.actionIcon.P,
+	LOOT = Theme.actionIcon.L,
 }
 
 -- A guide by how it suits your level, as the quest log colours a quest.
@@ -939,6 +941,7 @@ Theme.BADGES = {
 	pf  = { bg = { 0.36, 0.62, 0.84 }, text = DARK },
 	dg  = { bg = { 0.60, 0.48, 0.86 }, text = DARK },
 	cl  = { bg = { 0.30, 0.70, 0.64 }, text = DARK },
+	co  = { bg = { 0.78, 0.60, 0.36 }, text = DARK },
 	at  = { bg = { 0.91, 0.51, 0.23 }, text = DARK },
 	hc  = { bg = { 0.85, 0.30, 0.30 }, text = LIGHT },
 	tpl = { bg = "subtle", text = LIGHT },

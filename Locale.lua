@@ -23,9 +23,9 @@ L.NO_GUIDES_BODY = "WoW: Forever is new, so Pathfinder has no guides for it yet.
 	.. "you pick up, finish and hand in, and what it gave you."
 -- ... and once there are guides.
 L.PICK_GUIDE_TITLE = "Pick a guide"
-L.PICK_GUIDE_BODY = "Click + above to open the guide browser and pick a guide. There is one short test "
-	.. "guide so far, for Northshire. Help write the rest: switch on data collection and play as you "
-	.. "normally would."
+L.PICK_GUIDE_BODY = "Click + above to open the guide browser and pick a guide. So far there are routes "
+	.. "for the library books, under Collections, and a short test guide for Northshire, for the "
+	.. "Alliance. Help write the rest: switch on data collection and play as you normally would."
 L.GUIDE_DONE = "Guide done"
 L.GUIDE_DONE_NOTE = "You finished %s. Click + above to pick another guide."
 -- Pathfinder's arrow (UI/NavArrow.lua): what to do at the step's place, by its action.
@@ -36,7 +36,7 @@ L.ARROW_PHRASES = {
 	HEARTH = "Return to the inn", SETHEARTH = "Return to the inn",
 	FLY = "Head to the flight master", GETFLIGHTPOINT = "Head to the flight master",
 	BOAT = "Head to the dock", BUY = "Head to the vendor", USE = "Head to where you use the item",
-	TRAIN = "Head to the trainer",
+	TRAIN = "Head to the trainer", LOOT = "Go and pick it up",
 }
 L.ARROW_PHRASE = "Follow the path"
 L.ARROW_YARDS = "%d yd"
