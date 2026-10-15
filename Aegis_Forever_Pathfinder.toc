@@ -2,7 +2,7 @@
 ## Title: Aegis: Pathfinder (Forever)
 ## Notes: Leveling guide window for WoW: Forever. A first test guide for Northshire; it collects quest and leveling data to write the rest.|nPart of the Aegis addon suite.
 ## Author: Aegis: Pathfinder Contributors
-## Version: 0.6.0
+## Version: 0.7.0
 ## X-Category: Quest
 ## X-Curse-Project-ID: 1742985
 ## SavedVariables: AegisPathfinderDB
@@ -20,6 +20,7 @@ Core\Guides.lua
 # The guides, written from the data players sent in.
 Guides\Northshire.lua
 Guides\LibraryBooks.lua
+Guides\SleepingBag.lua
 
 # The data collector: what the client says about quests and levels.
 Collector\Collector.lua

@@ -5,8 +5,8 @@
 # Aegis: Pathfinder — Forever
 
 **The Pathfinder leveling guide, ported to WoW: Forever. So far: routes for the
-library books, and a short test guide for Northshire. It collects the data to
-write the rest.**
+library books and the Cozy Sleeping Bag, and a short test guide for Northshire.
+It collects the data to write the rest.**
 
 [![WoW: Forever](https://img.shields.io/badge/WoW%3A%20Forever-Interface%2016001-c79c2e?style=flat-square&labelColor=555)](#install)
 [![CurseForge](https://img.shields.io/badge/CurseForge-download-F16436?style=flat-square&logo=curseforge&logoColor=white)](https://www.curseforge.com/wow/addons/aegis-pathfinder)
@@ -16,8 +16,8 @@ write the rest.**
 > the modern engine. This is a port of [Aegis: Pathfinder](https://github.com/Torchlite-bit/Aegis_Pathfinder)
 > for Turtle WoW (1.12), not that addon. The two clients share almost no API.
 
-> ⚠️ **In development.** So far: the **library-book routes** (Collections) and a
-> test guide, **Northshire Valley (1-6)**.
+> ⚠️ **In development.** So far: the **library-book** and **Cozy Sleeping Bag**
+> routes (Collections) and a test guide, **Northshire Valley (1-6)**.
 > What works now: the guide window, the guide browser, the settings, quest and
 > vendor automation, and the **data collector**.
 

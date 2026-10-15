@@ -389,8 +389,11 @@ local function Satisfied(step)
 end
 
 --- Tick every step the client already says is done. As you play (not `atLoad`), a step
---- done now also ticks the trips just before it: you got there.
-function AP:ScanGuide(atLoad)
+--- done now also ticks the trips just before it: you got there. In a quest chain (a
+--- guide with `chain = true`), a quest step done, or found done at load, also ticks every
+--- step with no quest before it: you're past them. A trip unticked by hand stays unticked.
+--- `fresh`: steps the caller has just ticked (a quest handed in), done now like the rest.
+function AP:ScanGuide(atLoad, fresh)
 	local guide = self:GetCurrentGuide()
 	if guide then
 		local progress = Progress()
@@ -398,15 +401,34 @@ function AP:ScanGuide(atLoad)
 		progress[guide.name] = done
 		heldNames = nil
 		local mine = self:GuideSteps(guide)
+		local past
 		for position, index in ipairs(mine) do
-			if not done[index] and Satisfied(guide.steps[index]) then
+			local step = guide.steps[index]
+			local now = fresh ~= nil and fresh[index] == true
+			if not now and not done[index] and Satisfied(step) then
 				done[index] = true
+				now = true
+			end
+			if now then
 				if not atLoad then
 					local back = position - 1
 					while back >= 1 and not done[mine[back]] and TRAVEL[guide.steps[mine[back]].action] do
 						done[mine[back]] = true
 						back = back - 1
 					end
+				end
+				if guide.chain and step.qid then past = position end
+			elseif atLoad and guide.chain and step.qid and done[index] then
+				past = position
+			end
+		end
+		if past then
+			local unticked = self.db.char.untickedTrip
+			for position = 1, past - 1 do
+				local index = mine[position]
+				if not done[index] and not guide.steps[index].qid
+					and not (unticked and unticked.guide == guide.name and unticked.index == index) then
+					done[index] = true
 				end
 			end
 		end
@@ -581,14 +603,19 @@ local function OnQuestEvent(event, questID)
 	local guide = AP:GetCurrentGuide()
 	if not guide then return end
 	questID = Compat.Readable(questID)
+	local fresh
 	if event == "QUEST_TURNED_IN" and questID then
 		local done = Progress()
 		done[guide.name] = done[guide.name] or {}
 		for _, index in ipairs(AP:GuideSteps(guide)) do
-			if guide.steps[index].qid == questID then done[guide.name][index] = true end
+			if guide.steps[index].qid == questID and not done[guide.name][index] then
+				done[guide.name][index] = true
+				fresh = fresh or {}
+				fresh[index] = true
+			end
 		end
 	end
-	AP:ScanGuide()
+	AP:ScanGuide(false, fresh)
 end
 
 AP:OnLogin(function()
