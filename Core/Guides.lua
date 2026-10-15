@@ -216,6 +216,10 @@ function AP:SetStepDone(index, done, guideName)
 	local progress = Progress()
 	progress[guideName] = progress[guideName] or {}
 	progress[guideName][index] = done and true or nil
+	-- A quest step of a chain ticked by hand: the steps before it are behind you, now.
+	if done and step and step.qid and guide.chain and guideName == self.db.char.currentguide then
+		return self:ScanGuide(false, { [index] = true })
+	end
 	self:GuideChanged()
 end
 
@@ -349,9 +353,15 @@ function AP:RecordKnownFlightPoints()
 	local ok, nodes = pcall(C_TaxiMap.GetAllTaxiNodes, mapID)
 	if not (ok and type(nodes) == "table") then return end
 	local known = self.db.char.knownTaxi or {}
+	local current = Enum and Enum.FlightPathState and Enum.FlightPathState.Current or 0
+	-- The flight master you're standing at: the map marks its own node Current.
+	self.taxiHere = nil
 	for _, info in ipairs(nodes) do
 		local id = Compat.Readable(info.nodeID)
-		if id then known[id] = true end
+		if id then
+			known[id] = true
+			if Compat.Readable(info.state) == current then self.taxiHere = id end
+		end
 	end
 	self.db.char.knownTaxi = known
 end
@@ -389,8 +399,13 @@ local function Satisfied(step)
 end
 
 --- Tick every step the client already says is done. As you play (not `atLoad`), a step
---- done now also ticks the trips just before it: you got there.
-function AP:ScanGuide(atLoad)
+--- done now also ticks the trips just before it: you got there. A flight point does so
+--- only at its own flight master: any flight master's map lists every one you know. In a
+--- quest chain (a guide with `chain = true`), a quest step done, or found done at load,
+--- also ticks every step with no quest before it: you're past them. A trip you stepped
+--- back to by hand isn't ticked again while you stand at its place.
+--- `fresh`: steps the caller has just ticked (a quest handed in), done now like the rest.
+function AP:ScanGuide(atLoad, fresh)
 	local guide = self:GetCurrentGuide()
 	if guide then
 		local progress = Progress()
@@ -398,15 +413,34 @@ function AP:ScanGuide(atLoad)
 		progress[guide.name] = done
 		heldNames = nil
 		local mine = self:GuideSteps(guide)
+		local past
 		for position, index in ipairs(mine) do
-			if not done[index] and Satisfied(guide.steps[index]) then
+			local step = guide.steps[index]
+			local now = fresh ~= nil and fresh[index] == true
+			if not now and not done[index] and Satisfied(step) then
 				done[index] = true
-				if not atLoad then
+				now = true
+			end
+			if now then
+				if not atLoad and (step.action ~= "GETFLIGHTPOINT" or step.node == self.taxiHere) then
 					local back = position - 1
 					while back >= 1 and not done[mine[back]] and TRAVEL[guide.steps[mine[back]].action] do
 						done[mine[back]] = true
 						back = back - 1
 					end
+				end
+				if guide.chain and step.qid then past = position end
+			elseif atLoad and guide.chain and step.qid and done[index] then
+				past = position
+			end
+		end
+		if past then
+			local unticked = self.db.char.untickedTrip
+			for position = 1, past - 1 do
+				local index = mine[position]
+				if not done[index] and not guide.steps[index].qid
+					and not (unticked and unticked.guide == guide.name and unticked.index == index) then
+					done[index] = true
 				end
 			end
 		end
@@ -581,14 +615,19 @@ local function OnQuestEvent(event, questID)
 	local guide = AP:GetCurrentGuide()
 	if not guide then return end
 	questID = Compat.Readable(questID)
+	local fresh
 	if event == "QUEST_TURNED_IN" and questID then
 		local done = Progress()
 		done[guide.name] = done[guide.name] or {}
 		for _, index in ipairs(AP:GuideSteps(guide)) do
-			if guide.steps[index].qid == questID then done[guide.name][index] = true end
+			if guide.steps[index].qid == questID and not done[guide.name][index] then
+				done[guide.name][index] = true
+				fresh = fresh or {}
+				fresh[index] = true
+			end
 		end
 	end
-	AP:ScanGuide()
+	AP:ScanGuide(false, fresh)
 end
 
 AP:OnLogin(function()

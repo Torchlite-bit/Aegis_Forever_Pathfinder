@@ -1,0 +1,355 @@
+{
+ "about": "Forever's boats, zeppelins, trams, portals and airships, from the Aegis Instance Journal (Data/Travel/KnownTransports.lua and Data/Authored/Transports.lua), each stood on in game. One record per dock: kind, the faction that may use it, the dock's spot (0..1 on mapID), and where it goes. A guide's BOAT step stands on the dock it arrives at; the smoke test checks that dock exists for the guide's faction.",
+ "transports": [
+  {
+   "kind": "zeppelin",
+   "faction": "Horde",
+   "area": "Orgrimmar",
+   "to": [
+    "Undercity"
+   ],
+   "zone": "Durotar",
+   "mapID": 1411,
+   "x": 0.509,
+   "y": 0.139
+  },
+  {
+   "kind": "zeppelin",
+   "faction": "Horde",
+   "area": "Orgrimmar",
+   "to": [
+    "Grom'gol Base Camp"
+   ],
+   "zone": "Durotar",
+   "mapID": 1411,
+   "x": 0.506,
+   "y": 0.126
+  },
+  {
+   "kind": "boat",
+   "faction": "Neutral",
+   "area": "Ratchet",
+   "to": [
+    "Booty Bay"
+   ],
+   "zone": "The Barrens",
+   "mapID": 1413,
+   "x": 0.6367,
+   "y": 0.3843
+  },
+  {
+   "kind": "zeppelin",
+   "faction": "Horde",
+   "area": "Undercity",
+   "to": [
+    "Orgrimmar"
+   ],
+   "zone": "Tirisfal Glades",
+   "mapID": 1420,
+   "x": 0.607,
+   "y": 0.588
+  },
+  {
+   "kind": "zeppelin",
+   "faction": "Horde",
+   "area": "Undercity",
+   "to": [
+    "Grom'gol Base Camp"
+   ],
+   "zone": "Tirisfal Glades",
+   "mapID": 1420,
+   "x": 0.619,
+   "y": 0.591
+  },
+  {
+   "kind": "boat",
+   "faction": "Alliance",
+   "area": "Southshore",
+   "to": [
+    "Auberdine"
+   ],
+   "zone": "Hillsbrad Foothills",
+   "mapID": 1424,
+   "x": 0.5057,
+   "y": 0.6967
+  },
+  {
+   "kind": "zeppelin",
+   "faction": "Horde",
+   "area": "Grom'gol Base Camp",
+   "to": [
+    "Orgrimmar"
+   ],
+   "zone": "Stranglethorn Vale",
+   "mapID": 1434,
+   "x": 0.314,
+   "y": 0.302
+  },
+  {
+   "kind": "zeppelin",
+   "faction": "Horde",
+   "area": "Grom'gol Base Camp",
+   "to": [
+    "Undercity"
+   ],
+   "zone": "Stranglethorn Vale",
+   "mapID": 1434,
+   "x": 0.316,
+   "y": 0.291
+  },
+  {
+   "kind": "boat",
+   "faction": "Neutral",
+   "area": "Booty Bay",
+   "to": [
+    "Ratchet"
+   ],
+   "zone": "Stranglethorn Vale",
+   "mapID": 1434,
+   "x": 0.2586,
+   "y": 0.7299
+  },
+  {
+   "kind": "boat",
+   "faction": "Alliance",
+   "area": "Menethil Harbor",
+   "to": [
+    "Southshore",
+    "Auberdine"
+   ],
+   "zone": "Wetlands",
+   "mapID": 1437,
+   "x": 0.0464,
+   "y": 0.5717
+  },
+  {
+   "kind": "boat",
+   "faction": "Alliance",
+   "area": "Menethil Harbor",
+   "to": [
+    "Theramore Isle"
+   ],
+   "zone": "Wetlands",
+   "mapID": 1437,
+   "x": 0.0508,
+   "y": 0.6341
+  },
+  {
+   "kind": "boat",
+   "faction": "Alliance",
+   "area": "Rut'theran Village",
+   "to": [
+    "Auberdine"
+   ],
+   "zone": "Teldrassil",
+   "mapID": 1438,
+   "x": 0.5486,
+   "y": 0.9677
+  },
+  {
+   "kind": "boat",
+   "faction": "Alliance",
+   "area": "Auberdine",
+   "to": [
+    "Menethil Harbor",
+    "Southshore"
+   ],
+   "zone": "Darkshore",
+   "mapID": 1439,
+   "x": 0.3242,
+   "y": 0.4377
+  },
+  {
+   "kind": "boat",
+   "faction": "Alliance",
+   "area": "Auberdine",
+   "to": [
+    "Stormwind Harbor"
+   ],
+   "zone": "Darkshore",
+   "mapID": 1439,
+   "x": 0.3074,
+   "y": 0.4103
+  },
+  {
+   "kind": "boat",
+   "faction": "Alliance",
+   "area": "Auberdine",
+   "to": [
+    "Rut'theran Village"
+   ],
+   "zone": "Darkshore",
+   "mapID": 1439,
+   "x": 0.3319,
+   "y": 0.4013
+  },
+  {
+   "kind": "boat",
+   "faction": "Neutral",
+   "area": "The Forgotten Coast",
+   "to": [
+    "Feathermoon Stronghold"
+   ],
+   "zone": "Feralas",
+   "mapID": 1444,
+   "x": 0.433,
+   "y": 0.428
+  },
+  {
+   "kind": "boat",
+   "faction": "Neutral",
+   "area": "Feathermoon Stronghold",
+   "to": [
+    "The Forgotten Coast"
+   ],
+   "zone": "Feralas",
+   "mapID": 1444,
+   "x": 0.31,
+   "y": 0.398
+  },
+  {
+   "kind": "boat",
+   "faction": "Alliance",
+   "area": "Theramore Isle",
+   "to": [
+    "Menethil Harbor"
+   ],
+   "zone": "Dustwallow Marsh",
+   "mapID": 1445,
+   "x": 0.7151,
+   "y": 0.5634
+  },
+  {
+   "kind": "boat",
+   "faction": "Neutral",
+   "area": "Tanaris",
+   "to": [
+    "Riverglades"
+   ],
+   "zone": "Tanaris",
+   "mapID": 1446,
+   "x": 0.6813,
+   "y": 0.2254
+  },
+  {
+   "kind": "boat",
+   "faction": "Alliance",
+   "area": "Stormwind Harbor",
+   "to": [
+    "Auberdine"
+   ],
+   "zone": "Stormwind City",
+   "mapID": 1453,
+   "x": 0.2253,
+   "y": 0.562
+  },
+  {
+   "kind": "tram",
+   "faction": "Alliance",
+   "area": "Dwarven District",
+   "to": [
+    "Tinker Town"
+   ],
+   "zone": "Stormwind City",
+   "mapID": 1453,
+   "x": 0.6901,
+   "y": 0.3071
+  },
+  {
+   "kind": "tram",
+   "faction": "Alliance",
+   "area": "Tinker Town",
+   "to": [
+    "Dwarven District"
+   ],
+   "zone": "Ironforge",
+   "mapID": 1455,
+   "x": 0.7668,
+   "y": 0.5113
+  },
+  {
+   "kind": "boat",
+   "faction": "Neutral",
+   "area": "Riverglades",
+   "to": [
+    "Tanaris"
+   ],
+   "zone": "Riverglades",
+   "mapID": 2548,
+   "x": 0.8024,
+   "y": 0.5408
+  },
+  {
+   "kind": "portal",
+   "faction": "Alliance",
+   "area": "Wizard's Sanctum",
+   "to": [
+    "Dalaran"
+   ],
+   "zone": "Stormwind City",
+   "mapID": 1453,
+   "x": 0.4997,
+   "y": 0.8686
+  },
+  {
+   "kind": "portal",
+   "faction": "Alliance",
+   "area": "The Sky Enclave",
+   "to": [
+    "Stormwind"
+   ],
+   "zone": "Alterac Mountains",
+   "mapID": 1416,
+   "x": 0.1204,
+   "y": 0.563
+  },
+  {
+   "kind": "airship",
+   "faction": "Alliance",
+   "area": "Dalaran",
+   "to": [
+    "Zephras Isle"
+   ],
+   "zone": "Alterac Mountains",
+   "mapID": 1416,
+   "x": 0.1268,
+   "y": 0.5202
+  },
+  {
+   "kind": "airship",
+   "faction": "Alliance",
+   "area": "Valanaar",
+   "to": [
+    "Dalaran"
+   ],
+   "zone": "Zephras Isle",
+   "mapID": 2521,
+   "x": 0.6581,
+   "y": 0.834
+  },
+  {
+   "kind": "tram",
+   "faction": "Alliance",
+   "area": "Tinker Town",
+   "to": [
+    "Stormwind City"
+   ],
+   "zone": "Ironforge",
+   "mapID": 1455,
+   "x": 0.7628,
+   "y": 0.5131
+  },
+  {
+   "kind": "tram",
+   "faction": "Alliance",
+   "area": "Dwarven District",
+   "to": [
+    "Ironforge"
+   ],
+   "zone": "Stormwind City",
+   "mapID": 1453,
+   "x": 0.6707,
+   "y": 0.3329
+  }
+ ]
+}

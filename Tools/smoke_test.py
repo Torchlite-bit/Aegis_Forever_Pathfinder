@@ -111,16 +111,20 @@ def check_guides(ns):
 
 BOOKS = os.path.join(TOOLS, "library_books.json")
 FLIGHT_MASTERS = os.path.join(TOOLS, "flight_masters.json")
+TRANSPORTS = os.path.join(TOOLS, "transports.json")
 TRIPS = ("RUN", "FLY", "BOAT", "HEARTH", "MAP")
 
 
 def check_shipped(ns):
     """Every shipped guide's steps, before the scenario adds its own: a title; map/x/y all or
     none, on a 0..1 map; a node on a flight point; no character name in a note. The book
-    routes: each holds its continent's books once each (one Rumi), and every flight point and
-    flight stands on a flight master of the guide's faction or a neutral one."""
+    routes: each holds its continent's books once each (one Rumi). Every flight point and
+    flight stands on a flight master of the guide's faction or a neutral one, and every boat
+    or zeppelin on a dock of theirs (Tools/transports.json)."""
     with open(FLIGHT_MASTERS, encoding="utf-8") as handle:
         masters = {n["id"]: n for n in json.load(handle)["nodes"]}
+    with open(TRANSPORTS, encoding="utf-8") as handle:
+        docks = json.load(handle)["transports"]
     with open(BOOKS, encoding="utf-8") as handle:
         data = json.load(handle)
     continents = {side: {b["book"] for b in data[side]} for side in ("eastern_kingdoms", "kalimdor")}
@@ -151,6 +155,11 @@ def check_shipped(ns):
                 if not any(n["mapID"] == step.map and abs(n["x"] - step.x) <= 0.002 and abs(n["y"] - step.y) <= 0.002
                            and n["faction"] in (faction, "Neutral") for n in masters.values()):
                     problems.append(where + ": a flight to no %s flight master" % faction)
+            if step.action == "BOAT" and step.map is not None:
+                if not any(t["mapID"] == step.map and abs(t["x"] - step.x) <= 0.002 and abs(t["y"] - step.y) <= 0.002
+                           and t["faction"] in (faction, "Neutral") and t["kind"] in ("boat", "zeppelin")
+                           for t in docks):
+                    problems.append(where + ": a boat to no %s dock" % faction)
             if step.action == "LOOT" and step.item:
                 books.append(step.item)
         if guide.category == "collections" and name.startswith("Library Books"):
@@ -194,6 +203,45 @@ def check_books(ns):
                        for b in known):
                 problems.append(where + ": not at the book's spot")
     return problems, checked
+
+
+CHAIN = os.path.join(TOOLS, "sleeping_bag.json")
+CHAIN_NEAR = 0.003
+
+
+def check_chain(ns):
+    """The Cozy Sleeping Bag guides against the chain (Tools/sleeping_bag.json): one for each
+    faction, marked as a chain, whose quest steps are exactly the faction's steps in order
+    (action, quest id, title), each within 0.003 of its object's spot. Returns the problems."""
+    with open(CHAIN, encoding="utf-8") as handle:
+        chain = json.load(handle)
+    problems, factions = [], []
+    for name in ns.guidelist.values():
+        if not name.startswith("Cozy Sleeping Bag"):
+            continue
+        guide = ns.guides[name]
+        factions.append(guide.faction)
+        if not guide.chain:
+            problems.append(name + ": not marked as a chain")
+        want = chain["steps"].get(guide.faction)
+        if not want:
+            problems.append(name + ": no chain for the faction %s" % guide.faction)
+            continue
+        got = [(index, step) for index, step in sorted(guide.steps.items()) if step.qid is not None]
+        if [(s.action, int(s.qid)) for _, s in got] != [(w["action"], w["qid"]) for w in want]:
+            problems.append("%s: the quest steps aren't the chain's, in order: %s" % (
+                name, ", ".join("%s %d" % (s.action, s.qid) for _, s in got)))
+            continue
+        for (index, step), w in zip(got, want):
+            where = "%s, step %d (%s %s)" % (name, index, step.action, step.title)
+            if step.title != chain["quests"][str(w["qid"])]["title"]:
+                problems.append(where + ": the quest is called %r" % chain["quests"][str(w["qid"])]["title"])
+            if step.map != w["map"] or step.x is None or abs(step.x - w["x"]) > CHAIN_NEAR \
+                    or abs(step.y - w["y"]) > CHAIN_NEAR:
+                problems.append(where + ": not at %s" % w["object"])
+    if sorted(factions) != ["Alliance", "Horde"]:
+        problems.append("the Cozy Sleeping Bag guides: want one each for the Alliance and the Horde, have %s" % factions)
+    return problems
 
 
 def run(skin):
@@ -240,9 +288,9 @@ def run(skin):
     ElementTree.parse(os.path.join(ROOT, "Bindings.xml"))
     # Before the scenario registers its own test guide: only the shipped ones.
     bookProblems, bookSteps = check_books(ns)
-    bookProblems = bookProblems + check_shipped(ns)
+    bookProblems = bookProblems + check_shipped(ns) + check_chain(ns)
     if bookProblems:
-        print("FAILED (%s skin): the book guides disagree with the book list:\n  %s" % (skin, "\n  ".join(bookProblems)))
+        print("FAILED (%s skin): the shipped guides disagree with their lists:\n  %s" % (skin, "\n  ".join(bookProblems)))
         return False
     problems, warnings, matched, unseen = check_guides(ns)
     for warning in warnings:

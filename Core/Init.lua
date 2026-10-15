@@ -17,7 +17,7 @@ local L = AP.L
 AegisPathfinder = AP
 AP.name = addonName
 AP.title = L.TITLE
-AP.version = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version")) or "0.6.0"
+AP.version = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version")) or "0.7.0"
 AP.media = "Interface\\AddOns\\" .. addonName .. "\\media\\"
 
 AP.PROFILE_DEFAULTS = {

@@ -585,12 +585,15 @@ C_Map = {
 	end,
 	ClearUserWaypoint = function() Mock.waypoint = nil end,
 }
--- The flight master's own list (open): the nodes this character knows, Mock.taxiKnown = { ids }.
+-- The flight master's own list (open): the nodes this character knows, Mock.taxiKnown = { ids };
+-- the one you stand at, Mock.taxiHere, is Current (state 0), the rest Reachable (1).
 function GetTaxiMapID() return S().mapID end
 C_TaxiMap = {
 	GetAllTaxiNodes = function()
 		local out = {}
-		for _, id in ipairs(Mock.taxiKnown or {}) do out[#out + 1] = { nodeID = id, name = "Node " .. id, state = 1 } end
+		for _, id in ipairs(Mock.taxiKnown or {}) do
+			out[#out + 1] = { nodeID = id, name = "Node " .. id, state = id == Mock.taxiHere and 0 or 1 }
+		end
 		return out
 	end,
 	GetTaxiNodesForMap = function(mapID)

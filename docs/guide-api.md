@@ -15,6 +15,7 @@ AegisPathfinder:RegisterGuide({
     faction = "Alliance",            -- Alliance | Horde | Both
     minLevel = 1, maxLevel = 10,
     next = "Westfall (10-20)",       -- offered when this one ends
+    chain = true,                    -- optional: a quest chain (see below)
     steps = {
         { action = "ACCEPT", qid = 176, title = "Wanted: Hogger", map = 1429, x = 0.4215, y = 0.6590,
           note = "Marshal Dughan, Goldshire." },
@@ -30,6 +31,15 @@ AegisPathfinder:RegisterGuide({
 an unknown action, an unknown class or race). A guide file should report a
 refusal (`if not ok then geterrorhandler()(why) end`): a refused guide is
 otherwise just missing. The smoke test checks every shipped guide registers.
+
+`chain = true` marks a quest chain, done in order (the Cozy Sleeping Bag). In a
+chain, a quest step done (as you play, ticked by hand, or found done when the
+guide opens) also ticks every step with no quest before it: a player partway
+through opens the guide where they are, and a note or a hearth they skipped
+doesn't hold the guide back. Quest steps keep the client's word. A trip you step
+back to by hand isn't ticked again while you stand at its place; once you've
+left, the next quest done (or a reload) ticks it again. Leave it off a leveling
+guide: there a quest done out of order mustn't tick the steps before it.
 
 ## Steps
 
@@ -62,8 +72,9 @@ How steps tick:
 - `GETFLIGHTPOINT` (with `node`): once you know that flight point. Forever's client calls every node
   "discovered", so the flight points a flight master's map lists are saved per character as it opens
 - `RUN`, `FLY`, `BOAT`, `HEARTH`, `MAP`: once you're within 40 yards of its place, or once the step of
-  yours right after it is done as you play (not at load). Stepping back to a trip by hand doesn't tick it
-  again until you've left its place
+  yours right after it is done as you play (not at load; a quest handed in counts, from 0.7.0; a flight
+  point only when you learn it at its own flight master, since every flight master's map lists all the
+  ones you know). Stepping back to a trip by hand doesn't tick it again until you've left its place
 - anything else: by hand (the step's ring, the → on the nav row, `/apg next`).
   A current ACCEPT or TURNIN shows as a band without a ring: its fallback is the →.
   (In a block of steps done together there are no bands: every step has its ring.)

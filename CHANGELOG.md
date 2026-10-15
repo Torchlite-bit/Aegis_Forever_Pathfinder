@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.7.0 — the Cozy Sleeping Bag
+
+- **New: a guide for the Cozy Sleeping Bag**, under Collections, one for the
+  Alliance and one for the Horde. It takes you through the whole quest chain,
+  from level 14: Westfall and the Barrens (the Horde does them the other way
+  round), then Stonetalon Mountains, Loch Modan and Thoradin's Wall. It uses
+  boats, zeppelins, flights and your hearthstone, and learns flight points on
+  the way. On foot it takes about an hour and a half for the Alliance and two
+  hours for the Horde.
+- Each quest step ticks by itself as you pick up or hand in the quest. Every
+  step says where it's dangerous: enemy towns, guards, strong monsters.
+- **Already partway through the chain?** Open the guide: it starts where you are.
+- Fixed: handing in a quest now also ticks the run or flight just before it.
+  The guide no longer waits on a trip you've already made.
+- Fixed: a flight point you already know, further on in a route, no longer
+  skips the runs and flights before it when you open a flight master's map.
+- **After updating, close the game and start it again.** A /reload is not
+  enough this time: there is a new file.
+
+---
+
 ## 0.6.0 — library books
 
 - **New: routes for the library books**, under a new **Collections** category in

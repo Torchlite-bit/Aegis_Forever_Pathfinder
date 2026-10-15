@@ -473,8 +473,9 @@ for _, row in ipairs(browser.ui.categories) do
 		local names = {}
 		for _, r in ipairs(browser.ui.rows) do if r:IsShown() and r.guide then names[#names + 1] = r.guide.name end end
 		table.sort(names)
-		equal(table.concat(names, " | "), "Library Books: Eastern Kingdoms (Alliance) | Library Books: Kalimdor (Alliance)",
-			"Collections lists the Alliance's library-book guides, not the Horde's")
+		equal(table.concat(names, " | "),
+			"Cozy Sleeping Bag (Alliance) | Library Books: Eastern Kingdoms (Alliance) | Library Books: Kalimdor (Alliance)",
+			"Collections lists the Alliance's library-book and sleeping-bag guides, not the Horde's")
 	else
 		check(browser.ui.empty:IsShown(), "an empty category says so")
 	end
@@ -985,8 +986,9 @@ equal(guide.ui.empty.title:GetText(), "PICK A GUIDE", "a Horde character has the
 local hordeBooks = {}
 for _, g in ipairs(AP:GetGuides("collections")) do hordeBooks[#hordeBooks + 1] = g.name end
 table.sort(hordeBooks)
-equal(table.concat(hordeBooks, " | "), "Library Books: Eastern Kingdoms (Horde) | Library Books: Kalimdor (Horde)",
-	"Collections shows the Horde its two routes")
+equal(table.concat(hordeBooks, " | "),
+	"Cozy Sleeping Bag (Horde) | Library Books: Eastern Kingdoms (Horde) | Library Books: Kalimdor (Horde)",
+	"Collections shows the Horde its three routes")
 for _, g in ipairs(AP:GetGuides(nil)) do
 	check(g.faction == "Horde" or g.faction == "Both", "and sees no Alliance guide: " .. g.name)
 end
@@ -1268,6 +1270,175 @@ do
 	end
 	equal(table.concat(totals, ","), "26,13,26,13", "26 books in the Eastern Kingdoms and 13 in Kalimdor, for each faction")
 	S.x, S.y = 0.4, 0.6
+	AP.db.char.progress, AP.db.char.arrived = {}, nil
+end
+
+------------------------------------------------------------------------------------------
+-- Quest chains (`chain = true`): a quest done means the steps before it are behind you
+------------------------------------------------------------------------------------------
+
+do
+	local function Chain(name, chain)
+		return AP:RegisterGuide({ name = name, category = "leveling", faction = "Alliance", chain = chain,
+			minLevel = 1, maxLevel = 2, steps = {
+				{ action = "NOTE", title = "What the chain gives" },
+				{ action = "SETHEARTH", title = "Set your hearth" },
+				{ action = "RUN", title = "Far off", map = 1429, x = 0.1, y = 0.1 },
+				{ action = "TURNIN", qid = 990001, title = "First Link", map = 1429, x = 0.1, y = 0.1 },
+				{ action = "ACCEPT", qid = 990002, title = "Second Link", map = 1429, x = 0.1, y = 0.1 },
+				{ action = "FLY", title = "Fly away", map = 1429, x = 0.9, y = 0.9 },
+				{ action = "TURNIN", qid = 990002, title = "Second Link", map = 1429, x = 0.9, y = 0.9 },
+				{ action = "NOTE", title = "The end" },
+			} })
+	end
+	check(Chain("Chain Test (1-2)", true) and Chain("Loose Test (1-2)", nil), "a quest chain and a plain guide register")
+	S.x = nil
+	S.log, S.completed = { { questID = 990002, title = "Second Link", level = 1, objectives = {} } }, { [990001] = true }
+	AP.db.char.progress, AP.db.char.untickedTrip = {}, nil
+	AP:LoadGuide("Loose Test (1-2)")
+	equal((AP:GetCurrentStep()), 1, "a plain guide, its later quests done, still starts at its first step")
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 6, "a chain joined halfway opens at the step after the last quest done")
+	AP.db.char.progress, S.completed = {}, {}
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 4, "a quest the client doesn't call done isn't ticked, even before one that is")
+	AP.db.char.progress, S.log = { ["Chain Test (1-2)"] = { [4] = true } }, {}
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 5, "a quest step ticked by hand counts too: the steps before it are behind you")
+	AP.db.char.progress = {}
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 1, "a chain not started opens at its first step")
+	AP:SetStepDone(4, true)
+	equal((AP:GetCurrentStep()), 5, "a quest step ticked by hand counts at once, not only at the next load")
+	S.log, S.completed = { { questID = 990002, title = "Second Link", level = 1, objectives = {} } }, { [990001] = true }
+	AP.db.char.progress = {}
+	AP:LoadGuide("Chain Test (1-2)")
+	S.x, S.y = 0.1, 0.1                       -- at the run's place
+	AP:SetStepDone(3, false)
+	equal((AP:GetCurrentStep()), 3, "stepping back to a run by hand, at its place, shows it")
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 3, "and a reload there doesn't tick it again")
+	S.x = nil
+	Mock.Advance(2)
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 6, "once you've left its place, the chain ticks it again")
+	AP.db.char.untickedTrip = nil
+	S.log, S.completed = {}, {}
+	AP.db.char.progress = {}
+	AP:LoadGuide("Loose Test (1-2)")
+	S.completed[990001] = true
+	Mock.Fire("QUEST_TURNED_IN", 990001, 0, 0)
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 1, "in a plain guide, a quest handed in ticks only the trip before it")
+	check(AP:IsStepDone("Loose Test (1-2)", 3), "(the run)")
+	S.completed = {}
+	AP.db.char.progress = {}
+	AP:LoadGuide("Chain Test (1-2)")
+	equal((AP:GetCurrentStep()), 1, "a chain not started opens at its first step")
+	S.completed[990001] = true
+	Mock.Fire("QUEST_TURNED_IN", 990001, 0, 0)
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 5, "in a chain, a quest handed in ticks the note and the hearth before it too")
+	AP:UnloadGuide()
+	S.x, S.y = 0.4, 0.6
+	S.log, S.completed = {}, {}
+	AP.db.char.progress, AP.db.char.arrived = {}, nil
+end
+
+------------------------------------------------------------------------------------------
+-- A flight point ticks the trips before it only at its own flight master
+------------------------------------------------------------------------------------------
+
+do
+	check(AP:RegisterGuide({ name = "Flight Test (1-2)", category = "leveling", faction = "Alliance",
+		minLevel = 1, maxLevel = 2, steps = {
+			{ action = "NOTE", title = "Start here" },
+			{ action = "GETFLIGHTPOINT", title = "Near flight point", node = 4, map = 1429, x = 0.45, y = 0.6 },
+			{ action = "RUN", title = "A long run", map = 1429, x = 0.1, y = 0.1 },
+			{ action = "GETFLIGHTPOINT", title = "Far flight point", node = 2, map = 1429, x = 0.2, y = 0.2 },
+			{ action = "NOTE", title = "The end" },
+		} }), "a guide of flight points registers")
+	S.x = nil
+	AP.db.char.progress, AP.db.char.knownTaxi, AP.db.char.untickedTrip = {}, nil, nil
+	AP:LoadGuide("Flight Test (1-2)")
+	AP:StepForward()
+	Mock.taxiKnown, Mock.taxiHere = { 4, 2 }, 4
+	Mock.Fire("TAXIMAP_OPENED")
+	Mock.Advance(1)
+	check(AP:IsStepDone("Flight Test (1-2)", 2) and AP:IsStepDone("Flight Test (1-2)", 4),
+		"opening a flight master's map ticks every flight point it lists")
+	equal((AP:GetCurrentStep()), 3, "but a far one you already knew doesn't tick the run before it")
+	AP.db.char.progress, AP.db.char.knownTaxi = { ["Flight Test (1-2)"] = { [1] = true, [2] = true } }, nil
+	AP:LoadGuide("Flight Test (1-2)")
+	Mock.taxiKnown, Mock.taxiHere = { 4, 2 }, 2
+	Mock.Fire("TAXIMAP_OPENED")
+	Mock.Advance(1)
+	equal((AP:GetCurrentStep()), 5, "learned at its own flight master, a flight point ticks the run before it")
+	AP:UnloadGuide()
+	Mock.taxiKnown, Mock.taxiHere = nil, nil
+	S.x, S.y = 0.4, 0.6
+	AP.db.char.progress, AP.db.char.knownTaxi, AP.db.char.arrived = {}, nil, nil
+end
+
+------------------------------------------------------------------------------------------
+-- The Cozy Sleeping Bag guides, played through, and joined halfway
+------------------------------------------------------------------------------------------
+
+do
+	local quests = {}
+	for _, faction in ipairs({ "Alliance", "Horde" }) do
+		local name = "Cozy Sleeping Bag (" .. faction .. ")"
+		local g = AP.guides[name]
+		check(g and g.category == "collections" and g.faction == faction and g.chain and g.minLevel == 14,
+			name .. " registers, under Collections, as a chain from level 14")
+		S.x, S.log, S.completed = nil, {}, {}
+		AP.db.char.progress, AP.db.char.arrived, AP.db.char.untickedTrip = {}, nil, nil
+		AP:LoadGuide(name)
+		local count, stuck, wetJob = 0, nil, nil
+		for _, index in ipairs(AP:GuideSteps(g)) do
+			local current, step = AP:GetCurrentStep()
+			if current ~= index then
+				stuck = string.format("%s: step %d came when %d was due", name, current or -1, index)
+				break
+			end
+			if step.action == "ACCEPT" then
+				count = count + 1
+				if step.qid == 79974 then wetJob = index end
+				S.log[#S.log + 1] = { questID = step.qid, title = step.title, level = 14, objectives = {} }
+				Mock.Fire("QUEST_ACCEPTED", step.qid)
+				Mock.Advance(1)
+			elseif step.action == "TURNIN" then
+				count = count + 1
+				for i = #S.log, 1, -1 do
+					if S.log[i].questID == step.qid then table.remove(S.log, i) end
+				end
+				S.completed[step.qid] = true
+				Mock.Fire("QUEST_TURNED_IN", step.qid, 0, 0)
+				Mock.Advance(1)
+			else
+				AP:StepForward()
+			end
+			if not stuck and (step.action == "ACCEPT" or step.action == "TURNIN") and (AP:GetCurrentStep()) == index then
+				stuck = name .. ": the quest step " .. index .. " didn't tick itself"
+				break
+			end
+		end
+		check(not stuck, stuck or (name .. ": every step in order, each quest step ticking itself"))
+		check(select(2, AP:GetCurrentStep()) == nil, name .. ": the guide ends")
+		quests[#quests + 1] = count
+		AP:UnloadGuide()
+		-- Joined halfway: Scramble handed in, Wet Job in the log.
+		S.log = { { questID = 79974, title = "Wet Job", level = 14, objectives = {} } }
+		S.completed = { [79192] = true, [79980] = true }
+		S.completed[faction == "Alliance" and 79008 or 79007] = true
+		AP.db.char.progress = {}
+		AP:LoadGuide(name)
+		equal((AP:GetCurrentStep()), wetJob and wetJob + 1, name .. ": joined at Wet Job, it opens at the step after it")
+		AP:UnloadGuide()
+	end
+	equal(table.concat(quests, ","), "12,12", "each chain: 6 quests, each picked up and handed in")
+	S.x, S.y = 0.4, 0.6
+	S.log, S.completed = {}, {}
 	AP.db.char.progress, AP.db.char.arrived = {}, nil
 end
 

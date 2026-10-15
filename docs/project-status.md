@@ -111,6 +111,18 @@ clone, following `.claude/CLAUDE.md` (#10).
    and Stormwind (maps other than Elwynn's). `/dump GetPlayerFacing()` facing north
    should be about 0 and facing west about 1.57. With default windows, open
    Settings > Navigation: the arrow (top middle) stays clear of it while you size it.
+10. **The Cozy Sleeping Bag guides (0.7.0): to confirm in game.** The quest ids and
+   spots are Wowhead's Forever database's (`Tools/sleeping_bag.json`); the collected
+   data hasn't seen them, so the quest steps are `unverified`. To check: which object
+   takes the first hand-in on each side (a player reported the Burned-Out Remains
+   don't; the Nailed Plank beside them should), whether the Horde can start the
+   chain from that plank too, Menethil's boat to Southshore, the hearthstone's
+   cooldown on Forever (the routes assume Classic's hour), and every RUN step marked
+   `unverified` (14, the routes' own waypoints). Alliance: Algaz Station, the Shady
+   Rest Inn, the plains east of Camp Taurajo, the road to Stonetalon, the foot and the
+   middle of the Webwinder Path. Horde: Duskwood, Raven Hill, Westfall, Hillsbrad
+   Foothills, Arathi Highlands, the crossroads near Refuge Pointe, Thandol Span,
+   Algaz Station.
 
 ## Learned the hard way (don't relearn these)
 
@@ -127,6 +139,25 @@ clone, following `.claude/CLAUDE.md` (#10).
   endings tell it apart from a mirror of this clone, which has CRLF). A test build
   installed before a release lands is gone after it. Check the installed TOC's
   `## Version` before asking the owner to test; reinstall if it changed.
+- **Quest chains (0.7.0, the Cozy Sleeping Bag):** a guide with `chain = true` treats a
+  quest step done (as you play, ticked by hand, or found done at load) as proof that
+  every step with no quest before it is behind you; quest steps keep the client's word.
+  A trip stepped back to by hand is spared only while you stand at its place
+  (`char.untickedTrip` is cleared once you leave).
+  Not for leveling guides, where quests get done out of order. The same change found a
+  bug from 0.6.0: a turn-in ticks its steps in the event handler (the completed flag
+  lags), so the scan never saw them as newly done and the trip before a TURNIN never
+  ticked. The handler now passes those steps to `ScanGuide` as `fresh`.
+  `Tools/transports.json` (the Instance Journal's docks) lets the smoke test check every
+  BOAT step lands on a dock of the guide's faction.
+- **A flight point known ahead (0.7.0 review):** opening any flight master's map records
+  every flight point the character knows, so a GETFLIGHTPOINT far down a route ticks
+  wherever you are, and the trip rule then ticked the runs and flights before it: whole
+  legs of the routes were skipped. Now a flight point ticks the trips before it only when
+  it is the node the map marks `Enum.FlightPathState.Current` (you're standing at it;
+  `AP.taxiHere`, the client's own flight map uses the same state). Routes that cross a
+  flight point the player may already know say so in the step before ("If you know X's
+  flight point, fly there instead").
 - **Travel guides (0.6.0, library books):** Forever's flight masters come from the client
   (`/apg flights` -> `AegisPathfinderDB.atlas`: every map's name, size in yards and rect on
   its continent, and `C_TaxiMap.GetTaxiNodesForMap` for each, which lists every node of the

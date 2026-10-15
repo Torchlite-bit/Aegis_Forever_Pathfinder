@@ -1,0 +1,45 @@
+{
+ "about": "The Cozy Sleeping Bag quest chain on WoW: Forever, for Guides/SleepingBag.lua and the smoke test. Quest ids, titles, levels and the objects' spots are from Wowhead's Forever database (2026-10-15); the collected data hasn't seen these quests yet. Every quest starts and ends at an object you click, needs level 14 and can't be shared. Spots are 0..1 on the uiMapID. Each faction's steps, in order: the guide's quest steps must be exactly these.",
+ "quests": {
+  "79008": { "title": "... and that note you found", "faction": "Alliance", "level": 22 },
+  "79007": { "title": "... and that note you found", "faction": "Horde", "level": 22 },
+  "79192": { "title": "Stepping Stones", "level": 24 },
+  "79980": { "title": "Scramble", "level": 24 },
+  "79974": { "title": "Wet Job", "level": 32 },
+  "79975": { "title": "Eagle's Fist", "level": 32 },
+  "79976": { "title": "This Must Be The Place", "level": 32 }
+ },
+ "optional": {
+  "80001": { "title": "Rekindle", "note": "The camp's firepit (Stonetalon 40.6, 52.4). Optional, and some can't click the fire: named in a note, never a step." }
+ },
+ "steps": {
+  "Alliance": [
+   { "action": "ACCEPT", "qid": 79008, "map": 1436, "x": 0.374, "y": 0.506, "object": "Burned-Out Remains, Alexston Farmstead, Westfall" },
+   { "action": "TURNIN", "qid": 79008, "map": 1413, "x": 0.464, "y": 0.739, "object": "Burned-Out Remains or the Nailed Plank, a burnt tower south of Camp Taurajo, The Barrens" },
+   { "action": "ACCEPT", "qid": 79192, "map": 1413, "x": 0.464, "y": 0.739, "object": "the same" },
+   { "action": "TURNIN", "qid": 79192, "map": 1442, "x": 0.407, "y": 0.524, "object": "Pocket Litter, an abandoned camp, Stonetalon Mountains" },
+   { "action": "ACCEPT", "qid": 79980, "map": 1442, "x": 0.407, "y": 0.524, "object": "the same" },
+   { "action": "TURNIN", "qid": 79980, "map": 1442, "x": 0.396, "y": 0.499, "object": "Mound of Dirt, across a jump north of the camp" },
+   { "action": "ACCEPT", "qid": 79974, "map": 1442, "x": 0.396, "y": 0.499, "object": "the same" },
+   { "action": "TURNIN", "qid": 79974, "map": 1432, "x": 0.494, "y": 0.129, "object": "Carved Figurine, on the Stonewrought Dam, Loch Modan" },
+   { "action": "ACCEPT", "qid": 79975, "map": 1432, "x": 0.494, "y": 0.129, "object": "the same" },
+   { "action": "TURNIN", "qid": 79975, "map": 1417, "x": 0.224, "y": 0.242, "object": "Messenger Bag, inside Thoradin's Wall (climb in from the cart at Hillsbrad 87.3, 49.6)" },
+   { "action": "ACCEPT", "qid": 79976, "map": 1417, "x": 0.224, "y": 0.242, "object": "the same" },
+   { "action": "TURNIN", "qid": 79976, "map": 1417, "x": 0.224, "y": 0.242, "object": "Hastily Rolled-Up Satchel, below the bag: the Cozy Sleeping Bag" }
+  ],
+  "Horde": [
+   { "action": "ACCEPT", "qid": 79007, "map": 1413, "x": 0.464, "y": 0.739, "object": "Burned-Out Remains, a burnt tower south of Camp Taurajo, The Barrens" },
+   { "action": "TURNIN", "qid": 79007, "map": 1436, "x": 0.374, "y": 0.509, "object": "Burned-Out Remains or the Nailed Plank, Alexston Farmstead, Westfall" },
+   { "action": "ACCEPT", "qid": 79192, "map": 1436, "x": 0.374, "y": 0.509, "object": "the same" },
+   { "action": "TURNIN", "qid": 79192, "map": 1442, "x": 0.407, "y": 0.524, "object": "Pocket Litter, an abandoned camp, Stonetalon Mountains" },
+   { "action": "ACCEPT", "qid": 79980, "map": 1442, "x": 0.407, "y": 0.524, "object": "the same" },
+   { "action": "TURNIN", "qid": 79980, "map": 1442, "x": 0.396, "y": 0.499, "object": "Mound of Dirt, across a jump north of the camp" },
+   { "action": "ACCEPT", "qid": 79974, "map": 1442, "x": 0.396, "y": 0.499, "object": "the same" },
+   { "action": "TURNIN", "qid": 79974, "map": 1432, "x": 0.494, "y": 0.129, "object": "Carved Figurine, on the Stonewrought Dam, Loch Modan" },
+   { "action": "ACCEPT", "qid": 79975, "map": 1432, "x": 0.494, "y": 0.129, "object": "the same" },
+   { "action": "TURNIN", "qid": 79975, "map": 1417, "x": 0.224, "y": 0.242, "object": "Messenger Bag, inside Thoradin's Wall (climb in from the cart at Hillsbrad 87.3, 49.6)" },
+   { "action": "ACCEPT", "qid": 79976, "map": 1417, "x": 0.224, "y": 0.242, "object": "the same" },
+   { "action": "TURNIN", "qid": 79976, "map": 1417, "x": 0.224, "y": 0.242, "object": "Hastily Rolled-Up Satchel, below the bag: the Cozy Sleeping Bag" }
+  ]
+ }
+}
