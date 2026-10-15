@@ -50,7 +50,13 @@ Built for **WoW: Forever** (client 1.60.1, interface **16001**), which runs the 
 
 **Default: Blizzard's own look.** One more theme, **Default**, draws the same windows the way today's game draws its own Options window: the smooth metal frame over a solid dark background, the red close button, Blizzard's red buttons, slim check boxes, sliders, scroll bars and drop-downs, gold Friz Quadrata labels and the game's tooltip. A new install starts in it; the Pathfinder themes are under *Settings → Appearance → Theme*. Switching to or from it reloads the interface.
 
-**A first test guide: Northshire Valley (1-6).** For Alliance characters: the human starting area, from Deputy Willem to Goldshire, written from the data players sent in. Open it from the guide browser (**+** on the guide window). Each step ticks itself as you accept, finish and hand in quests. **Pathfinder's arrow** points the way, with how far it is and about how long it takes, and the game's own pin and arrow go on the next place too. Class quests show only for your class. The other zones will be written the same way, so please keep **collecting data**.
+**Guides so far.** Open them from the guide browser (**+** on the guide window):
+
+- **Cozy Sleeping Bag** (*Collections*): the whole quest chain, from level 14, one route for each faction. It crosses both continents: Westfall and the Barrens, then Stonetalon Mountains, Loch Modan and Thoradin's Wall. Already partway through? It opens where you are.
+- **Library Books** (*Collections*): four routes, the Eastern Kingdoms and Kalimdor for each faction, picking up the books in the fastest order we found and ending at your librarian. A book ticks once it's in your bags. The Feralas book is left out until its new spot is known.
+- **Northshire Valley (1-6)**: a short test guide for Alliance characters, from Deputy Willem to Goldshire, written from the data players sent in. Class quests show only for your class.
+
+Each step ticks itself as you accept, finish and hand in quests, learn flight points and get where a step sends you. The routes take boats, zeppelins, flights and your hearthstone, and every step says where it's dangerous. **Pathfinder's arrow** points the way, with how far it is and about how long it takes, and the game's own pin and arrow go on the next place too. The leveling guides will be written from the data players send, so please keep **collecting data**.
 
 ## The data collector
 
@@ -93,7 +99,7 @@ Send again whenever you like, without clearing: a newer copy of a collection rep
 - **Quest automation**: accepts and hands in quests, on by default as in the Turtle addon, and picks them from an NPC's list. Never a grey quest, never a reward choice. Hold Shift to skip one.
 - **At the vendor** (switch it on under *Settings → Automation*): sells greys with the game's own *Sell All Junk*, and repairs, with your own money or the guild's first. Where a vendor has no *Sell All Junk*, a *Sell greys* button does it.
 - **Reputation detail**: "Stormwind +25: Honored 4,350 / 12,000, 7,650 to Revered"
-- **Level-ups**: tell everyone nearby, your party or your guild with one click, and how long the level took when the data collector saw all of it
+- **Level-ups**: tell your party and your guild by themselves, or everyone nearby with one click (an emote), and how long the level took when the data collector saw all of it
 - **Window settings**: lock, transparency, opacity, step text size, window scale, hiding in dungeons or combat
 
 Automation is set per character, under *Settings → Automation*.

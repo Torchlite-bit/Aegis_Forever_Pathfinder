@@ -38,15 +38,27 @@ drop-downs, gold Friz Quadrata labels, the Options list highlight and section
 rules, and the game's tooltip. Pick it under *Settings → Appearance → Theme*.
 Switching to or from it reloads the interface.
 
-**A first test guide: Northshire Valley (1-6).** For Alliance characters: the
-human starting area, from Deputy Willem to Goldshire, written from the data
-players sent in. Open it from
-the guide browser (**+** on the guide window). Each step ticks itself as you
-accept, finish and hand in quests. **Pathfinder's arrow** points the way, with
-how far it is and about how long it takes, and the game's own pin and arrow go on the
-next place. Class quests show only for your class. The other zones' guides
-will be written the same way ([docs/guide-api.md](docs/guide-api.md)), so
-please keep **collecting data**.
+**Guides so far.** Open them from the guide browser (**+** on the guide window):
+
+- **Cozy Sleeping Bag** (*Collections*): the whole quest chain, from level 14,
+  one route for each faction. It crosses both continents: Westfall and the
+  Barrens, then Stonetalon Mountains, Loch Modan and Thoradin's Wall. Already
+  partway through? It opens where you are.
+- **Library Books** (*Collections*): four routes, the Eastern Kingdoms and
+  Kalimdor for each faction, picking up the books in the fastest order we
+  found and ending at your librarian. A book ticks once it's in your bags. The
+  Feralas book is left out until its new spot is known.
+- **Northshire Valley (1-6)**: a short test guide for Alliance characters,
+  from Deputy Willem to Goldshire, written from the data players sent in.
+  Class quests show only for your class.
+
+Each step ticks itself as you accept, finish and hand in quests, learn flight
+points and get where a step sends you. The routes take boats, zeppelins,
+flights and your hearthstone, and every step says where it's dangerous.
+**Pathfinder's arrow** points the way, with how far it is and about how long it
+takes, and the game's own pin and arrow go on the next place. The leveling
+guides will be written from the data players send
+([docs/guide-api.md](docs/guide-api.md)), so please keep **collecting data**.
 
 ### The data collector
 
@@ -123,9 +135,9 @@ the Submit window, on the *About* page and in
   vendor has none), repairing (your money, or the guild's first). Hold Shift
   to suspend. These are per character: *Settings → Automation*.
 - **Extras**: detailed reputation gains ("Stormwind +25: Honored 4,350 /
-  12,000, 7,650 to Revered"), and level-up announcements to emote, party or
-  guild: a card with a button for each, since the game lets addons post in
-  chat only when you click.
+  12,000, 7,650 to Revered"), and level-up announcements. Party and guild get
+  them by themselves; the emote is a button on a card, since the game lets an
+  addon emote only when you click.
 - **Window settings**: lock, transparency, opacity, step text size, window
   scale, hiding in dungeons or combat.
 
